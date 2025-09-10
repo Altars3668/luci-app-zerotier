@@ -1,0 +1,160 @@
+#!/bin/sh
+# ZeroTier Moon Management Script
+# This script helps manage ZeroTier Moon nodes
+
+ZT_HOME="/var/lib/zerotier-one"
+ZT_CLI="/usr/bin/zerotier-cli"
+ZT_IDTOOL="/usr/bin/zerotier-idtool"
+
+# Check if ZeroTier is running
+check_zerotier() {
+    if ! pgrep zerotier-one > /dev/null; then
+        echo "ERROR: ZeroTier is not running"
+        exit 1
+    fi
+}
+
+# Create a moon configuration
+create_moon() {
+    local public_ip="$1"
+    local public_port="${2:-9993}"
+    
+    if [ -z "$public_ip" ]; then
+        echo "ERROR: Public IP address is required"
+        exit 1
+    fi
+    
+    check_zerotier
+    
+    # Get node identity
+    if [ ! -f "$ZT_HOME/identity.public" ] || [ ! -f "$ZT_HOME/identity.secret" ]; then
+        echo "ERROR: ZeroTier identity not found"
+        exit 1
+    fi
+    
+    # Create moon configuration
+    local moon_json="$ZT_HOME/moon.json"
+    local node_id=$(cat "$ZT_HOME/identity.public" | cut -d':' -f1)
+    
+    cat > "$moon_json" << EOF
+{
+    "id": "${node_id}",
+    "objtype": "world",
+    "roots": [
+        {
+            "identity": "$(cat $ZT_HOME/identity.public)",
+            "stableEndpoints": ["${public_ip}/${public_port}"]
+        }
+    ],
+    "signingKey": "$(cat $ZT_HOME/identity.secret | cut -d':' -f4)",
+    "signingKey_SECRET": "$(cat $ZT_HOME/identity.secret | cut -d':' -f5)",
+    "updatesMustBeSignedBy": "${node_id}",
+    "worldType": "moon"
+}
+EOF
+
+    # Generate moon file
+    if [ -x "$ZT_IDTOOL" ]; then
+        local moon_file="$ZT_HOME/${node_id}.moon"
+        if "$ZT_IDTOOL" mkworld "$moon_json" > "$moon_file"; then
+            # Create moons.d directory if it doesn't exist
+            mkdir -p "$ZT_HOME/moons.d"
+            
+            # Copy moon file to moons.d
+            cp "$moon_file" "$ZT_HOME/moons.d/"
+            
+            echo "SUCCESS: Moon created successfully"
+            echo "Moon ID: ${node_id}"
+            echo "Moon file: ${moon_file}"
+            
+            # Restart ZeroTier to apply moon configuration
+            /etc/init.d/zerotier restart
+        else
+            echo "ERROR: Failed to generate moon file"
+            exit 1
+        fi
+    else
+        echo "ERROR: zerotier-idtool not found"
+        exit 1
+    fi
+}
+
+# Join a moon
+join_moon() {
+    local moon_id="$1"
+    
+    if [ -z "$moon_id" ]; then
+        echo "ERROR: Moon ID is required"
+        exit 1
+    fi
+    
+    check_zerotier
+    
+    if "$ZT_CLI" orbit "$moon_id" "$moon_id"; then
+        echo "SUCCESS: Joined moon ${moon_id}"
+    else
+        echo "ERROR: Failed to join moon ${moon_id}"
+        exit 1
+    fi
+}
+
+# Leave a moon
+leave_moon() {
+    local moon_id="$1"
+    
+    if [ -z "$moon_id" ]; then
+        echo "ERROR: Moon ID is required"
+        exit 1
+    fi
+    
+    check_zerotier
+    
+    if "$ZT_CLI" deorbit "$moon_id"; then
+        echo "SUCCESS: Left moon ${moon_id}"
+    else
+        echo "ERROR: Failed to leave moon ${moon_id}"
+        exit 1
+    fi
+}
+
+# List moons
+list_moons() {
+    check_zerotier
+    
+    "$ZT_CLI" listmoons
+}
+
+# Get node info
+get_info() {
+    check_zerotier
+    
+    "$ZT_CLI" info
+}
+
+# Main function
+case "$1" in
+    "create")
+        create_moon "$2" "$3"
+        ;;
+    "join")
+        join_moon "$2"
+        ;;
+    "leave")
+        leave_moon "$2"
+        ;;
+    "list")
+        list_moons
+        ;;
+    "info")
+        get_info
+        ;;
+    *)
+        echo "Usage: $0 {create|join|leave|list|info}"
+        echo "  create <public_ip> [public_port] - Create a moon node"
+        echo "  join <moon_id>                   - Join a moon network"
+        echo "  leave <moon_id>                  - Leave a moon network"
+        echo "  list                             - List connected moons"
+        echo "  info                             - Show node information"
+        exit 1
+        ;;
+esac

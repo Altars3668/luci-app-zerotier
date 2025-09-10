@@ -84,6 +84,27 @@ return view.extend({
 				_('Copy the contents of the persistent configuration directory to memory instead of linking it, this avoids writing to flash.'));
 		o.depends({'config_path': '', '!reverse': true});
 
+		o = s.option(form.Flag, 'auto_moon', _('Auto-create moon'),
+				_('Automatically create a moon node on startup if none exists.'));
+
+		o = s.option(form.Value, 'moon_root_public_port', _('Moon public port'),
+				_('Public port for moon node (required for moon creation).'));
+		o.datatype = 'port';
+		o.depends('auto_moon', '1');
+
+		o = s.option(form.Value, 'moon_root_public_addr', _('Moon public address'),
+				_('Public IP address or domain name for moon node (required for moon creation).'));
+		o.depends('auto_moon', '1');
+
+		o = s.option(form.Flag, 'enable_controller', _('Enable network controller'),
+				_('Enable ZeroTier network controller functionality with ZTNCUI web interface.'));
+
+		o = s.option(form.Value, 'controller_port', _('Controller web port'),
+				_('Port for ZTNCUI web interface (default: 3000).'));
+		o.datatype = 'port';
+		o.value('3000');
+		o.depends('enable_controller', '1');
+
 		o = s.option(form.Flag, 'fw_allow_input', _('Allow input traffic'),
 			_('Allow input traffic to the ZeroTier daemon.'));
 
@@ -93,6 +114,22 @@ return view.extend({
 		o.inputstyle = 'apply';
 		o.onclick = function() {
 			window.open("https://my.zerotier.com/network", '_blank');
+		}
+
+		o = s.option(form.Button, '_controller', _('Network Controller'),
+			_('Access local ZTNCUI web interface for managing your own ZeroTier networks.'));
+		o.inputtitle = _('Open Controller');
+		o.inputstyle = 'apply';
+		o.onclick = function() {
+			window.open("/cgi-bin/luci/admin/vpn/zerotier/controller", '_self');
+		}
+
+		o = s.option(form.Button, '_moon', _('Moon Manager'),
+			_('Manage ZeroTier Moon nodes for better connectivity and performance.'));
+		o.inputtitle = _('Open Moon Manager');
+		o.inputstyle = 'apply';
+		o.onclick = function() {
+			location.href = L.url('admin/vpn/zerotier/moon');
 		}
 
 		s = m.section(form.GridSection, 'network', _('Network configuration'));

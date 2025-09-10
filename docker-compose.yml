@@ -1,0 +1,79 @@
+# Docker Compose Configuration for ZTNCUI
+# This file provides an easy way to deploy ZTNCUI using Docker Compose
+
+version: '3.8'
+
+services:
+  ztncui:
+    image: keynetworks/ztncui:latest
+    container_name: ztncui
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      # Mount ZeroTier data directory
+      - /var/lib/zerotier-one:/var/lib/zerotier-one:ro
+      # Persistent ZTNCUI data
+      - ztncui_data:/opt/key-networks/ztncui/etc
+      # Optional: Custom configuration
+      # - ./ztncui.conf:/opt/key-networks/ztncui/etc/ztncui.conf
+    environment:
+      # Optional environment variables
+      - NODE_ENV=production
+      - HTTP_PORT=3000
+      - HTTP_ALL_INTERFACES=yes
+      - ZT_HOME=/var/lib/zerotier-one
+    networks:
+      - ztncui_network
+    depends_on:
+      - zerotier
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Optional: ZeroTier service in container (if not running on host)
+  zerotier:
+    image: zerotier/zerotier:latest
+    container_name: zerotier-one
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+      - SYS_ADMIN
+    devices:
+      - /dev/net/tun
+    volumes:
+      - zerotier_data:/var/lib/zerotier-one
+    networks:
+      - ztncui_network
+    command: ["/usr/sbin/zerotier-one"]
+    profiles:
+      - zerotier-container  # Use profile to optionally enable this service
+
+volumes:
+  ztncui_data:
+    driver: local
+  zerotier_data:
+    driver: local
+
+networks:
+  ztncui_network:
+    driver: bridge
+
+# Usage Instructions:
+#
+# 1. Basic deployment (ZeroTier running on host):
+#    docker-compose up -d ztncui
+#
+# 2. Full deployment (ZeroTier in container):
+#    docker-compose --profile zerotier-container up -d
+#
+# 3. Stop services:
+#    docker-compose down
+#
+# 4. View logs:
+#    docker-compose logs -f ztncui
+#
+# 5. Access ZTNCUI:
+#    http://localhost:3000 (default: admin/password)

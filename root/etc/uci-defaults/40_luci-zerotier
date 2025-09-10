@@ -1,5 +1,14 @@
 #!/bin/sh
 
+# Set executable permissions for scripts
+chmod +x /usr/bin/zerotier-moon
+chmod +x /usr/bin/ztncui-manager
+
+# Initialize ZTNCUI if available
+if [ -f "/etc/init.d/ztncui" ]; then
+    /usr/bin/ztncui-manager setup 2>/dev/null || true
+fi
+
 uci -q batch <<-EOF >/dev/null
 	delete ucitrack.@zerotier[-1]
 	commit ucitrack

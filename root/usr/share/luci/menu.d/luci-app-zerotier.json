@@ -25,5 +25,21 @@
 			"type": "view",
 			"path": "zerotier/interface"
 		}
+	},
+	"admin/vpn/zerotier/moon": {
+		"title": "Moon Manager",
+		"order": 30,
+		"action": {
+			"type": "view",
+			"path": "zerotier/moon"
+		}
+	},
+	"admin/vpn/zerotier/controller": {
+		"title": "Network Controller",
+		"order": 40,
+		"action": {
+			"type": "view",
+			"path": "zerotier/controller"
+		}
 	}
 }

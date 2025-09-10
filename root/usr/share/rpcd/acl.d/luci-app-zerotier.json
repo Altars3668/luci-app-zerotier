@@ -3,7 +3,14 @@
 		"description": "Grant access to ZeroTier configuration",
 		"read": {
 			"file": {
-				"/sbin/ifconfig": [ "exec" ]
+				"/sbin/ifconfig": [ "exec" ],
+				"/usr/bin/zerotier-cli": [ "exec" ],
+				"/usr/bin/zerotier-moon": [ "exec" ],
+				"/etc/init.d/ztncui": [ "exec" ],
+				"/var/lib/zerotier-one/identity.public": [ "read" ],
+				"/var/lib/zerotier-one/identity.secret": [ "read" ],
+				"/var/lib/zerotier-one/moons.d/*": [ "read" ],
+				"/etc/ztncui/etc/ztncui.conf": [ "read" ]
 			},
 			"ubus": {
 				"service": [ "list" ]
@@ -11,6 +18,13 @@
 			"uci": [ "zerotier" ]
 		},
 		"write": {
+			"file": {
+				"/usr/bin/zerotier-cli": [ "exec" ],
+				"/usr/bin/zerotier-moon": [ "exec" ],
+				"/etc/init.d/ztncui": [ "exec" ],
+				"/var/lib/zerotier-one/moons.d/*": [ "write" ],
+				"/etc/ztncui/etc/ztncui.conf": [ "write" ]
+			},
 			"uci": [ "zerotier" ]
 		}
 	}

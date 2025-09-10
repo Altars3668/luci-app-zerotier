@@ -237,3 +237,360 @@ msgstr "ZeroTier 管理中心"
 #: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/interface.js:74
 msgid "ZeroTier is an open source, cross-platform and easy to use virtual LAN."
 msgstr "ZeroTier 是一个开源、跨平台且易于使用的虚拟局域网 VPN。"
+
+# Moon Manager specific translations
+msgid "Moon Manager"
+msgstr "Moon 节点管理"
+
+msgid "Manage ZeroTier Moon nodes for better connectivity and performance."
+msgstr "管理 ZeroTier Moon 节点以获得更好的连接性和性能。"
+
+msgid "Open Moon Manager"
+msgstr "打开 Moon 管理器"
+
+msgid "Auto-create moon"
+msgstr "自动创建 Moon"
+
+msgid "Automatically create a moon node on startup if none exists."
+msgstr "如果不存在 Moon 节点，则在启动时自动创建一个。"
+
+msgid "Moon public port"
+msgstr "Moon 公网端口"
+
+msgid "Public port for moon node (required for moon creation)."
+msgstr "Moon 节点的公网端口（创建 Moon 时必需）。"
+
+msgid "Moon public address"
+msgstr "Moon 公网地址"
+
+msgid "Public IP address or domain name for moon node (required for moon creation)."
+msgstr "Moon 节点的公网 IP 地址或域名（创建 Moon 时必需）。"
+
+msgid "Node Information"
+msgstr "节点信息"
+
+msgid "Node ID"
+msgstr "节点 ID"
+
+msgid "Status"
+msgstr "状态"
+
+msgid "Version"
+msgstr "版本"
+
+msgid "Unknown"
+msgstr "未知"
+
+msgid "Unable to get node information: %s"
+msgstr "无法获取节点信息：%s"
+
+msgid "ZeroTier not running"
+msgstr "ZeroTier 未运行"
+
+msgid "Create Moon Node"
+msgstr "创建 Moon 节点"
+
+msgid "Create a moon node to improve network connectivity. This node will act as a relay for other ZeroTier nodes."
+msgstr "创建一个 Moon 节点以改善网络连接。该节点将充当其他 ZeroTier 节点的中继。"
+
+msgid "Create Moon"
+msgstr "创建 Moon"
+
+msgid "Join Moon Network"
+msgstr "加入 Moon 网络"
+
+msgid "Join an existing moon network by entering the moon ID."
+msgstr "通过输入 Moon ID 加入现有的 Moon 网络。"
+
+msgid "Enter Moon ID"
+msgstr "输入 Moon ID"
+
+msgid "Join Moon"
+msgstr "加入 Moon"
+
+msgid "Please enter a moon ID"
+msgstr "请输入 Moon ID"
+
+msgid "Connected Moons"
+msgstr "已连接的 Moon"
+
+msgid "Moon ID"
+msgstr "Moon ID"
+
+msgid "Address"
+msgstr "地址"
+
+msgid "Actions"
+msgstr "操作"
+
+msgid "Leave"
+msgstr "离开"
+
+msgid "Are you sure you want to leave this moon?"
+msgstr "您确定要离开这个 Moon 吗？"
+
+msgid "No moons connected."
+msgstr "没有连接的 Moon。"
+
+msgid "Failed to create moon: %s"
+msgstr "创建 Moon 失败：%s"
+
+msgid "Unknown error"
+msgstr "未知错误"
+
+msgid "Moon created successfully!"
+msgstr "Moon 创建成功！"
+
+msgid "Failed to delete moon: %s"
+msgstr "删除 Moon 失败：%s"
+
+msgid "Moon deleted successfully!"
+msgstr "Moon 删除成功！"
+
+msgid "Failed to join moon: %s"
+msgstr "加入 Moon 失败：%s"
+
+msgid "Joined moon successfully!"
+msgstr "加入 Moon 成功！"
+
+msgid "Public IP Address:"
+msgstr "公网 IP 地址："
+
+msgid "Public Port:"
+msgstr "公网端口："
+
+msgid "Enter public IP address"
+msgstr "输入公网 IP 地址"
+
+msgid "Port (default: 9993)"
+msgstr "端口（默认：9993）"
+
+msgid "Please enter a public IP address"
+msgstr "请输入公网 IP 地址"
+
+msgid "Public IP address is required"
+msgstr "公网 IP 地址是必需的"
+
+msgid "Left moon successfully!"
+msgstr "离开 Moon 成功！"
+
+# Network Controller translations
+msgid "Network Controller"
+msgstr "网络控制器"
+
+msgid "ZeroTier Network Controller"
+msgstr "ZeroTier 网络控制器"
+
+msgid "ZTNCUI provides a web-based interface for managing ZeroTier networks locally as a network controller."
+msgstr "ZTNCUI 提供基于 Web 的界面，用于在本地作为网络控制器管理 ZeroTier 网络。"
+
+msgid "Service Status"
+msgstr "服务状态"
+
+msgid "Running"
+msgstr "运行中"
+
+msgid "Stopped"
+msgstr "已停止"
+
+msgid "ZTNCUI Status"
+msgstr "ZTNCUI 状态"
+
+msgid "ZeroTier Status"
+msgstr "ZeroTier 状态"
+
+msgid "Service Control"
+msgstr "服务控制"
+
+msgid "Control the ZTNCUI service and ZeroTier controller functionality."
+msgstr "控制 ZTNCUI 服务和 ZeroTier 控制器功能。"
+
+msgid "Start ZTNCUI"
+msgstr "启动 ZTNCUI"
+
+msgid "Stop ZTNCUI"
+msgstr "停止 ZTNCUI"
+
+msgid "Restart ZTNCUI"
+msgstr "重启 ZTNCUI"
+
+msgid "Enable Controller Mode"
+msgstr "启用控制器模式"
+
+msgid "Access Information"
+msgstr "访问信息"
+
+msgid "ZTNCUI is running and can be accessed at:"
+msgstr "ZTNCUI 正在运行，可以通过以下地址访问："
+
+msgid "Local access: "
+msgstr "本地访问："
+
+msgid "Network access: "
+msgstr "网络访问："
+
+msgid "Default credentials:"
+msgstr "默认凭据："
+
+msgid "Username: "
+msgstr "用户名："
+
+msgid "Password: "
+msgstr "密码："
+
+msgid "Please change the default password after first login."
+msgstr "首次登录后请更改默认密码。"
+
+msgid "Start ZTNCUI service to access the web interface."
+msgstr "启动 ZTNCUI 服务以访问 Web 界面。"
+
+msgid "Configuration"
+msgstr "配置"
+
+msgid "ZTNCUI configuration can be modified in /etc/ztncui/etc/ztncui.conf"
+msgstr "ZTNCUI 配置可以在 /etc/ztncui/etc/ztncui.conf 中修改"
+
+msgid "Key Configuration Options:"
+msgstr "关键配置选项："
+
+msgid "HTTP_PORT: Web interface port (default: 3000)"
+msgstr "HTTP_PORT：Web 界面端口（默认：3000）"
+
+msgid "ZT_HOME: ZeroTier data directory"
+msgstr "ZT_HOME：ZeroTier 数据目录"
+
+msgid "ZT_ADDR: ZeroTier daemon address"
+msgstr "ZT_ADDR：ZeroTier 守护进程地址"
+
+msgid "HTTP_ALL_INTERFACES: Listen on all interfaces"
+msgstr "HTTP_ALL_INTERFACES：监听所有接口"
+
+msgid "Note: "
+msgstr "注意："
+
+msgid "Restart ZTNCUI service after modifying configuration."
+msgstr "修改配置后重启 ZTNCUI 服务。"
+
+msgid "Quick Setup Guide"
+msgstr "快速设置指南"
+
+msgid "Install ZTNCUI package if not already installed"
+msgstr "如果尚未安装，请安装 ZTNCUI 软件包"
+
+msgid "Enable controller mode by clicking the button above"
+msgstr "点击上方按钮启用控制器模式"
+
+msgid "Start ZTNCUI service"
+msgstr "启动 ZTNCUI 服务"
+
+msgid "Access the web interface using the provided URL"
+msgstr "使用提供的 URL 访问 Web 界面"
+
+msgid "Login with default credentials and change password"
+msgstr "使用默认凭据登录并更改密码"
+
+msgid "Create and manage your ZeroTier networks"
+msgstr "创建和管理您的 ZeroTier 网络"
+
+msgid "Failed to start ZTNCUI: %s"
+msgstr "启动 ZTNCUI 失败：%s"
+
+msgid "ZTNCUI started successfully!"
+msgstr "ZTNCUI 启动成功！"
+
+msgid "Failed to stop ZTNCUI: %s"
+msgstr "停止 ZTNCUI 失败：%s"
+
+msgid "ZTNCUI stopped successfully!"
+msgstr "ZTNCUI 停止成功！"
+
+msgid "Failed to restart ZTNCUI: %s"
+msgstr "重启 ZTNCUI 失败：%s"
+
+msgid "ZTNCUI restarted successfully!"
+msgstr "ZTNCUI 重启成功！"
+
+msgid "Failed to enable controller mode: %s"
+msgstr "启用控制器模式失败：%s"
+
+msgid "Controller mode enabled successfully!"
+msgstr "控制器模式启用成功！"
+
+msgid "Enable network controller"
+msgstr "启用网络控制器"
+
+msgid "Enable ZeroTier network controller functionality with ZTNCUI web interface."
+msgstr "使用 ZTNCUI Web 界面启用 ZeroTier 网络控制器功能。"
+
+msgid "Controller web port"
+msgstr "控制器 Web 端口"
+
+msgid "Port for ZTNCUI web interface (default: 3000)."
+msgstr "ZTNCUI Web 界面端口（默认：3000）。"
+
+msgid "Open Controller"
+msgstr "打开控制器"
+
+msgid "Access local ZTNCUI web interface for managing your own ZeroTier networks."
+msgstr "访问本地 ZTNCUI Web 界面以管理您自己的 ZeroTier 网络。"
+
+# Installation method translations
+msgid "Installation & Setup Guide"
+msgstr "安装和设置指南"
+
+msgid "ZTNCUI is not available in standard OpenWrt packages. Choose one of the following installation methods:"
+msgstr "ZTNCUI 在标准 OpenWrt 软件包中不可用。请选择以下安装方法之一："
+
+msgid "Method 1: Docker (Recommended)"
+msgstr "方法 1：Docker（推荐）"
+
+msgid "Method 2: Node.js Installation"
+msgstr "方法 2：Node.js 安装"
+
+msgid "Method 3: External Server"
+msgstr "方法 3：外部服务器"
+
+msgid "Install Docker: opkg install dockerd docker"
+msgstr "安装 Docker：opkg install dockerd docker"
+
+msgid "Start Docker service: /etc/init.d/dockerd start"
+msgstr "启动 Docker 服务：/etc/init.d/dockerd start"
+
+msgid "Run ZTNCUI container: docker run -d --name ztncui --restart=unless-stopped -p 3000:3000 -v /var/lib/zerotier-one:/var/lib/zerotier-one keynetworks/ztncui"
+msgstr "运行 ZTNCUI 容器：docker run -d --name ztncui --restart=unless-stopped -p 3000:3000 -v /var/lib/zerotier-one:/var/lib/zerotier-one keynetworks/ztncui"
+
+msgid "Install Node.js: opkg install node npm"
+msgstr "安装 Node.js：opkg install node npm"
+
+msgid "Install ZTNCUI: npm install -g ztncui"
+msgstr "安装 ZTNCUI：npm install -g ztncui"
+
+msgid "Run ZTNCUI: ztncui"
+msgstr "运行 ZTNCUI：ztncui"
+
+msgid "Note: Requires significant storage space (100MB+)"
+msgstr "注意：需要大量存储空间（100MB+）"
+
+msgid "Run ZTNCUI on a separate device and configure ZeroTier controller to use this OpenWrt device as backend."
+msgstr "在单独的设备上运行 ZTNCUI，并配置 ZeroTier 控制器使用这个 OpenWrt 设备作为后端。"
+
+msgid "Download from: "
+msgstr "从以下地址下载："
+
+msgid "After installation:"
+msgstr "安装后："
+
+msgid "ZTNCUI Not Installed"
+msgstr "ZTNCUI 未安装"
+
+msgid "Please install ZTNCUI using one of the methods described below."
+msgstr "请使用下面描述的方法之一安装 ZTNCUI。"
+
+msgid "Docker Available"
+msgstr "Docker 可用"
+
+msgid "You can install ZTNCUI using Docker. See installation guide below."
+msgstr "您可以使用 Docker 安装 ZTNCUI。请参阅下面的安装指南。"
+
+msgid "Installation Method: "
+msgstr "安装方式："

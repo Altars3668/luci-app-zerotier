@@ -1,0 +1,321 @@
+#!/bin/sh
+# ZTNCUI Management Script for OpenWrt
+# This script helps manage ZTNCUI installation and configuration
+
+ZTNCUI_DIR="/etc/ztncui"
+ZTNCUI_CONF="$ZTNCUI_DIR/etc/ztncui.conf"
+ZTNCUI_INIT="/etc/init.d/ztncui"
+ZT_HOME="/var/lib/zerotier-one"
+
+# Check if ZTNCUI is installed
+check_ztncui() {
+    # Check for different installation methods
+    if [ -f "$ZTNCUI_INIT" ]; then
+        return 0  # System service installation
+    elif command -v ztncui >/dev/null 2>&1; then
+        return 0  # Binary or npm installation
+    elif command -v docker >/dev/null 2>&1 && docker ps --format "table {{.Names}}" | grep -q ztncui; then
+        return 0  # Docker installation
+    else
+        echo "ERROR: ZTNCUI is not installed or not running"
+        echo "Run 'ztncui-manager install' for installation instructions"
+        exit 1
+    fi
+}
+
+# Install ZTNCUI - provides multiple installation methods
+install_ztncui() {
+    echo "ZTNCUI is not available in standard OpenWrt packages."
+    echo "Choose one of the following installation methods:"
+    echo ""
+    echo "=== Method 1: Docker Installation (Recommended) ==="
+    echo "1. Install Docker on OpenWrt:"
+    echo "   opkg update"
+    echo "   opkg install dockerd docker docker-compose"
+    echo "   /etc/init.d/dockerd start"
+    echo "   /etc/init.d/dockerd enable"
+    echo ""
+    echo "2. Run ZTNCUI container:"
+    echo "   docker run -d --name ztncui \\"
+    echo "     --restart=unless-stopped \\"
+    echo "     -p 3000:3000 \\"
+    echo "     -v /var/lib/zerotier-one:/var/lib/zerotier-one \\"
+    echo "     -v ztncui-data:/opt/key-networks/ztncui/etc \\"
+    echo "     keynetworks/ztncui"
+    echo ""
+    echo "=== Method 2: Manual Binary Installation ==="
+    echo "1. Download pre-built binary (if available):"
+    echo "   wget https://github.com/key-networks/ztncui/releases/latest/download/ztncui-linux-[arch]"
+    echo "   chmod +x ztncui-linux-[arch]"
+    echo "   mv ztncui-linux-[arch] /usr/bin/ztncui"
+    echo ""
+    echo "=== Method 3: Node.js Installation ==="
+    echo "1. Install Node.js (requires significant space):"
+    echo "   opkg update"
+    echo "   opkg install node npm"
+    echo "2. Install ZTNCUI via npm:"
+    echo "   npm install -g ztncui"
+    echo ""
+    echo "=== Method 4: External ZTNCUI Server ==="
+    echo "Run ZTNCUI on a separate device and configure ZeroTier"
+    echo "controller to use this OpenWrt device as backend."
+    echo ""
+    echo "After installation, run: ztncui-manager setup"
+}
+
+# Create initial ZTNCUI configuration
+create_config() {
+    check_ztncui
+    
+    mkdir -p "$ZTNCUI_DIR/etc"
+    
+    if [ ! -f "$ZTNCUI_CONF" ]; then
+        cat > "$ZTNCUI_CONF" << EOF
+#
+# ZTNCUI Configuration File
+#
+
+# Web interface settings
+HTTP_PORT=3000
+HTTP_ALL_INTERFACES=yes
+HTTPS_PORT=3443
+HTTPS_ENABLED=no
+
+# ZeroTier settings
+ZT_HOME=$ZT_HOME
+ZT_ADDR=127.0.0.1:9993
+
+# Authentication
+ZTNCUI_AUTH=yes
+ZTNCUI_LOGIN_TIME=1800
+
+# Database
+ZTNCUI_HOME=$ZTNCUI_DIR
+
+# Logging
+LOG_LEVEL=info
+LOG_FILE=$ZTNCUI_DIR/log/ztncui.log
+EOF
+        echo "SUCCESS: ZTNCUI configuration created at $ZTNCUI_CONF"
+    else
+        echo "INFO: ZTNCUI configuration already exists"
+    fi
+}
+
+# Set up ZTNCUI directories and permissions
+setup_directories() {
+    check_ztncui
+    
+    mkdir -p "$ZTNCUI_DIR/log"
+    mkdir -p "$ZTNCUI_DIR/etc"
+    mkdir -p "$ZTNCUI_DIR/passwd"
+    
+    # Set proper permissions
+    chmod 755 "$ZTNCUI_DIR"
+    chmod 755 "$ZTNCUI_DIR/etc"
+    chmod 755 "$ZTNCUI_DIR/log"
+    chmod 700 "$ZTNCUI_DIR/passwd"
+    
+    if [ -f "$ZTNCUI_CONF" ]; then
+        chmod 600 "$ZTNCUI_CONF"
+    fi
+    
+    echo "SUCCESS: ZTNCUI directories set up"
+}
+
+# Start ZTNCUI service
+start_service() {
+    if [ -f "$ZTNCUI_INIT" ]; then
+        # System service
+        if "$ZTNCUI_INIT" start; then
+            echo "SUCCESS: ZTNCUI service started"
+        else
+            echo "ERROR: Failed to start ZTNCUI service"
+            exit 1
+        fi
+    elif command -v docker >/dev/null 2>&1; then
+        # Docker container
+        if docker ps -a --format "table {{.Names}}" | grep -q ztncui; then
+            docker start ztncui
+            echo "SUCCESS: ZTNCUI Docker container started"
+        else
+            echo "ERROR: ZTNCUI Docker container not found"
+            echo "Run: docker run -d --name ztncui --restart=unless-stopped -p 3000:3000 -v /var/lib/zerotier-one:/var/lib/zerotier-one keynetworks/ztncui"
+            exit 1
+        fi
+    else
+        echo "ERROR: No supported ZTNCUI installation found"
+        exit 1
+    fi
+}
+
+# Stop ZTNCUI service
+stop_service() {
+    if [ -f "$ZTNCUI_INIT" ] && pgrep -f ztncui >/dev/null; then
+        # System service
+        if "$ZTNCUI_INIT" stop; then
+            echo "SUCCESS: ZTNCUI service stopped"
+        else
+            echo "ERROR: Failed to stop ZTNCUI service"
+            exit 1
+        fi
+    elif command -v docker >/dev/null 2>&1 && docker ps --format "table {{.Names}}" | grep -q ztncui; then
+        # Docker container
+        docker stop ztncui
+        echo "SUCCESS: ZTNCUI Docker container stopped"
+    else
+        echo "INFO: ZTNCUI is not running"
+    fi
+}
+
+# Restart ZTNCUI service
+restart_service() {
+    if [ -f "$ZTNCUI_INIT" ]; then
+        # System service
+        if "$ZTNCUI_INIT" restart; then
+            echo "SUCCESS: ZTNCUI service restarted"
+        else
+            echo "ERROR: Failed to restart ZTNCUI service"
+            exit 1
+        fi
+    elif command -v docker >/dev/null 2>&1; then
+        # Docker container
+        if docker ps -a --format "table {{.Names}}" | grep -q ztncui; then
+            docker restart ztncui
+            echo "SUCCESS: ZTNCUI Docker container restarted"
+        else
+            echo "ERROR: ZTNCUI Docker container not found"
+            exit 1
+        fi
+    else
+        echo "ERROR: No supported ZTNCUI installation found"
+        exit 1
+    fi
+}
+
+# Enable ZTNCUI service
+enable_service() {
+    check_ztncui
+    
+    if "$ZTNCUI_INIT" enable; then
+        echo "SUCCESS: ZTNCUI service enabled"
+    else
+        echo "ERROR: Failed to enable ZTNCUI service"
+        exit 1
+    fi
+}
+
+# Disable ZTNCUI service
+disable_service() {
+    check_ztncui
+    
+    if "$ZTNCUI_INIT" disable; then
+        echo "SUCCESS: ZTNCUI service disabled"
+    else
+        echo "ERROR: Failed to disable ZTNCUI service"
+        exit 1
+    fi
+}
+
+# Get service status
+get_status() {
+    # Check system service
+    if [ -f "$ZTNCUI_INIT" ] && pgrep -f "ztncui" > /dev/null; then
+        echo "RUNNING"
+        return
+    fi
+    
+    # Check Docker container
+    if command -v docker >/dev/null 2>&1; then
+        if docker ps --format "table {{.Names}}\t{{.Status}}" | grep ztncui | grep -q "Up"; then
+            echo "RUNNING"
+            return
+        elif docker ps -a --format "table {{.Names}}\t{{.Status}}" | grep ztncui | grep -q "Exited"; then
+            echo "STOPPED"
+            return
+        fi
+    fi
+    
+    # Check binary installation
+    if command -v ztncui >/dev/null 2>&1; then
+        if pgrep -f "ztncui" > /dev/null; then
+            echo "RUNNING"
+        else
+            echo "STOPPED"
+        fi
+    else
+        echo "NOT_INSTALLED"
+    fi
+}
+
+# Reset admin password
+reset_password() {
+    check_ztncui
+    
+    # Remove existing password file to reset to default
+    rm -f "$ZTNCUI_DIR/passwd/passwd"
+    
+    echo "SUCCESS: Admin password reset to default (admin/password)"
+    echo "Please change the password after logging in"
+}
+
+# Show configuration
+show_config() {
+    if [ -f "$ZTNCUI_CONF" ]; then
+        cat "$ZTNCUI_CONF"
+    else
+        echo "ERROR: ZTNCUI configuration not found"
+        exit 1
+    fi
+}
+
+# Main function
+case "$1" in
+    "install")
+        install_ztncui
+        ;;
+    "setup")
+        setup_directories
+        create_config
+        ;;
+    "start")
+        start_service
+        ;;
+    "stop")
+        stop_service
+        ;;
+    "restart")
+        restart_service
+        ;;
+    "enable")
+        enable_service
+        ;;
+    "disable")
+        disable_service
+        ;;
+    "status")
+        get_status
+        ;;
+    "reset-password")
+        reset_password
+        ;;
+    "show-config")
+        show_config
+        ;;
+    *)
+        echo "Usage: $0 {install|setup|start|stop|restart|enable|disable|status|reset-password|show-config}"
+        echo ""
+        echo "Commands:"
+        echo "  install        - Show installation instructions"
+        echo "  setup          - Set up directories and create initial configuration"
+        echo "  start          - Start ZTNCUI service"
+        echo "  stop           - Stop ZTNCUI service"
+        echo "  restart        - Restart ZTNCUI service"
+        echo "  enable         - Enable ZTNCUI service at boot"
+        echo "  disable        - Disable ZTNCUI service at boot"
+        echo "  status         - Show service status"
+        echo "  reset-password - Reset admin password to default"
+        echo "  show-config    - Display current configuration"
+        exit 1
+        ;;
+esac
