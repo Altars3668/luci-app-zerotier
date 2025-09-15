@@ -41,5 +41,13 @@
 			"type": "view",
 			"path": "zerotier/controller"
 		}
+	},
+	"admin/vpn/zerotier/openwrt-controller": {
+		"title": "OpenWrt Controller",
+		"order": 50,
+		"action": {
+			"type": "view",
+			"path": "zerotier/openwrt-controller"
+		}
 	}
 }

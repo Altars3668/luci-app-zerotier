@@ -594,3 +594,233 @@ msgstr "您可以使用 Docker 安装 ZTNCUI。请参阅下面的安装指南。
 
 msgid "Installation Method: "
 msgstr "安装方式："
+
+# Additional health and status translations
+msgid "Running (Healthy)"
+msgstr "运行中（健康）"
+
+msgid "Running (Warning)"
+msgstr "运行中（警告）"
+
+msgid "Healthy"
+msgstr "健康"
+
+msgid "Check Required"
+msgstr "需要检查"
+
+msgid "Web Interface Port"
+msgstr "Web 界面端口"
+
+msgid "Health Check"
+msgstr "健康检查"
+
+msgid "View Installation Guide"
+msgstr "查看安装指南"
+
+msgid "Download ZTNCUI"
+msgstr "下载 ZTNCUI"
+
+msgid "Install via Docker"
+msgstr "通过 Docker 安装"
+
+msgid "Node.js Available"
+msgstr "Node.js 可用"
+
+msgid "You can install ZTNCUI using Node.js. See installation guide below for commands."
+msgstr "您可以使用 Node.js 安装 ZTNCUI。请参阅下面的安装指南获取命令。"
+
+msgid "Are you sure you want to stop ZTNCUI?"
+msgstr "您确定要停止 ZTNCUI 吗？"
+
+msgid "Open ZTNCUI"
+msgstr "打开 ZTNCUI"
+
+msgid "This will download and install ZTNCUI via Docker. Continue?"
+msgstr "这将下载并通过 Docker 安装 ZTNCUI。继续吗？"
+
+msgid "Starting ZTNCUI"
+msgstr "正在启动 ZTNCUI"
+
+msgid "Stopping ZTNCUI"
+msgstr "正在停止 ZTNCUI"
+
+msgid "Restarting ZTNCUI"
+msgstr "正在重启 ZTNCUI"
+
+msgid "Installing ZTNCUI via Docker"
+msgstr "正在通过 Docker 安装 ZTNCUI"
+
+msgid "Enabling Controller Mode"
+msgstr "正在启用控制器模式"
+
+msgid "Please wait..."
+msgstr "请稍候..."
+
+msgid "This may take several minutes..."
+msgstr "这可能需要几分钟..."
+
+msgid "Configuring ZeroTier..."
+msgstr "正在配置 ZeroTier..."
+
+msgid "ZTNCUI is healthy and responding"
+msgstr "ZTNCUI 健康且响应正常"
+
+msgid "ZTNCUI may not be fully ready yet. Please wait a moment and try accessing the web interface."
+msgstr "ZTNCUI 可能尚未完全准备好。请稍候片刻再尝试访问 Web 界面。"
+
+msgid "ZTNCUI Docker container installed and started successfully!"
+msgstr "ZTNCUI Docker 容器安装并启动成功！"
+
+msgid "Failed to install ZTNCUI via Docker: %s"
+msgstr "通过 Docker 安装 ZTNCUI 失败：%s"
+
+msgid "ZTNCUI restart completed with warnings"
+msgstr "ZTNCUI 重启完成，但有警告"
+
+msgid "ZTNCUI stop completed (service may not have been running)"
+msgstr "ZTNCUI 停止完成（服务可能本来就未运行）"
+
+msgid "Failed to enable controller mode: ZeroTier service not running or not accessible"
+msgstr "启用控制器模式失败：ZeroTier 服务未运行或不可访问"
+
+#: Enhanced ZTNCUI functionality translations
+msgid "Node ID"
+msgstr "节点 ID"
+
+msgid "ZeroTier Status"
+msgstr "ZeroTier 状态"
+
+msgid "Configuration Management"
+msgstr "配置管理"
+
+msgid "Configure ZTNCUI settings and ZeroTier controller options"
+msgstr "配置 ZTNCUI 设置和 ZeroTier 控制器选项"
+
+msgid "ZTNCUI Settings"
+msgstr "ZTNCUI 设置"
+
+msgid "HTTP Port"
+msgstr "HTTP 端口"
+
+msgid "Port for HTTP web interface (1024-65535)"
+msgstr "HTTP 网络界面端口 (1024-65535)"
+
+msgid "HTTPS Port"
+msgstr "HTTPS 端口"
+
+msgid "Port for HTTPS web interface (optional, requires TLS certificates)"
+msgstr "HTTPS 网络界面端口（可选，需要 TLS 证书）"
+
+msgid "Listen on All Interfaces"
+msgstr "监听所有接口"
+
+msgid "Allow access from external networks (security risk if not properly firewalled)"
+msgstr "允许从外部网络访问（如果没有适当的防火墙保护，存在安全风险）"
+
+msgid "ZeroTier Daemon Address"
+msgstr "ZeroTier 守护进程地址"
+
+msgid "Address of ZeroTier daemon (host:port)"
+msgstr "ZeroTier 守护进程地址（主机:端口）"
+
+msgid "Apply Configuration"
+msgstr "应用配置"
+
+msgid "This will update ZTNCUI configuration and restart the service. Continue?"
+msgstr "这将更新 ZTNCUI 配置并重启服务。继续？"
+
+msgid "Advanced Configuration"
+msgstr "高级配置"
+
+msgid "ZTNCUI can be configured using environment variables or configuration files:"
+msgstr "ZTNCUI 可以通过环境变量或配置文件进行配置："
+
+msgid "Configuration Files:"
+msgstr "配置文件："
+
+msgid "System: "
+msgstr "系统："
+
+msgid "Docker: Environment variables in container"
+msgstr "Docker：容器中的环境变量"
+
+msgid "Configuration Method"
+msgstr "配置方式"
+
+msgid "Listen Interfaces"
+msgstr "监听接口"
+
+msgid "All interfaces"
+msgstr "所有接口"
+
+msgid "Localhost only"
+msgstr "仅本地主机"
+
+msgid "ZeroTier Daemon"
+msgstr "ZeroTier 守护进程"
+
+msgid "Controller Mode"
+msgstr "控制器模式"
+
+msgid "Enabled"
+msgstr "已启用"
+
+msgid "Disabled"
+msgstr "已禁用"
+
+msgid "Auth token available"
+msgstr "认证令牌可用"
+
+msgid "No auth token"
+msgstr "无认证令牌"
+
+msgid "ZTNCUI Compatibility"
+msgstr "ZTNCUI 兼容性"
+
+msgid "Compatible"
+msgstr "兼容"
+
+msgid "Ready for network management"
+msgstr "已准备好进行网络管理"
+
+msgid "Limited"
+msgstr "有限"
+
+msgid "Some features may not work"
+msgstr "某些功能可能无法工作"
+
+msgid "Managed Networks"
+msgstr "管理的网络"
+
+msgid "ZTNCUI is healthy and fully operational"
+msgstr "ZTNCUI 健康且全面运行"
+
+msgid "ZTNCUI web interface is responding, but ZeroTier daemon may have issues"
+msgstr "ZTNCUI 网络界面正在响应，但 ZeroTier 守护进程可能存在问题"
+
+msgid "ZTNCUI service is starting up, please wait..."
+msgstr "ZTNCUI 服务正在启动，请稍候..."
+
+msgid "ZTNCUI is not responding. Check service status and configuration."
+msgstr "ZTNCUI 没有响应。请检查服务状态和配置。"
+
+msgid "Health check tools not available - service status unknown"
+msgstr "健康检查工具不可用 - 服务状态未知"
+
+msgid "Configuring ZTNCUI"
+msgstr "正在配置 ZTNCUI"
+
+msgid "Updating configuration..."
+msgstr "正在更新配置..."
+
+msgid "ZTNCUI configuration updated successfully"
+msgstr "ZTNCUI 配置更新成功"
+
+msgid "Failed to update ZTNCUI configuration: %s"
+msgstr "更新 ZTNCUI 配置失败：%s"
+
+msgid "Configuration update failed: %s"
+msgstr "配置更新失败：%s"
+
+msgid "Install ZTNCUI first to access configuration options"
+msgstr "请先安装 ZTNCUI 以访问配置选项"

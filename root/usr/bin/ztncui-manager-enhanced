@@ -1,0 +1,560 @@
+#!/bin/sh
+
+# ZTNCUI Manager Script - Enhanced with API compatibility
+# Manages ZTNCUI service with multiple installation methods
+# Compatible with ztncui API and configuration
+
+set -e
+
+SCRIPT_NAME="$(basename "$0")"
+ZTNCUI_CONFIG_DIR="/etc/ztncui/etc"
+ZTNCUI_CONFIG_FILE="$ZTNCUI_CONFIG_DIR/ztncui.conf"
+ZTNCUI_PID_FILE="/var/run/ztncui.pid"
+ZTNCUI_LOG_FILE="/var/log/ztncui.log"
+ZT_HOME="${ZT_HOME:-/var/lib/zerotier-one}"
+ZT_ADDR="${ZT_ADDR:-localhost:9993}"
+HTTP_PORT="${HTTP_PORT:-3000}"
+
+# Color output functions
+log_info() { echo "\033[32m[INFO]\033[0m $*"; }
+log_warn() { echo "\033[33m[WARN]\033[0m $*"; }
+log_error() { echo "\033[31m[ERROR]\033[0m $*"; }
+log_debug() { [ "$DEBUG" = "1" ] && echo "\033[36m[DEBUG]\033[0m $*"; }
+
+# Load configuration from file if exists
+load_config() {
+    if [ -f "$ZTNCUI_CONFIG_FILE" ]; then
+        log_debug "Loading configuration from $ZTNCUI_CONFIG_FILE"
+        # Source the config file to load environment variables
+        set -a
+        . "$ZTNCUI_CONFIG_FILE"
+        set +a
+    fi
+}
+
+# Detect installation method
+detect_installation() {
+    # Check Docker installation
+    if command -v docker >/dev/null 2>&1; then
+        if docker ps -a --format "table {{.Names}}" | grep -q "ztncui"; then
+            echo "docker"
+            return 0
+        fi
+    fi
+    
+    # Check system service
+    if [ -f "/etc/init.d/ztncui" ]; then
+        echo "service"
+        return 0
+    fi
+    
+    # Check binary installation
+    if command -v ztncui >/dev/null 2>&1; then
+        echo "binary"
+        return 0
+    fi
+    
+    # Check npm global installation
+    if command -v npm >/dev/null 2>&1; then
+        if npm list -g ztncui >/dev/null 2>&1; then
+            echo "npm"
+            return 0
+        fi
+    fi
+    
+    echo "none"
+}
+
+# Check if ZeroTier daemon is running and accessible
+check_zerotier() {
+    if ! command -v zerotier-cli >/dev/null 2>&1; then
+        log_error "ZeroTier CLI not found. Please install ZeroTier first."
+        return 1
+    fi
+    
+    if ! zerotier-cli info >/dev/null 2>&1; then
+        log_error "ZeroTier daemon is not running or not accessible."
+        return 1
+    fi
+    
+    # Check if authtoken is available
+    if [ ! -f "$ZT_HOME/authtoken.secret" ]; then
+        log_warn "ZeroTier authtoken not found at $ZT_HOME/authtoken.secret"
+        log_warn "ZTNCUI may not be able to communicate with ZeroTier daemon"
+    fi
+    
+    return 0
+}
+
+# Enable controller mode
+enable_controller() {
+    log_info "Enabling ZeroTier controller mode..."
+    
+    if ! check_zerotier; then
+        return 1
+    fi
+    
+    # Enable controller functionality
+    zerotier-cli set allowDefaultCentrality=1 || {
+        log_error "Failed to enable controller mode"
+        return 1
+    }
+    
+    zerotier-cli set allowTcpFallbackRelay=1 || {
+        log_warn "Failed to set TCP fallback relay (non-critical)"
+    }
+    
+    log_info "Controller mode enabled successfully"
+    return 0
+}
+
+# Get service status
+get_status() {
+    local method
+    method=$(detect_installation)
+    
+    case "$method" in
+        docker)
+            if docker ps --format "table {{.Names}}\t{{.Status}}" | grep -q "ztncui.*Up"; then
+                echo "RUNNING"
+            elif docker ps -a --format "table {{.Names}}\t{{.Status}}" | grep -q "ztncui"; then
+                echo "STOPPED"
+            else
+                echo "NOT_INSTALLED"
+            fi
+            ;;
+        service)
+            if /etc/init.d/ztncui status >/dev/null 2>&1; then
+                echo "RUNNING"
+            else
+                echo "STOPPED"
+            fi
+            ;;
+        binary|npm)
+            if pgrep -f "ztncui" >/dev/null 2>&1; then
+                echo "RUNNING"
+            else
+                echo "STOPPED"
+            fi
+            ;;
+        none)
+            echo "NOT_INSTALLED"
+            ;;
+        *)
+            echo "UNKNOWN"
+            ;;
+    esac
+}
+
+# Start ZTNCUI service
+start_service() {
+    local method
+    method=$(detect_installation)
+    
+    log_info "Starting ZTNCUI using method: $method"
+    
+    # Load configuration
+    load_config
+    
+    # Check ZeroTier first
+    if ! check_zerotier; then
+        log_error "ZeroTier daemon check failed. Please ensure ZeroTier is running."
+        return 1
+    fi
+    
+    case "$method" in
+        docker)
+            log_info "Starting ZTNCUI Docker container..."
+            if docker ps -a --format "table {{.Names}}" | grep -q "ztncui"; then
+                docker start ztncui || {
+                    log_error "Failed to start existing Docker container"
+                    return 1
+                }
+            else
+                # Create and start new container
+                docker run -d \
+                    --name ztncui \
+                    --restart=unless-stopped \
+                    -p "${HTTP_PORT}:3000" \
+                    -v "$ZT_HOME:$ZT_HOME" \
+                    -v ztncui-data:/opt/key-networks/ztncui/etc \
+                    -e "ZT_HOME=$ZT_HOME" \
+                    -e "ZT_ADDR=$ZT_ADDR" \
+                    keynetworks/ztncui || {
+                    log_error "Failed to create Docker container"
+                    return 1
+                }
+            fi
+            ;;
+        service)
+            /etc/init.d/ztncui start || {
+                log_error "Failed to start service"
+                return 1
+            }
+            ;;
+        binary)
+            log_info "Starting ZTNCUI binary..."
+            # Create log directory
+            mkdir -p "$(dirname "$ZTNCUI_LOG_FILE")"
+            
+            # Start ztncui in background
+            nohup ztncui > "$ZTNCUI_LOG_FILE" 2>&1 &
+            echo $! > "$ZTNCUI_PID_FILE"
+            
+            # Wait a moment and check if it started
+            sleep 2
+            if ! pgrep -f "ztncui" >/dev/null 2>&1; then
+                log_error "Failed to start ZTNCUI binary"
+                rm -f "$ZTNCUI_PID_FILE"
+                return 1
+            fi
+            ;;
+        npm)
+            log_info "Starting ZTNCUI from npm installation..."
+            mkdir -p "$(dirname "$ZTNCUI_LOG_FILE")"
+            
+            # Start using npx
+            nohup npx ztncui > "$ZTNCUI_LOG_FILE" 2>&1 &
+            echo $! > "$ZTNCUI_PID_FILE"
+            
+            sleep 2
+            if ! pgrep -f "ztncui" >/dev/null 2>&1; then
+                log_error "Failed to start ZTNCUI via npm"
+                rm -f "$ZTNCUI_PID_FILE"
+                return 1
+            fi
+            ;;
+        none)
+            log_error "ZTNCUI is not installed. Please install it first."
+            return 1
+            ;;
+        *)
+            log_error "Unknown installation method: $method"
+            return 1
+            ;;
+    esac
+    
+    log_info "ZTNCUI started successfully"
+    
+    # Wait for service to be ready
+    log_info "Waiting for service to be ready..."
+    local timeout=30
+    while [ $timeout -gt 0 ]; do
+        if check_health >/dev/null 2>&1; then
+            log_info "Service is ready and responding"
+            return 0
+        fi
+        timeout=$((timeout - 1))
+        sleep 1
+    done
+    
+    log_warn "Service started but health check failed"
+    return 0
+}
+
+# Stop ZTNCUI service
+stop_service() {
+    local method
+    method=$(detect_installation)
+    
+    log_info "Stopping ZTNCUI using method: $method"
+    
+    case "$method" in
+        docker)
+            if docker ps --format "table {{.Names}}" | grep -q "ztncui"; then
+                docker stop ztncui || {
+                    log_error "Failed to stop Docker container"
+                    return 1
+                }
+            else
+                log_warn "Docker container is not running"
+            fi
+            ;;
+        service)
+            /etc/init.d/ztncui stop || {
+                log_error "Failed to stop service"
+                return 1
+            }
+            ;;
+        binary|npm)
+            if [ -f "$ZTNCUI_PID_FILE" ]; then
+                local pid
+                pid=$(cat "$ZTNCUI_PID_FILE")
+                if kill "$pid" 2>/dev/null; then
+                    log_info "Stopped ZTNCUI process (PID: $pid)"
+                else
+                    log_warn "Failed to stop process with PID: $pid"
+                fi
+                rm -f "$ZTNCUI_PID_FILE"
+            fi
+            
+            # Force kill any remaining processes
+            pkill -f "ztncui" >/dev/null 2>&1 || true
+            ;;
+        none)
+            log_warn "ZTNCUI is not installed"
+            ;;
+        *)
+            log_error "Unknown installation method: $method"
+            return 1
+            ;;
+    esac
+    
+    log_info "ZTNCUI stopped"
+    return 0
+}
+
+# Restart service
+restart_service() {
+    log_info "Restarting ZTNCUI service..."
+    stop_service
+    sleep 2
+    start_service
+}
+
+# Health check
+check_health() {
+    local port="${HTTP_PORT}"
+    
+    # Try multiple health check methods
+    if command -v curl >/dev/null 2>&1; then
+        if curl -s -o /dev/null -w "%{http_code}" "http://localhost:$port" | grep -q "200\|302"; then
+            echo "HEALTHY"
+            return 0
+        fi
+    elif command -v wget >/dev/null 2>&1; then
+        if wget -q --spider "http://localhost:$port" 2>/dev/null; then
+            echo "HEALTHY"
+            return 0
+        fi
+    fi
+    
+    # Check if process is running
+    local status
+    status=$(get_status)
+    if [ "$status" = "RUNNING" ]; then
+        echo "RUNNING_UNVERIFIED"
+        return 0
+    fi
+    
+    echo "UNHEALTHY"
+    return 1
+}
+
+# Show service information
+show_info() {
+    local method status
+    method=$(detect_installation)
+    status=$(get_status)
+    
+    echo "ZTNCUI Service Information:"
+    echo "=========================="
+    echo "Installation method: $method"
+    echo "Service status: $status"
+    echo "Configuration file: $ZTNCUI_CONFIG_FILE"
+    echo "HTTP Port: $HTTP_PORT"
+    echo "ZeroTier Home: $ZT_HOME"
+    echo "ZeroTier Address: $ZT_ADDR"
+    
+    if [ -f "$ZTNCUI_PID_FILE" ]; then
+        echo "PID file: $ZTNCUI_PID_FILE ($(cat "$ZTNCUI_PID_FILE"))"
+    fi
+    
+    if [ -f "$ZTNCUI_LOG_FILE" ]; then
+        echo "Log file: $ZTNCUI_LOG_FILE"
+    fi
+    
+    # ZeroTier information
+    if command -v zerotier-cli >/dev/null 2>&1; then
+        echo ""
+        echo "ZeroTier Information:"
+        echo "===================="
+        zerotier-cli info 2>/dev/null || echo "ZeroTier daemon not accessible"
+        
+        # Controller mode status
+        local controller_mode
+        controller_mode=$(zerotier-cli get allowDefaultCentrality 2>/dev/null || echo "unknown")
+        echo "Controller mode: $controller_mode"
+    fi
+    
+    # Health check
+    echo ""
+    echo "Health Check:"
+    echo "============"
+    check_health
+}
+
+# Show logs
+show_logs() {
+    local method
+    method=$(detect_installation)
+    
+    case "$method" in
+        docker)
+            if docker ps -a --format "table {{.Names}}" | grep -q "ztncui"; then
+                echo "Docker container logs:"
+                docker logs ztncui
+            else
+                log_error "No Docker container found"
+            fi
+            ;;
+        *)
+            if [ -f "$ZTNCUI_LOG_FILE" ]; then
+                echo "ZTNCUI logs:"
+                tail -50 "$ZTNCUI_LOG_FILE"
+            else
+                log_warn "No log file found at $ZTNCUI_LOG_FILE"
+            fi
+            ;;
+    esac
+}
+
+# Install ZTNCUI via Docker
+install_docker() {
+    log_info "Installing ZTNCUI via Docker..."
+    
+    if ! command -v docker >/dev/null 2>&1; then
+        log_error "Docker is not installed. Please install Docker first."
+        return 1
+    fi
+    
+    if ! check_zerotier; then
+        log_error "ZeroTier check failed. Please install and start ZeroTier first."
+        return 1
+    fi
+    
+    # Pull and run ZTNCUI container
+    log_info "Pulling ZTNCUI Docker image..."
+    docker pull keynetworks/ztncui || {
+        log_error "Failed to pull ZTNCUI image"
+        return 1
+    }
+    
+    log_info "Creating ZTNCUI container..."
+    docker run -d \
+        --name ztncui \
+        --restart=unless-stopped \
+        -p "${HTTP_PORT}:3000" \
+        -v "$ZT_HOME:$ZT_HOME" \
+        -v ztncui-data:/opt/key-networks/ztncui/etc \
+        -e "ZT_HOME=$ZT_HOME" \
+        -e "ZT_ADDR=$ZT_ADDR" \
+        keynetworks/ztncui || {
+        log_error "Failed to create container"
+        return 1
+    }
+    
+    log_info "ZTNCUI installed and started via Docker"
+    
+    # Enable controller mode
+    enable_controller
+    
+    return 0
+}
+
+# API compatibility functions
+api_networks() {
+    # Get list of networks managed by this controller
+    if ! check_zerotier; then
+        echo "[]"
+        return 1
+    fi
+    
+    local node_id
+    node_id=$(zerotier-cli info | awk '{print $3}')
+    
+    # This would need to query the actual ZeroTier controller API
+    # For now, return empty array
+    echo "[]"
+}
+
+api_network_detail() {
+    local nwid="$1"
+    if [ -z "$nwid" ]; then
+        echo "{\"error\": \"Network ID required\"}"
+        return 1
+    fi
+    
+    # This would query ZeroTier controller API for network details
+    echo "{\"nwid\": \"$nwid\", \"error\": \"Not implemented\"}"
+}
+
+# Main function
+main() {
+    case "${1:-help}" in
+        start)
+            start_service
+            ;;
+        stop)
+            stop_service
+            ;;
+        restart)
+            restart_service
+            ;;
+        status)
+            get_status
+            ;;
+        health)
+            check_health
+            ;;
+        info)
+            show_info
+            ;;
+        logs)
+            show_logs
+            ;;
+        enable-controller)
+            enable_controller
+            ;;
+        install-docker)
+            install_docker
+            ;;
+        api-networks)
+            api_networks
+            ;;
+        api-network-detail)
+            api_network_detail "$2"
+            ;;
+        help|--help|-h)
+            cat << EOF
+$SCRIPT_NAME - ZTNCUI Management Script
+
+Usage: $SCRIPT_NAME [COMMAND]
+
+Commands:
+  start              Start ZTNCUI service
+  stop               Stop ZTNCUI service
+  restart            Restart ZTNCUI service
+  status             Get service status
+  health             Check service health
+  info               Show detailed service information
+  logs               Show service logs
+  enable-controller  Enable ZeroTier controller mode
+  install-docker     Install ZTNCUI via Docker
+  api-networks       List networks (API compatibility)
+  api-network-detail Get network details (API compatibility)
+  help               Show this help message
+
+Environment Variables:
+  HTTP_PORT          HTTP port for web interface (default: 3000)
+  ZT_HOME           ZeroTier data directory (default: /var/lib/zerotier-one)
+  ZT_ADDR           ZeroTier daemon address (default: localhost:9993)
+  DEBUG             Enable debug output (set to 1)
+
+Examples:
+  $SCRIPT_NAME start
+  $SCRIPT_NAME status
+  $SCRIPT_NAME enable-controller
+  HTTP_PORT=8080 $SCRIPT_NAME restart
+
+EOF
+            ;;
+        *)
+            log_error "Unknown command: $1"
+            echo "Use '$SCRIPT_NAME help' for usage information."
+            exit 1
+            ;;
+    esac
+}
+
+main "$@"

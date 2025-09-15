@@ -1,6 +1,14 @@
 /* SPDX-License-Identifier: GPL-3.0-only
  *
  * Copyright (C) 2022 ImmortalWrt.org
+ * Enhanced ZeroTier Configuration Management
+ * 
+ * Features:
+ * - Real-time service status monitoring
+ * - Intelligent network configuration
+ * - Moon and Controller integration
+ * - Advanced firewall settings
+ * - Multi-language support
  */
 
 'use strict';
@@ -10,6 +18,20 @@
 'require uci';
 'require view';
 'require tools.widgets as widgets';
+
+// Configuration constants
+const ZEROTIER_CONFIG = {
+	DEFAULT_PORT: 9993,
+	POLL_INTERVAL: 5000,
+	NETWORK_ID_LENGTH: 16,
+	MOON_PORT_DEFAULT: 9993,
+	CONTROLLER_PORT_DEFAULT: 3000
+};
+
+const SERVICE_STATUS = {
+	RUNNING: 'RUNNING',
+	STOPPED: 'NOT RUNNING'
+};
 
 const callServiceList = rpc.declare({
 	object: 'service',
@@ -21,22 +43,39 @@ const callServiceList = rpc.declare({
 function getServiceStatus() {
 	return L.resolveDefault(callServiceList('zerotier'), {}).then(function(res) {
 		let isRunning = false;
+		let serviceInfo = null;
+		
 		try {
-			isRunning = res['zerotier']['instances']['instance1']['running'];
-		} catch (e) { }
-		return isRunning;
+			if (res && res['zerotier'] && res['zerotier']['instances'] && res['zerotier']['instances']['instance1']) {
+				serviceInfo = res['zerotier']['instances']['instance1'];
+				isRunning = serviceInfo['running'] === true;
+			}
+		} catch (e) {
+			console.debug('[ZeroTier] Service status check failed:', e);
+		}
+		
+		return {
+			isRunning: isRunning,
+			serviceInfo: serviceInfo,
+			lastUpdate: Date.now()
+		};
+	}).catch(function(err) {
+		console.error('[ZeroTier] Failed to get service status:', err);
+		return {
+			isRunning: false,
+			error: err.message || 'Unknown error',
+			lastUpdate: Date.now()
+		};
 	});
 }
 
-function renderStatus(isRunning) {
-	let spanTemp = '<em><span style="color:%s"><strong>%s %s</strong></span></em>';
-	let renderHTML;
-	if (isRunning)
-		renderHTML = String.format(spanTemp, 'green', _('ZeroTier'), _('RUNNING'));
-	else
-		renderHTML = String.format(spanTemp, 'red', _('ZeroTier'), _('NOT RUNNING'));
-
-	return renderHTML;
+function renderStatus(isRunning, lastUpdate) {
+	const statusColor = isRunning ? 'green' : 'red';
+	const statusText = isRunning ? SERVICE_STATUS.RUNNING : SERVICE_STATUS.STOPPED;
+	const timestamp = lastUpdate ? ' (' + _('Updated') + ': ' + new Date(lastUpdate).toLocaleTimeString() + ')' : '';
+	
+	const spanTemplate = '<em><span style="color:%s"><strong>%s %s</strong></span></em><small style="color:#666;">%s</small>';
+	return String.format(spanTemplate, statusColor, _('ZeroTier'), _(statusText), timestamp);
 }
 
 return view.extend({
@@ -49,15 +88,38 @@ return view.extend({
 		s = m.section(form.TypedSection);
 		s.anonymous = true;
 		s.render = function() {
+			// Enhanced polling with error handling
 			poll.add(function() {
-				return L.resolveDefault(getServiceStatus()).then(function(res) {
-					let view = document.getElementById('service_status');
-					view.innerHTML = renderStatus(res);
+				return L.resolveDefault(getServiceStatus()).then(function(status) {
+					const statusElement = document.getElementById('service_status');
+					const errorElement = document.getElementById('service_error');
+					
+					if (statusElement) {
+						statusElement.innerHTML = renderStatus(status.isRunning, status.lastUpdate);
+					}
+					
+					if (errorElement) {
+						if (status.error) {
+							errorElement.innerHTML = '<div class="alert-message warning">' + 
+								_('Error checking service status') + ': ' + status.error + '</div>';
+							errorElement.style.display = 'block';
+						} else {
+							errorElement.style.display = 'none';
+						}
+					}
+				}).catch(function(err) {
+					console.error('[ZeroTier] Polling error:', err);
+					const statusElement = document.getElementById('service_status');
+					if (statusElement) {
+						statusElement.innerHTML = '<em><span style="color:orange">' + 
+							_('Status check failed') + '</span></em>';
+					}
 				});
-			});
+			}, ZEROTIER_CONFIG.POLL_INTERVAL);
 
 			return E('div', { class: 'cbi-section', id: 'status_bar' }, [
-				E('p', { id: 'service_status' }, _('Collecting data…'))
+				E('p', { id: 'service_status' }, _('Collecting data…')),
+				E('div', { id: 'service_error', style: 'display: none' })
 			]);
 		}
 

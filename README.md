@@ -2,195 +2,224 @@
 
 Enhanced LuCI application for ZeroTier with comprehensive Moon node management and ZTNCUI network controller integration.
 
-## Features
+> [📖 中文文档 / Chinese Documentation](README_CN.md)
+
+## 🌟 Features
 
 ### Core ZeroTier Management
-- ✅ Basic ZeroTier configuration and network management
-- ✅ Interface information and status monitoring
-- ✅ Firewall integration and traffic control
-- ✅ Multi-language support (English, 简体中文, 繁體中文)
+- ✅ **Advanced Configuration**: Complete ZeroTier service configuration with real-time monitoring
+- ✅ **Network Management**: Join/leave networks with advanced routing and firewall integration
+- ✅ **Interface Monitoring**: Real-time network interface status and traffic statistics
+- ✅ **Multi-language Support**: English, 简体中文, 繁體中文 with comprehensive translations
 
-### Moon Node Management
-- 🌙 **Create Moon Nodes**: Set up your router as a ZeroTier Moon for improved connectivity
-- 🌙 **Join Moon Networks**: Connect to existing Moon nodes
-- 🌙 **Manage Connections**: View and manage connected Moon nodes
-- 🌙 **Auto-creation**: Automatically create Moon nodes on startup
+### 🌙 Moon Node Management
+- 🌙 **Create Moon Nodes**: Transform your router into a ZeroTier Moon for enhanced connectivity
+- 🌙 **Join Moon Networks**: Connect to existing Moon nodes with automatic discovery
+- 🌙 **Connection Management**: Monitor and manage Moon connections with health status
+- 🌙 **Auto-creation**: Intelligent Moon node creation on startup with validation
+- 🌙 **Input Validation**: Comprehensive IP address and port validation
 
-### Network Controller (ZTNCUI Integration)
-- 🎛️ **Local Controller**: Run your own ZeroTier network controller
-- 🎛️ **Web Interface**: Browser-based network management via ZTNCUI
-- 🎛️ **Service Control**: Start, stop, and configure ZTNCUI service
-- 🎛️ **Quick Setup**: Automated controller mode configuration
+### 🎛️ Network Controller (ZTNCUI Integration)
+- 🎛️ **Local Controller**: Run your own ZeroTier network controller with full management
+- 🎛️ **Web Interface**: Modern browser-based network management via ZTNCUI
+- 🎛️ **Multi-Installation**: Docker, System Service, Binary, and Node.js installation methods
+- 🎛️ **Health Monitoring**: Real-time service health checks and automatic recovery
+- 🎛️ **One-click Setup**: Automated Docker installation and configuration
+- 🎛️ **Service Management**: Start, stop, restart with intelligent status detection
 
-## Installation
+## 🚀 Quick Start
 
 ### Prerequisites
-- OpenWrt router with LuCI
-- ZeroTier package installed
-- Sufficient storage space (recommended: 100MB+)
+- **OpenWrt/ImmortalWrt**: 19.07+ or compatible
+- **Storage Space**: 10MB minimum (100MB+ for full ZTNCUI features)
+- **Internet Connection**: Required for network functionality
+- **Optional Docker**: For easy ZTNCUI installation
 
-### Package Installation
+### 1. Installation
 
+#### Package Manager Installation
 ```bash
-# Install core ZeroTier
+# Update package lists
 opkg update
-opkg install zerotier
 
-# Install LuCI ZeroTier app
+# Install ZeroTier core
+opkg install zerotier zerotier-idtool
+
+# Install LuCI application
 opkg install luci-app-zerotier
 
-# Install ZTNCUI for network controller functionality
-# Note: ZTNCUI is not available in standard OpenWrt packages
-# Choose one of the following methods:
+# Restart LuCI
+/etc/init.d/uhttpd restart
+```
 
-# Method 1: Docker (Recommended)
-opkg install dockerd docker
-docker run -d --name ztncui --restart=unless-stopped \
-  -p 3000:3000 \
-  -v /var/lib/zerotier-one:/var/lib/zerotier-one \
-  keynetworks/ztncui
+#### Manual Installation
+1. Download the appropriate IPK package for your architecture
+2. Install via LuCI: **System** → **Software** → **Upload Package**
+3. Or command line: `opkg install luci-app-zerotier_*.ipk`
 
-# Method 2: Node.js
+### 2. Basic Configuration
+1. Navigate to **Network** → **VPN** → **ZeroTier** → **Configuration**
+2. Enable ZeroTier service
+3. Add your network ID (16 characters)
+4. Configure network settings as needed
+5. Click **Save & Apply**
+
+### 3. Authorize Device
+1. Visit [ZeroTier Central](https://my.zerotier.com/network)
+2. Find your device in the network members list
+3. Check **Authorized** to allow connection
+4. Optionally assign a static IP address
+
+## 📋 Advanced Features
+
+### Network Controller Setup
+
+#### Quick ZTNCUI Installation (Docker)
+1. Go to **ZeroTier** → **Network Controller**
+2. If Docker is available, click **Install via Docker**
+3. Wait for installation to complete
+4. Access web interface at `http://[router-ip]:3000`
+5. Login with default credentials:
+   - Username: `admin`
+   - Password: `password`
+6. **Important**: Change password after first login
+
+#### Alternative Installation Methods
+
+**Node.js Installation:**
+```bash
 opkg install node npm
 npm install -g ztncui
-
-# Method 3: Manual download
-# Download from: https://github.com/key-networks/ztncui/releases
+ztncui-manager start
 ```
 
-## Quick Start Guide
+**Manual Binary:**
+Download from [ZTNCUI Releases](https://github.com/key-networks/ztncui/releases)
 
-### 1. Basic ZeroTier Setup
-1. Go to **Network** → **VPN** → **ZeroTier** → **Configuration**
-2. Enable ZeroTier service
-3. Add your network ID
-4. Configure network settings
-5. Apply changes
+### Moon Node Configuration
 
-### 2. Moon Node Setup
+#### Creating a Moon Node
 1. Navigate to **ZeroTier** → **Moon Manager**
-2. Enter your public IP address and port
-3. Click "Create Moon"
-4. Share your Moon ID with other users
+2. Enter your **public IP address**
+3. Set **public port** (default: 9993)
+4. Click **Create Moon**
+5. Share the generated Moon ID with other users
 
-### 3. Network Controller Setup
-1. Go to **ZeroTier** → **Network Controller**
-2. Click "Enable Controller Mode"
-3. Start ZTNCUI service
-4. Access web interface at `http://[router-ip]:3000`
-5. Login with default credentials (admin/password)
-6. Create and manage your networks
+#### Joining a Moon Network
+1. Obtain a Moon ID (10-character hex string)
+2. In Moon Manager, enter the Moon ID
+3. Click **Join Moon**
+4. Verify connection in the connected moons list
 
-## Configuration Options
+### Advanced Network Configuration
+
+#### Firewall Integration
+- **Input Rules**: Control access to ZeroTier service
+- **Forward Rules**: Allow traffic between networks
+- **Masquerading**: Enable NAT for internet access
+- **Interface Selection**: Choose specific interfaces for rules
+
+#### Routing Options
+- **Managed Routes**: Let ZeroTier handle routing automatically
+- **Global Routes**: Allow routes to public networks (use cautiously)
+- **Default Route**: Use ZeroTier as default gateway
+- **DNS Management**: Allow ZeroTier to configure DNS settings
+
+## 🛠️ Configuration Options
 
 ### Global Settings
-- **Listen Port**: ZeroTier daemon port (default: 9993)
-- **Client Secret**: Optional authentication secret
-- **Config Path**: Persistent configuration directory
-- **Copy Config**: Copy config to memory to avoid flash writes
-
-### Moon Configuration
-- **Auto-create Moon**: Automatically create Moon on startup
-- **Public IP/Port**: Required for Moon creation
-- **Moon Management**: Join/leave Moon networks
-
-### Controller Settings
-- **Enable Controller**: Activate network controller functionality
-- **Web Port**: ZTNCUI interface port (default: 3000)
-- **Service Control**: Start/stop ZTNCUI service
-
-### Network Settings
-- **Network ID**: 16-character network identifier
-- **IP Management**: Allow managed/global/default routes
-- **DNS Settings**: Allow DNS configuration
-- **Firewall Rules**: Input/forward/masquerade controls
-
-## File Structure
-
-```
-/usr/share/luci/menu.d/
-└── luci-app-zerotier.json          # Menu configuration
-
-/usr/share/rpcd/acl.d/
-└── luci-app-zerotier.json          # Permission configuration
-
-/usr/share/luci-static/resources/view/zerotier/
-├── config.js                       # Main configuration page
-├── interface.js                    # Interface information page
-├── moon.js                         # Moon node management
-└── controller.js                   # ZTNCUI controller management
-
-/usr/bin/
-├── zerotier-moon                   # Moon management script
-└── ztncui-manager                  # ZTNCUI management script
-
-/etc/uci-defaults/
-└── 40_luci-zerotier               # Installation script
+```yaml
+Listen Port: 9993              # ZeroTier daemon port
+Client Secret: [optional]      # Authentication secret
+Config Path: /etc/zerotier     # Persistent configuration
+Copy Config: true              # Copy to memory (flash protection)
+Auto Moon: false               # Auto-create Moon on startup
+Enable Controller: false      # Enable ZTNCUI functionality
 ```
 
-## Advanced Usage
+### Network Settings (per network)
+```yaml
+Network ID: [16-char hex]      # ZeroTier network identifier
+Allow Managed IP: true         # ZeroTier IP management
+Allow Global IP: false         # Public IP routes
+Allow Default Route: false     # Default gateway
+Allow DNS: true                # DNS configuration
+Firewall Rules:                # Custom firewall settings
+  - Input: allow/deny
+  - Forward: allow/deny
+  - Masquerade: enable/disable
+```
 
-### Command Line Tools
+## 📚 Documentation
 
-#### Moon Management
+### User Documentation
+- 📖 **[User Manual](docs/USER_MANUAL.md)** - Comprehensive usage guide
+- 🔧 **[Troubleshooting Guide](docs/USER_MANUAL.md#故障排除)** - Common issues and solutions
+- ⚙️ **[Configuration Examples](docs/USER_MANUAL.md#高级配置)** - Advanced setup scenarios
+
+### Developer Documentation
+- 🏗️ **[Architecture Guide](ARCHITECTURE.md)** - System design and components
+- 👨‍💻 **[Developer Guide](docs/DEVELOPER_GUIDE.md)** - Development standards and practices
+- 📊 **[Project Summary](PROJECT_SUMMARY.md)** - Optimization overview and improvements
+
+### Additional Resources
+- 📝 **[Changelog](CHANGELOG.md)** - Version history and updates
+- 🌙 **[Moon Setup Guide](README-moon.md)** - Detailed Moon configuration
+- 🎛️ **[ZTNCUI Integration](README-ztncui.md)** - Controller setup guide
+
+## 🔧 Command Line Tools
+
+### ZeroTier Management
 ```bash
-# Create a moon
-zerotier-moon create <public_ip> [port]
+# Service control
+/etc/init.d/zerotier start|stop|restart|status
 
-# Join a moon
-zerotier-moon join <moon_id>
+# Network management
+zerotier-cli join <network-id>
+zerotier-cli leave <network-id>
+zerotier-cli listnetworks
 
-# Leave a moon
-zerotier-moon leave <moon_id>
+# Node information
+zerotier-cli info
+zerotier-cli peers
+```
 
-# List connected moons
+### Moon Management
+```bash
+# Create moon
+zerotier-moon create <public-ip> [port]
+
+# Join moon
+zerotier-moon join <moon-id>
+
+# List moons
 zerotier-moon list
+
+# Leave moon
+zerotier-moon leave <moon-id>
 ```
 
-#### ZTNCUI Management
+### ZTNCUI Management
 ```bash
-# Setup ZTNCUI
+# Service control
+ztncui-manager start|stop|restart|status
+
+# Installation help
+ztncui-manager install
+
+# Configuration
 ztncui-manager setup
-
-# Control service
-ztncui-manager start|stop|restart
-
-# Reset admin password
-ztncui-manager reset-password
-
-# Show configuration
 ztncui-manager show-config
+
+# Health check
+ztncui-manager health-check [port]
 ```
 
-### Configuration Files
-
-#### ZeroTier UCI Config
-```bash
-# View configuration
-uci show zerotier
-
-# Example network configuration
-uci set zerotier.@network[0].enabled='1'
-uci set zerotier.@network[0].id='1234567890abcdef'
-uci commit zerotier
-```
-
-#### ZTNCUI Configuration
-```bash
-# Configuration file location
-/etc/ztncui/etc/ztncui.conf
-
-# Key settings
-HTTP_PORT=3000
-ZT_HOME=/var/lib/zerotier-one
-HTTP_ALL_INTERFACES=yes
-```
-
-## Troubleshooting
+## 🐛 Troubleshooting
 
 ### Common Issues
 
-#### ZeroTier Service Issues
+**Service Won't Start**
 ```bash
 # Check service status
 /etc/init.d/zerotier status
@@ -202,142 +231,111 @@ logread | grep zerotier
 /etc/init.d/zerotier restart
 ```
 
-#### Moon Creation Problems
-- Ensure public IP is accessible from internet
-- Check firewall rules for ZeroTier port
-- Verify zerotier-idtool is available
+**Network Connection Issues**
+1. Verify device is authorized in ZeroTier Central
+2. Check firewall rules and routing
+3. Confirm network ID is correct
+4. Test with `ping` to other network members
 
-#### ZTNCUI Access Issues
-- Verify service is running: `ztncui-manager status`
-- Check web port accessibility
-- Review firewall configuration for port 3000
+**ZTNCUI Access Problems**
+1. Verify service is running: `ztncui-manager status`
+2. Check port accessibility and firewall
+3. Try health check: `ztncui-manager health-check`
+4. Review Docker logs: `docker logs ztncui`
 
-### Debug Information
+**Moon Creation Failures**
+1. Ensure public IP is reachable from internet
+2. Verify firewall allows ZeroTier port
+3. Check network connectivity
+4. Confirm zerotier-idtool is available
 
-```bash
-# ZeroTier status
-zerotier-cli info
-zerotier-cli peers
-zerotier-cli listnetworks
+### Getting Help
+- 📋 **Issues**: [GitHub Issues](https://github.com/AltarsCN/luci-app-zerotier/issues)
+- 💬 **Forums**: OpenWrt and ImmortalWrt community forums
+- 📖 **Documentation**: Check the comprehensive user manual
+- 🔍 **Search**: Existing issues and community discussions
 
-# Moon status
-zerotier-cli listmoons
-
-# System resources
-free -m
-df -h
-```
-
-## Security Considerations
-
-### Firewall Configuration
-- Ensure ZeroTier port (9993) is accessible
-- Restrict ZTNCUI web interface access if needed
-- Use strong passwords for ZTNCUI admin account
+## 🔐 Security Considerations
 
 ### Network Security
-- Use private networks instead of open ones
-- Regularly audit network members
-- Monitor for unauthorized access attempts
+- Use **private networks** instead of public ones
+- Regularly **audit network members** and remove unused devices
+- Configure **appropriate firewall rules** for your use case
+- Monitor for **unauthorized access attempts**
 
-### Moon Security
-- Only create moons on trusted networks
-- Regularly review connected moons
-- Use secure, non-default ports when possible
+### System Security
+- Change **default ZTNCUI password** immediately after setup
+- Keep **ZeroTier and OpenWrt updated** to latest versions
+- Use **strong passwords** for all accounts
+- Restrict **ZTNCUI web interface access** if needed
+- Review **network access logs** periodically
 
-## Performance Tips
+## ⚡ Performance Tips
 
-### Resource Optimization
-- Use "Copy Config" option to reduce flash writes
-- Monitor storage usage in config directories
-- Restart services periodically for optimal performance
+### Network Optimization
+- Choose **nearby Moon nodes** for better latency
+- Configure **appropriate MTU** settings for your network
+- Use **private networks** to reduce overhead
+- Monitor **bandwidth usage** and optimize as needed
 
-### Network Performance
-- Place Moon nodes on stable, high-bandwidth connections
-- Limit number of networks per controller based on hardware
-- Monitor network latency and adjust accordingly
+### System Optimization
+- Enable **"Copy Config"** to reduce flash wear
+- Monitor **memory and CPU usage** regularly
+- Configure **appropriate polling intervals**
+- Clean up **old log files** periodically
 
-## API Reference
+## 🤝 Contributing
 
-### UCI Configuration Schema
+We welcome contributions from the community! Here's how you can help:
 
-```
-zerotier.global
-├── enabled (boolean)
-├── port (integer)
-├── secret (string)
-├── local_conf_path (string)
-├── config_path (string)
-├── copy_config_path (boolean)
-├── auto_moon (boolean)
-├── moon_root_public_port (integer)
-├── moon_root_public_addr (string)
-├── enable_controller (boolean)
-├── controller_port (integer)
-└── fw_allow_input (boolean)
-
-zerotier.network[]
-├── enabled (boolean)
-├── id (string)
-├── allow_managed (boolean)
-├── allow_global (boolean)
-├── allow_default (boolean)
-├── allow_dns (boolean)
-├── fw_allow_input (boolean)
-├── fw_allow_forward (boolean)
-├── fw_forward_ifaces (list)
-├── fw_allow_masq (boolean)
-└── fw_masq_ifaces (list)
-```
-
-## Contributing
+### Ways to Contribute
+- 🐛 **Report Bugs**: Submit detailed bug reports with logs
+- 💡 **Suggest Features**: Propose new functionality or improvements
+- 📝 **Improve Documentation**: Help make docs clearer and more comprehensive
+- 🌍 **Translate**: Add support for more languages
+- 💻 **Code Contributions**: Submit pull requests for fixes and features
 
 ### Development Setup
-1. Clone the luci repository
-2. Navigate to `applications/luci-app-zerotier/`
-3. Make modifications
-4. Test on OpenWrt device
-5. Submit pull request
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes with proper testing
+4. Submit a pull request with detailed description
 
-### Translation
-- Add new language files in `po/[language]/`
-- Follow existing translation format
-- Test translations in LuCI interface
+### Code Standards
+- Follow existing code style and conventions
+- Add comprehensive comments and documentation
+- Include tests for new functionality
+- Ensure backward compatibility
 
-## Changelog
+## 📄 License
 
-### v2.0.0 (Enhanced Edition)
-- ➕ Added Moon node management functionality
-- ➕ Added ZTNCUI network controller integration
-- ➕ Enhanced multi-language support
-- ➕ Added comprehensive configuration options
-- ➕ Added command-line management tools
-- 🐛 Fixed various UI and configuration issues
+This project is licensed under **GPL-3.0-only** - see the [LICENSE](LICENSE) file for details.
 
-### v1.x.x (Original)
-- Basic ZeroTier configuration
-- Network management
-- Interface information display
+## 🙏 Acknowledgments
 
-## License
+### Core Contributors
+- **ImmortalWrt Community** - Original development and ongoing maintenance
+- **OpenWrt Project** - Foundation platform and ecosystem
+- **ZeroTier Team** - Excellent networking technology and documentation
 
-This project is licensed under GPL-3.0-only, maintaining compatibility with the original LuCI ZeroTier application.
+### Special Thanks
+- **ZTNCUI Developers** - Network controller web interface
+- **Community Contributors** - Bug reports, feature requests, and feedback
+- **Translators** - Multi-language support
+- **Beta Testers** - Early adoption and testing
 
-## Acknowledgments
-
-- Original luci-app-zerotier developers
-- ZeroTier team for the excellent networking solution
-- ZTNCUI developers for the controller interface
-- OpenWrt and LuCI communities
-
-## Support
-
-For issues and support:
-1. Check troubleshooting section above
-2. Review log files and error messages
-3. Consult ZeroTier and ZTNCUI documentation
-4. Submit issues with detailed information and logs
+### Related Projects
+- [ZeroTier](https://github.com/zerotier/ZeroTierOne) - Core VPN technology
+- [ZTNCUI](https://github.com/key-networks/ztncui) - Network controller interface
+- [OpenWrt](https://github.com/openwrt/openwrt) - Router operating system
+- [ImmortalWrt](https://github.com/immortalwrt/immortalwrt) - Enhanced OpenWrt distribution
 
 ---
 
-**Note**: This enhanced version maintains full backward compatibility with existing ZeroTier configurations while adding powerful new features for advanced users.
+<div align="center">
+
+**🌐 Building Better Networks with ZeroTier 🌐**
+
+[Documentation](docs/) • [Issues](https://github.com/AltarsCN/luci-app-zerotier/issues) • [Discussions](https://github.com/AltarsCN/luci-app-zerotier/discussions) • [Releases](https://github.com/AltarsCN/luci-app-zerotier/releases)
+
+</div>

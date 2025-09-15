@@ -1,11 +1,12 @@
 #!/bin/sh
-# ZTNCUI Management Script for OpenWrt
+# ZTNCUI Management Script for OpenWrt with Dynamic IP Support
 # This script helps manage ZTNCUI installation and configuration
 
 ZTNCUI_DIR="/etc/ztncui"
 ZTNCUI_CONF="$ZTNCUI_DIR/etc/ztncui.conf"
 ZTNCUI_INIT="/etc/init.d/ztncui"
 ZT_HOME="/var/lib/zerotier-one"
+DYNAMIC_IP_CONFIG="/etc/ztncui/dynamic-ip.conf"
 
 # Check if ZTNCUI is installed
 check_ztncui() {
@@ -219,36 +220,162 @@ disable_service() {
 
 # Get service status
 get_status() {
-    # Check system service
-    if [ -f "$ZTNCUI_INIT" ] && pgrep -f "ztncui" > /dev/null; then
-        echo "RUNNING"
+    local status="NOT_INSTALLED"
+    local details=""
+    
+    # Check system service first
+    if [ -f "$ZTNCUI_INIT" ]; then
+        if pgrep -f "ztncui" > /dev/null 2>&1; then
+            status="RUNNING"
+            details="System service"
+        else
+            status="STOPPED"
+            details="System service installed"
+        fi
+        echo "$status"
         return
     fi
     
     # Check Docker container
     if command -v docker >/dev/null 2>&1; then
-        if docker ps --format "table {{.Names}}\t{{.Status}}" | grep ztncui | grep -q "Up"; then
-            echo "RUNNING"
+        if docker ps --format "table {{.Names}}\t{{.Status}}" 2>/dev/null | grep ztncui | grep -q "Up"; then
+            status="RUNNING"
+            details="Docker container"
+            echo "$status"
             return
-        elif docker ps -a --format "table {{.Names}}\t{{.Status}}" | grep ztncui | grep -q "Exited"; then
-            echo "STOPPED"
+        elif docker ps -a --format "table {{.Names}}\t{{.Status}}" 2>/dev/null | grep ztncui | grep -q "Exited"; then
+            status="STOPPED"
+            details="Docker container stopped"
+            echo "$status"
             return
         fi
     fi
     
     # Check binary installation
     if command -v ztncui >/dev/null 2>&1; then
-        if pgrep -f "ztncui" > /dev/null; then
-            echo "RUNNING"
+        if pgrep -f "ztncui" > /dev/null 2>&1; then
+            status="RUNNING"
+            details="Binary process"
         else
-            echo "STOPPED"
+            status="STOPPED"
+            details="Binary installed"
+        fi
+        echo "$status"
+        return
+    fi
+    
+    # Check if installation methods are available
+    if command -v docker >/dev/null 2>&1; then
+        status="DOCKER_AVAILABLE"
+        details="Docker available for installation"
+    elif command -v node >/dev/null 2>&1; then
+        status="NODE_AVAILABLE"
+        details="Node.js available for installation"
+    else
+        status="NOT_INSTALLED"
+        details="No installation method available"
+    fi
+    
+    echo "$status"
+}
+
+# Perform health check
+health_check() {
+    local port="${1:-3000}"
+    
+    # Check if service is running
+    local status=$(get_status)
+    if [ "$status" != "RUNNING" ]; then
+        echo "ERROR: ZTNCUI is not running"
+        return 1
+    fi
+    
+    # Check if port is listening
+    if command -v netstat >/dev/null 2>&1; then
+        if ! netstat -tlnp 2>/dev/null | grep -q ":$port "; then
+            echo "ERROR: ZTNCUI is not listening on port $port"
+            return 1
+        fi
+    fi
+    
+    # Check HTTP response if curl is available
+    if command -v curl >/dev/null 2>&1; then
+        local http_code=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:$port" 2>/dev/null)
+        if [ "$http_code" = "200" ] || [ "$http_code" = "302" ] || [ "$http_code" = "401" ]; then
+            echo "SUCCESS: ZTNCUI is healthy (HTTP $http_code)"
+            return 0
+        else
+            echo "WARNING: ZTNCUI responding with HTTP $http_code"
+            return 1
+        fi
+    elif command -v wget >/dev/null 2>&1; then
+        if wget -q --spider "http://localhost:$port" 2>/dev/null; then
+            echo "SUCCESS: ZTNCUI is responding"
+            return 0
+        else
+            echo "WARNING: ZTNCUI may not be responding"
+            return 1
         fi
     else
-        echo "NOT_INSTALLED"
+        echo "SUCCESS: ZTNCUI appears to be running (limited check)"
+        return 0
     fi
 }
 
-# Reset admin password
+# Uninstall ZTNCUI
+uninstall_ztncui() {
+    echo "Uninstalling ZTNCUI..."
+    
+    # Stop service first
+    stop_service 2>/dev/null
+    
+    # Remove system service
+    if [ -f "$ZTNCUI_INIT" ]; then
+        echo "Removing system service..."
+        "$ZTNCUI_INIT" disable 2>/dev/null
+        rm -f "$ZTNCUI_INIT"
+    fi
+    
+    # Remove Docker container
+    if command -v docker >/dev/null 2>&1; then
+        if docker ps -a --format "table {{.Names}}" | grep -q ztncui; then
+            echo "Removing Docker container..."
+            docker stop ztncui 2>/dev/null
+            docker rm ztncui 2>/dev/null
+            # Optionally remove image
+            read -p "Remove ZTNCUI Docker image? [y/N]: " remove_image
+            if [ "$remove_image" = "y" ] || [ "$remove_image" = "Y" ]; then
+                docker rmi keynetworks/ztncui 2>/dev/null
+            fi
+        fi
+    fi
+    
+    # Remove binary
+    if [ -f "/usr/bin/ztncui" ]; then
+        echo "Removing binary..."
+        rm -f "/usr/bin/ztncui"
+    fi
+    
+    # Remove npm global installation
+    if command -v npm >/dev/null 2>&1; then
+        if npm list -g ztncui >/dev/null 2>&1; then
+            echo "Removing npm global installation..."
+            npm uninstall -g ztncui 2>/dev/null
+        fi
+    fi
+    
+    # Ask about configuration removal
+    read -p "Remove ZTNCUI configuration directory ($ZTNCUI_DIR)? [y/N]: " remove_config
+    if [ "$remove_config" = "y" ] || [ "$remove_config" = "Y" ]; then
+        rm -rf "$ZTNCUI_DIR"
+        echo "Configuration removed"
+    else
+        echo "Configuration preserved in $ZTNCUI_DIR"
+    fi
+    
+    echo "SUCCESS: ZTNCUI uninstallation completed"
+}
+
 reset_password() {
     check_ztncui
     
@@ -270,9 +397,149 @@ show_config() {
 }
 
 # Main function
+# Dynamic IP management functions
+detect_public_ip() {
+    echo "Detecting public IP address..."
+    
+    # Try multiple IP detection methods
+    local ip=""
+    
+    # Method 1: icanhazip.com
+    ip=$(wget -qO- https://ipv4.icanhazip.com 2>/dev/null | tr -d '\n\r')
+    if [ -n "$ip" ] && echo "$ip" | grep -E '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$' >/dev/null; then
+        echo "Detected IP: $ip (via icanhazip.com)"
+        echo "$ip"
+        return 0
+    fi
+    
+    # Method 2: ipify.org
+    ip=$(wget -qO- https://api.ipify.org 2>/dev/null | tr -d '\n\r')
+    if [ -n "$ip" ] && echo "$ip" | grep -E '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$' >/dev/null; then
+        echo "Detected IP: $ip (via ipify.org)"
+        echo "$ip"
+        return 0
+    fi
+    
+    # Method 3: checkip.amazonaws.com
+    ip=$(wget -qO- https://checkip.amazonaws.com 2>/dev/null | tr -d '\n\r')
+    if [ -n "$ip" ] && echo "$ip" | grep -E '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$' >/dev/null; then
+        echo "Detected IP: $ip (via amazonaws.com)"
+        echo "$ip"
+        return 0
+    fi
+    
+    # Method 4: Use default gateway interface IP (if public)
+    local gateway_iface=$(ip route show default | awk '/default/ { print $5 }' | head -1)
+    if [ -n "$gateway_iface" ]; then
+        ip=$(ip addr show "$gateway_iface" | awk '/inet / { print $2 }' | cut -d/ -f1 | head -1)
+        if [ -n "$ip" ] && ! echo "$ip" | grep -E '^(10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.|192\.168\.|127\.)' >/dev/null; then
+            echo "Detected IP: $ip (via interface $gateway_iface)"
+            echo "$ip"
+            return 0
+        fi
+    fi
+    
+    echo "ERROR: Could not detect public IP address"
+    return 1
+}
+
+# Configure dynamic IP monitoring
+configure_dynamic_ip() {
+    local enable="$1"
+    local ip="$2"
+    local port="${3:-3000}"
+    
+    if [ "$enable" = "enable" ]; then
+        if [ -z "$ip" ]; then
+            echo "Auto-detecting IP address..."
+            ip=$(detect_public_ip)
+            if [ $? -ne 0 ]; then
+                echo "ERROR: Failed to detect IP address"
+                return 1
+            fi
+        fi
+        
+        echo "Enabling dynamic IP monitoring..."
+        echo "IP=$ip" > "$DYNAMIC_IP_CONFIG"
+        echo "PORT=$port" >> "$DYNAMIC_IP_CONFIG"
+        echo "ENABLED=1" >> "$DYNAMIC_IP_CONFIG"
+        echo "LAST_UPDATE=$(date)" >> "$DYNAMIC_IP_CONFIG"
+        
+        echo "Dynamic IP monitoring enabled for $ip:$port"
+        echo "Configuration saved to $DYNAMIC_IP_CONFIG"
+        
+    elif [ "$enable" = "disable" ]; then
+        echo "Disabling dynamic IP monitoring..."
+        if [ -f "$DYNAMIC_IP_CONFIG" ]; then
+            sed -i 's/ENABLED=1/ENABLED=0/' "$DYNAMIC_IP_CONFIG"
+            echo "Dynamic IP monitoring disabled"
+        else
+            echo "Dynamic IP not configured"
+        fi
+        
+    elif [ "$enable" = "status" ]; then
+        if [ -f "$DYNAMIC_IP_CONFIG" ]; then
+            echo "Dynamic IP Configuration:"
+            cat "$DYNAMIC_IP_CONFIG"
+        else
+            echo "Dynamic IP not configured"
+        fi
+        
+    else
+        echo "Usage: $0 dynamic-ip {enable|disable|status} [ip] [port]"
+        return 1
+    fi
+}
+
+# Update ZTNCUI endpoint with new IP
+update_endpoint() {
+    local new_ip="$1"
+    local port="${2:-3000}"
+    
+    if [ -z "$new_ip" ]; then
+        echo "ERROR: No IP address provided"
+        return 1
+    fi
+    
+    echo "Updating ZTNCUI endpoint to $new_ip:$port"
+    
+    # Update configuration if it exists
+    if [ -f "$ZTNCUI_CONF" ]; then
+        # Backup configuration
+        cp "$ZTNCUI_CONF" "$ZTNCUI_CONF.bak"
+        
+        # Update HTTP_ALL_INTERFACES if needed
+        if ! grep -q "HTTP_ALL_INTERFACES" "$ZTNCUI_CONF"; then
+            echo "HTTP_ALL_INTERFACES=1" >> "$ZTNCUI_CONF"
+        fi
+        
+        # Update port if specified and different
+        if grep -q "HTTP_PORT" "$ZTNCUI_CONF"; then
+            sed -i "s/HTTP_PORT=.*/HTTP_PORT=$port/" "$ZTNCUI_CONF"
+        else
+            echo "HTTP_PORT=$port" >> "$ZTNCUI_CONF"
+        fi
+        
+        echo "Configuration updated"
+    fi
+    
+    # Update dynamic IP configuration
+    if [ -f "$DYNAMIC_IP_CONFIG" ]; then
+        sed -i "s/IP=.*/IP=$new_ip/" "$DYNAMIC_IP_CONFIG"
+        sed -i "s/LAST_UPDATE=.*/LAST_UPDATE=$(date)/" "$DYNAMIC_IP_CONFIG"
+    fi
+    
+    echo "Endpoint updated to $new_ip:$port"
+    echo "Restarting ZTNCUI service..."
+    restart_service
+}
+
 case "$1" in
     "install")
         install_ztncui
+        ;;
+    "uninstall")
+        uninstall_ztncui
         ;;
     "setup")
         setup_directories
@@ -296,24 +563,46 @@ case "$1" in
     "status")
         get_status
         ;;
+    "health-check")
+        health_check "$2"
+        ;;
     "reset-password")
         reset_password
         ;;
     "show-config")
         show_config
         ;;
+    "detect-ip")
+        detect_public_ip
+        ;;
+    "dynamic-ip")
+        configure_dynamic_ip "$2" "$3" "$4"
+        ;;
+    "update-endpoint")
+        update_endpoint "$2" "$3"
+        ;;
     *)
-        echo "Usage: $0 {install|setup|start|stop|restart|enable|disable|status|reset-password|show-config}"
+        echo "Usage: $0 {install|uninstall|setup|start|stop|restart|enable|disable|status|health-check [port]|reset-password|show-config|detect-ip|dynamic-ip {enable|disable|status} [ip] [port]|update-endpoint <ip> [port]}"
         echo ""
         echo "Commands:"
-        echo "  install        - Show installation instructions"
-        echo "  setup          - Set up directories and create initial configuration"
-        echo "  start          - Start ZTNCUI service"
-        echo "  stop           - Stop ZTNCUI service"
-        echo "  restart        - Restart ZTNCUI service"
-        echo "  enable         - Enable ZTNCUI service at boot"
-        echo "  disable        - Disable ZTNCUI service at boot"
-        echo "  status         - Show service status"
+        echo "  install            - Show installation instructions"
+        echo "  uninstall          - Remove ZTNCUI installation"
+        echo "  setup              - Set up directories and create initial configuration"
+        echo "  start              - Start ZTNCUI service"
+        echo "  stop               - Stop ZTNCUI service"
+        echo "  restart            - Restart ZTNCUI service"
+        echo "  enable             - Enable ZTNCUI service at boot"
+        echo "  disable            - Disable ZTNCUI service at boot"
+        echo "  status             - Show service status"
+        echo "  health-check [port]- Check service health on specified port (default: 3000)"
+        echo "  reset-password     - Reset admin password to default"
+        echo "  show-config        - Show current configuration"
+        echo "  detect-ip          - Detect current public IP address"
+        echo "  dynamic-ip enable [ip] [port] - Enable dynamic IP monitoring"
+        echo "  dynamic-ip disable - Disable dynamic IP monitoring"
+        echo "  dynamic-ip status  - Show dynamic IP status"
+        echo "  update-endpoint <ip> [port] - Update ZTNCUI endpoint to new IP"
+        echo "  health-check   - Perform health check on running service"
         echo "  reset-password - Reset admin password to default"
         echo "  show-config    - Display current configuration"
         exit 1

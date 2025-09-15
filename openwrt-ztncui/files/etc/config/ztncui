@@ -1,0 +1,27 @@
+# UCI Configuration for ZTNCUI
+# /etc/config/ztncui
+
+config ztncui 'main'
+	option enabled '0'
+	option port '3000'
+	option bind_address '0.0.0.0'
+	option zt_home '/var/lib/zerotier-one'
+	option zt_address 'localhost:9993'
+	option enable_https '0'
+	option https_port '3443'
+	option cert_file '/etc/ztncui/server.crt'
+	option key_file '/etc/ztncui/server.key'
+	option log_level 'info'
+	option max_networks '50'
+	option session_timeout '3600'
+
+config auth 'admin'
+	option username 'admin'
+	option password '$2b$10$rKDKKD7HYKhNHKhKxKRG9ep3rBc3rBc3rBc3rBc3rBc3rBc3rBc'
+	option enabled '1'
+
+# Network management settings
+config network_settings 'default'
+	option auto_assign_ip '1'
+	option default_route '192.168.192.0/24'
+	option dns_servers '8.8.8.8,8.8.4.4'

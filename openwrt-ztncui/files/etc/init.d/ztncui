@@ -1,0 +1,151 @@
+#!/bin/sh /etc/rc.common
+
+START=80
+STOP=10
+
+USE_PROCD=1
+PROG=/usr/bin/ztncui-server
+CONFIGFILE=/etc/config/ztncui
+
+validate_section_ztncui() {
+	uci_validate_section ztncui ztncui "${1}" \
+		'enabled:bool:0' \
+		'port:port:3000' \
+		'bind_address:host:0.0.0.0' \
+		'zt_home:string:/var/lib/zerotier-one' \
+		'zt_address:string:localhost:9993' \
+		'enable_https:bool:0' \
+		'https_port:port:3443' \
+		'cert_file:string:/etc/ztncui/server.crt' \
+		'key_file:string:/etc/ztncui/server.key' \
+		'log_level:string:info' \
+		'max_networks:uinteger:50' \
+		'session_timeout:uinteger:3600'
+}
+
+ztncui_instance() {
+	local enabled port bind_address zt_home zt_address enable_https https_port
+	local cert_file key_file log_level max_networks session_timeout
+	
+	validate_section_ztncui "${1}" || {
+		echo "validation failed"
+		return 1
+	}
+	
+	[ "$enabled" = "1" ] || return 1
+	
+	# Check if ZeroTier is running
+	if ! /usr/bin/zerotier-cli info >/dev/null 2>&1; then
+		echo "ZeroTier service is not running. Please start zerotier first."
+		return 1
+	fi
+	
+	# Create configuration directory
+	mkdir -p /etc/ztncui
+	mkdir -p /var/log/ztncui
+	
+	# Generate runtime configuration
+	cat > /etc/ztncui/runtime.conf << EOF
+port=${port}
+bind_address=${bind_address}
+zt_home=${zt_home}
+zt_address=${zt_address}
+enable_https=${enable_https}
+https_port=${https_port}
+cert_file=${cert_file}
+key_file=${key_file}
+log_level=${log_level}
+max_networks=${max_networks}
+session_timeout=${session_timeout}
+EOF
+	
+	# Start the service
+	procd_open_instance
+	procd_set_param command "$PROG"
+	procd_set_param env \
+		ZTNCUI_CONFIG="/etc/ztncui/runtime.conf" \
+		ZT_HOME="$zt_home" \
+		ZT_ADDR="$zt_address"
+	procd_set_param respawn
+	procd_set_param stdout 1
+	procd_set_param stderr 1
+	procd_set_param file /etc/config/ztncui
+	
+	# Set user and group
+	procd_set_param user root
+	procd_set_param group root
+	
+	# Network namespace (if needed)
+	# procd_set_param netdev eth0
+	
+	procd_close_instance
+}
+
+start_service() {
+	config_load ztncui
+	config_foreach ztncui_instance ztncui
+}
+
+service_triggers() {
+	procd_add_reload_trigger ztncui
+}
+
+reload_service() {
+	stop
+	start
+}
+
+status() {
+	local port
+	config_load ztncui
+	config_get port main port 3000
+	
+	if pgrep -f ztncui-server >/dev/null; then
+		echo "ZTNCUI is running (PID: $(pgrep -f ztncui-server))"
+		echo "Web interface: http://$(uci get network.lan.ipaddr 2>/dev/null || echo "router-ip"):${port}"
+		return 0
+	else
+		echo "ZTNCUI is not running"
+		return 1
+	fi
+}
+
+# Health check function
+health_check() {
+	local port bind_address
+	config_load ztncui
+	config_get port main port 3000
+	config_get bind_address main bind_address 0.0.0.0
+	
+	# Check if process is running
+	if ! pgrep -f ztncui-server >/dev/null; then
+		echo "Process not running"
+		return 1
+	fi
+	
+	# Check if port is listening
+	if ! netstat -ln | grep ":${port}" >/dev/null; then
+		echo "Port ${port} not listening"
+		return 1
+	fi
+	
+	# Try to connect to the service
+	if command -v wget >/dev/null; then
+		if wget -q --spider --timeout=5 "http://localhost:${port}/status" 2>/dev/null; then
+			echo "Service is healthy"
+			return 0
+		fi
+	elif command -v curl >/dev/null; then
+		if curl -s --max-time 5 "http://localhost:${port}/status" >/dev/null 2>&1; then
+			echo "Service is healthy"
+			return 0
+		fi
+	fi
+	
+	echo "Service not responding"
+	return 1
+}
+
+# Custom commands
+extra_command "status" "Show service status"
+extra_command "health_check" "Check service health"
