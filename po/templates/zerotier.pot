@@ -229,3 +229,419 @@ msgstr ""
 #: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/interface.js:74
 msgid "ZeroTier is an open source, cross-platform and easy to use virtual LAN."
 msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "ZeroTier Network Controller"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Manage your ZeroTier networks directly from this router. Create networks, authorize members, and configure routes."
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Controller Status"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Controller Not Available"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "The ZeroTier Controller API is not available on this device."
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "The OpenWrt zerotier package may not include controller support."
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Solutions:"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Install zerotier-controller package: "
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Build Instructions"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Use ZTNCUI (available in the ZTNCUI tab) for a full-featured web interface"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Use ZeroTier Central (my.zerotier.com) for cloud-hosted controller"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Networks"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Create Network"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Network Name"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "My Network"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Network created successfully!"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Failed to create network: %s"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Are you sure you want to delete network \"%s\" (%s)?"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Deleting Network"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Network deleted successfully!"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Failed to delete network: %s"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Edit Network"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Private Network"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Private networks require authorization for members"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Enable Broadcast"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Network updated successfully!"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Failed to update network: %s"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Loading network details..."
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Failed to load members: %s"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Network Information"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Quick Setup"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Enter a CIDR to automatically configure routes and IP pool"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Please enter a CIDR"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Routes"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Target"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Via"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Actions"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "No routes configured"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Add Route"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "IP Assignment Pools"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Start IP"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "End IP"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "No IP pools configured"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Add IP Pool"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Members"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Member ID"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Name"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Authorized"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "IP Address"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "No members in this network"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Edit IP"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Delete member %s?"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Member authorized"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Member deauthorized"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Failed to update member: %s"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Edit IP Assignments"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Enter IP addresses (one per line)"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Member IP updated"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Member deleted"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Target (CIDR)"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Via (Gateway)"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Leave empty for LAN route"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Target is required"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Routes updated"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Failed to update routes: %s"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Both start and end IP are required"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "IP pools updated"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Failed to update IP pools: %s"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Applying Configuration"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Configuration applied successfully!"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Failed to apply configuration: %s"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Private"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Broadcast"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Unnamed"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Manage"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Edit"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Delete"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "No networks found. Click \"Create Network\" to get started."
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Not Running"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "ZeroTier daemon is not running. Please start the ZeroTier service first."
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Refresh"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Failed to refresh networks: %s"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Failed to refresh members: %s"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Network: %s"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Network ID copied to clipboard"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "(LAN)"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Apply"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Creating Network"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Loading"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Saving"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Please wait..."
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Cancel"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Create"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Save"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Add"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Close"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Yes"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "No"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Running"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Node ID"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Version"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Status"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/network-controller.js
+msgid "Untitled Network"
+msgstr ""
+
+#: applications/luci-app-zerotier/root/usr/share/luci/menu.d/luci-app-zerotier.json
+msgid "ZTNCUI"
+msgstr ""

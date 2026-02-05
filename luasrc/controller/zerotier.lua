@@ -11,9 +11,10 @@ entry({"admin", "vpn", "zerotier"},firstchild(), _("ZeroTier")).dependent = fals
 
 entry({"admin", "vpn", "zerotier", "general"},cbi("zerotier/settings"), _("Base Setting"), 1)
 entry({"admin", "vpn", "zerotier", "log"},form("zerotier/info"), _("Interface Info"), 2)
-entry({"admin", "vpn", "zerotier", "controller"},cbi("zerotier/controller"), _("Controller"), 3)
-entry({"admin", "vpn", "zerotier", "moon"},cbi("zerotier/moon"), _("Moon Server"), 4)
-entry({"admin", "vpn", "zerotier", "manual"},cbi("zerotier/manual"), _("Manual Config"), 5)
+entry({"admin", "vpn", "zerotier", "networks"},view("zerotier/network-controller"), _("Networks"), 3)
+entry({"admin", "vpn", "zerotier", "controller"},cbi("zerotier/controller"), _("ZTNCUI"), 4)
+entry({"admin", "vpn", "zerotier", "moon"},cbi("zerotier/moon"), _("Moon Server"), 5)
+entry({"admin", "vpn", "zerotier", "manual"},cbi("zerotier/manual"), _("Manual Config"), 6)
 
 entry({"admin","vpn","zerotier","status"},call("act_status"))
 entry({"admin","vpn","zerotier","download_moon"},call("download_moon"))

@@ -1,0 +1,639 @@
+#!/bin/sh
+# SPDX-License-Identifier: GPL-3.0-only
+#
+# Copyright (C) 2024 LuCI-app-zerotier
+# ZeroTier Controller API rpcd handler
+#
+# Provides a lightweight interface to the ZeroTier Controller API
+# for network and member management via ubus
+
+. /usr/share/libubox/jshn.sh
+
+# Configuration
+ZT_HOME="${ZT_HOME:-/var/lib/zerotier-one}"
+ZT_ADDR="${ZT_ADDR:-localhost:9993}"
+ZT_TOKEN_FILE="$ZT_HOME/authtoken.secret"
+
+# Get authentication token
+get_auth_token() {
+    if [ -f "$ZT_TOKEN_FILE" ]; then
+        cat "$ZT_TOKEN_FILE" 2>/dev/null
+    else
+        echo ""
+    fi
+}
+
+# Make API call to ZeroTier controller
+# $1: endpoint (e.g., "status", "controller/network")
+# $2: method (GET, POST, DELETE)
+# $3: data (optional JSON body for POST)
+zt_api_call() {
+    local endpoint="$1"
+    local method="${2:-GET}"
+    local data="$3"
+    local token
+    
+    token=$(get_auth_token)
+    if [ -z "$token" ]; then
+        echo '{"error": "No authentication token available"}'
+        return 1
+    fi
+    
+    local url="http://$ZT_ADDR/$endpoint"
+    local curl_args="-s -X $method -H 'X-ZT1-Auth: $token'"
+    
+    if [ -n "$data" ]; then
+        curl_args="$curl_args -H 'Content-Type: application/json' -d '$data'"
+    fi
+    
+    # Use eval to properly handle the command
+    eval "curl $curl_args '$url'" 2>/dev/null
+}
+
+# List available methods
+list_methods() {
+    echo '{
+        "status": {},
+        "check_controller": {},
+        "list_networks": {},
+        "get_network": {"nwid": "string"},
+        "create_network": {"name": "string"},
+        "update_network": {"nwid": "string", "config": "object"},
+        "delete_network": {"nwid": "string"},
+        "list_members": {"nwid": "string"},
+        "get_member": {"nwid": "string", "mid": "string"},
+        "authorize_member": {"nwid": "string", "mid": "string", "authorized": "boolean"},
+        "update_member": {"nwid": "string", "mid": "string", "config": "object"},
+        "delete_member": {"nwid": "string", "mid": "string"},
+        "update_routes": {"nwid": "string", "routes": "array"},
+        "update_ip_pools": {"nwid": "string", "pools": "array"},
+        "easy_setup": {"nwid": "string", "cidr": "string"}
+    }'
+}
+
+# Get controller status
+cmd_status() {
+    local result
+    result=$(zt_api_call "status")
+    
+    if [ -z "$result" ] || echo "$result" | grep -q '"error"'; then
+        echo '{"running": false, "error": "ZeroTier daemon not responding"}'
+        return 1
+    fi
+    
+    # Parse and enhance the result
+    json_init
+    json_load "$result" 2>/dev/null
+    json_get_var address address
+    json_get_var online online
+    json_get_var version version
+    json_get_var clock clock
+    
+    json_init
+    json_add_boolean "running" 1
+    json_add_string "address" "$address"
+    json_add_boolean "online" "$online"
+    json_add_string "version" "$version"
+    json_add_int "clock" "${clock:-0}"
+    json_add_boolean "hasAuthToken" 1
+    json_dump
+}
+
+# Check if controller API is available
+cmd_check_controller() {
+    local token
+    local result
+    local http_code
+    
+    token=$(get_auth_token)
+    if [ -z "$token" ]; then
+        json_init
+        json_add_boolean "available" 0
+        json_add_string "reason" "ZeroTier not running or no auth token"
+        json_dump
+        return
+    fi
+    
+    # Try to access the controller/network endpoint
+    result=$(curl -s -w '\n%{http_code}' -H "X-ZT1-Auth: $token" "http://$ZT_ADDR/controller/network" 2>/dev/null)
+    http_code=$(echo "$result" | tail -1)
+    
+    if [ "$http_code" = "200" ]; then
+        json_init
+        json_add_boolean "available" 1
+        json_dump
+    else
+        json_init
+        json_add_boolean "available" 0
+        json_add_string "reason" "Controller API not available (HTTP $http_code). The OpenWrt zerotier package may not include controller support. Consider using ZTNCUI or building ZeroTier with controller enabled."
+        json_dump
+    fi
+}
+
+# List all networks
+cmd_list_networks() {
+    local network_ids
+    local result="[]"
+    
+    network_ids=$(zt_api_call "controller/network")
+    
+    if [ -z "$network_ids" ] || echo "$network_ids" | grep -q '"error"'; then
+        echo '{"networks": [], "error": "Failed to get networks"}'
+        return 1
+    fi
+    
+    # Parse the array of network IDs
+    json_init
+    json_load "$network_ids" 2>/dev/null || {
+        echo '{"networks": []}'
+        return 0
+    }
+    
+    # Build network details array
+    local networks="["
+    local first=1
+    local idx=1
+    local nwid
+    
+    while json_get_type type "$idx" && [ "$type" = "string" ]; do
+        json_get_var nwid "$idx"
+        
+        if [ -n "$nwid" ]; then
+            local net_details
+            net_details=$(zt_api_call "controller/network/$nwid")
+            
+            if [ -n "$net_details" ] && ! echo "$net_details" | grep -q '"error"'; then
+                if [ "$first" = "1" ]; then
+                    first=0
+                else
+                    networks="$networks,"
+                fi
+                networks="$networks$net_details"
+            fi
+        fi
+        
+        idx=$((idx + 1))
+    done
+    
+    networks="$networks]"
+    
+    json_init
+    json_add_string "networks" ""
+    local output="{\"networks\": $networks}"
+    echo "$output"
+}
+
+# Get single network
+cmd_get_network() {
+    local nwid="$1"
+    
+    if [ -z "$nwid" ]; then
+        echo '{"error": "Network ID required"}'
+        return 1
+    fi
+    
+    local result
+    result=$(zt_api_call "controller/network/$nwid")
+    
+    if [ -z "$result" ]; then
+        echo '{"error": "Network not found"}'
+        return 1
+    fi
+    
+    echo "$result"
+}
+
+# Create new network
+cmd_create_network() {
+    local name="${1:-Untitled Network}"
+    
+    # Get node address first
+    local status
+    status=$(zt_api_call "status")
+    
+    json_init
+    json_load "$status" 2>/dev/null
+    json_get_var address address
+    
+    if [ -z "$address" ]; then
+        echo '{"error": "Cannot get node address"}'
+        return 1
+    fi
+    
+    # Network ID is node address + 6 underscores (placeholder for random part)
+    local network_endpoint="${address}______"
+    
+    local config
+    json_init
+    json_add_string "name" "$name"
+    json_add_boolean "private" 1
+    json_add_boolean "enableBroadcast" 1
+    
+    json_add_object "v4AssignMode"
+    json_add_boolean "zt" 1
+    json_close_object
+    
+    json_add_object "v6AssignMode"  
+    json_add_boolean "zt" 0
+    json_add_boolean "6plane" 0
+    json_add_boolean "rfc4193" 0
+    json_close_object
+    
+    json_add_int "multicastLimit" 32
+    
+    config=$(json_dump)
+    
+    local result
+    result=$(zt_api_call "controller/network/$network_endpoint" "POST" "$config")
+    
+    if [ -z "$result" ] || echo "$result" | grep -q '"error"'; then
+        echo '{"error": "Failed to create network"}'
+        return 1
+    fi
+    
+    echo "$result"
+}
+
+# Update network configuration
+cmd_update_network() {
+    local nwid="$1"
+    local config="$2"
+    
+    if [ -z "$nwid" ]; then
+        echo '{"error": "Network ID required"}'
+        return 1
+    fi
+    
+    if [ -z "$config" ]; then
+        echo '{"error": "Configuration required"}'
+        return 1
+    fi
+    
+    local result
+    result=$(zt_api_call "controller/network/$nwid" "POST" "$config")
+    
+    if [ -z "$result" ]; then
+        echo '{"error": "Failed to update network"}'
+        return 1
+    fi
+    
+    echo "$result"
+}
+
+# Delete network
+cmd_delete_network() {
+    local nwid="$1"
+    
+    if [ -z "$nwid" ]; then
+        echo '{"error": "Network ID required"}'
+        return 1
+    fi
+    
+    local result
+    result=$(zt_api_call "controller/network/$nwid" "DELETE")
+    
+    echo '{"success": true, "nwid": "'"$nwid"'"}'
+}
+
+# List network members
+cmd_list_members() {
+    local nwid="$1"
+    
+    if [ -z "$nwid" ]; then
+        echo '{"error": "Network ID required"}'
+        return 1
+    fi
+    
+    local member_ids
+    member_ids=$(zt_api_call "controller/network/$nwid/member")
+    
+    if [ -z "$member_ids" ]; then
+        echo '{"members": []}'
+        return 0
+    fi
+    
+    # member_ids is an object like {"memberid": 1, ...}
+    # Get detailed info for each member
+    local members="["
+    local first=1
+    
+    # Parse the object keys
+    json_init
+    json_load "$member_ids" 2>/dev/null
+    
+    local keys
+    keys=$(json_dump | grep -o '"[a-f0-9]\{10\}"' | tr -d '"')
+    
+    for mid in $keys; do
+        local member_details
+        member_details=$(zt_api_call "controller/network/$nwid/member/$mid")
+        
+        if [ -n "$member_details" ] && ! echo "$member_details" | grep -q '"error"'; then
+            if [ "$first" = "1" ]; then
+                first=0
+            else
+                members="$members,"
+            fi
+            members="$members$member_details"
+        fi
+    done
+    
+    members="$members]"
+    echo "{\"members\": $members}"
+}
+
+# Get single member
+cmd_get_member() {
+    local nwid="$1"
+    local mid="$2"
+    
+    if [ -z "$nwid" ] || [ -z "$mid" ]; then
+        echo '{"error": "Network ID and Member ID required"}'
+        return 1
+    fi
+    
+    local result
+    result=$(zt_api_call "controller/network/$nwid/member/$mid")
+    
+    if [ -z "$result" ]; then
+        echo '{"error": "Member not found"}'
+        return 1
+    fi
+    
+    echo "$result"
+}
+
+# Authorize or deauthorize member
+cmd_authorize_member() {
+    local nwid="$1"
+    local mid="$2"
+    local authorized="$3"
+    
+    if [ -z "$nwid" ] || [ -z "$mid" ]; then
+        echo '{"error": "Network ID and Member ID required"}'
+        return 1
+    fi
+    
+    local config
+    if [ "$authorized" = "true" ] || [ "$authorized" = "1" ]; then
+        config='{"authorized": true}'
+    else
+        config='{"authorized": false}'
+    fi
+    
+    local result
+    result=$(zt_api_call "controller/network/$nwid/member/$mid" "POST" "$config")
+    
+    if [ -z "$result" ]; then
+        echo '{"error": "Failed to update member authorization"}'
+        return 1
+    fi
+    
+    echo "$result"
+}
+
+# Update member configuration
+cmd_update_member() {
+    local nwid="$1"
+    local mid="$2"
+    local config="$3"
+    
+    if [ -z "$nwid" ] || [ -z "$mid" ]; then
+        echo '{"error": "Network ID and Member ID required"}'
+        return 1
+    fi
+    
+    if [ -z "$config" ]; then
+        echo '{"error": "Configuration required"}'
+        return 1
+    fi
+    
+    local result
+    result=$(zt_api_call "controller/network/$nwid/member/$mid" "POST" "$config")
+    
+    if [ -z "$result" ]; then
+        echo '{"error": "Failed to update member"}'
+        return 1
+    fi
+    
+    echo "$result"
+}
+
+# Delete member
+cmd_delete_member() {
+    local nwid="$1"
+    local mid="$2"
+    
+    if [ -z "$nwid" ] || [ -z "$mid" ]; then
+        echo '{"error": "Network ID and Member ID required"}'
+        return 1
+    fi
+    
+    local result
+    result=$(zt_api_call "controller/network/$nwid/member/$mid" "DELETE")
+    
+    echo '{"success": true, "nwid": "'"$nwid"'", "mid": "'"$mid"'"}'
+}
+
+# Update network routes
+cmd_update_routes() {
+    local nwid="$1"
+    local routes="$2"
+    
+    if [ -z "$nwid" ]; then
+        echo '{"error": "Network ID required"}'
+        return 1
+    fi
+    
+    if [ -z "$routes" ]; then
+        routes="[]"
+    fi
+    
+    local config="{\"routes\": $routes}"
+    
+    local result
+    result=$(zt_api_call "controller/network/$nwid" "POST" "$config")
+    
+    if [ -z "$result" ]; then
+        echo '{"error": "Failed to update routes"}'
+        return 1
+    fi
+    
+    echo "$result"
+}
+
+# Update IP assignment pools
+cmd_update_ip_pools() {
+    local nwid="$1"
+    local pools="$2"
+    
+    if [ -z "$nwid" ]; then
+        echo '{"error": "Network ID required"}'
+        return 1
+    fi
+    
+    if [ -z "$pools" ]; then
+        pools="[]"
+    fi
+    
+    local config="{\"ipAssignmentPools\": $pools}"
+    
+    local result
+    result=$(zt_api_call "controller/network/$nwid" "POST" "$config")
+    
+    if [ -z "$result" ]; then
+        echo '{"error": "Failed to update IP pools"}'
+        return 1
+    fi
+    
+    echo "$result"
+}
+
+# Easy setup - configure network with CIDR
+cmd_easy_setup() {
+    local nwid="$1"
+    local cidr="$2"
+    
+    if [ -z "$nwid" ]; then
+        echo '{"error": "Network ID required"}'
+        return 1
+    fi
+    
+    if [ -z "$cidr" ]; then
+        echo '{"error": "CIDR required (e.g., 10.147.17.0/24)"}'
+        return 1
+    fi
+    
+    # Parse CIDR
+    local network_addr="${cidr%/*}"
+    local prefix="${cidr#*/}"
+    
+    # Calculate IP range based on CIDR
+    # Simple implementation for /24 networks
+    local base_octets="${network_addr%.*}"
+    local last_octet="${network_addr##*.}"
+    
+    local ip_start="${base_octets}.1"
+    local ip_end="${base_octets}.254"
+    
+    # Build configuration
+    local config
+    config=$(cat <<EOF
+{
+    "routes": [
+        {"target": "$cidr", "via": null}
+    ],
+    "ipAssignmentPools": [
+        {"ipRangeStart": "$ip_start", "ipRangeEnd": "$ip_end"}
+    ],
+    "v4AssignMode": {"zt": true}
+}
+EOF
+)
+    
+    local result
+    result=$(zt_api_call "controller/network/$nwid" "POST" "$config")
+    
+    if [ -z "$result" ]; then
+        echo '{"error": "Failed to apply easy setup"}'
+        return 1
+    fi
+    
+    echo "$result"
+}
+
+# Main entry point
+case "$1" in
+    list)
+        list_methods
+        ;;
+    call)
+        shift
+        method="$1"
+        shift
+        
+        # Parse JSON arguments if provided
+        if [ -n "$1" ]; then
+            json_init
+            json_load "$1" 2>/dev/null
+        fi
+        
+        case "$method" in
+            status)
+                cmd_status
+                ;;
+            check_controller)
+                cmd_check_controller
+                ;;
+            list_networks)
+                cmd_list_networks
+                ;;
+            get_network)
+                json_get_var nwid nwid
+                cmd_get_network "$nwid"
+                ;;
+            create_network)
+                json_get_var name name
+                cmd_create_network "$name"
+                ;;
+            update_network)
+                json_get_var nwid nwid
+                json_get_var config config
+                cmd_update_network "$nwid" "$config"
+                ;;
+            delete_network)
+                json_get_var nwid nwid
+                cmd_delete_network "$nwid"
+                ;;
+            list_members)
+                json_get_var nwid nwid
+                cmd_list_members "$nwid"
+                ;;
+            get_member)
+                json_get_var nwid nwid
+                json_get_var mid mid
+                cmd_get_member "$nwid" "$mid"
+                ;;
+            authorize_member)
+                json_get_var nwid nwid
+                json_get_var mid mid
+                json_get_var authorized authorized
+                cmd_authorize_member "$nwid" "$mid" "$authorized"
+                ;;
+            update_member)
+                json_get_var nwid nwid
+                json_get_var mid mid
+                json_get_var config config
+                cmd_update_member "$nwid" "$mid" "$config"
+                ;;
+            delete_member)
+                json_get_var nwid nwid
+                json_get_var mid mid
+                cmd_delete_member "$nwid" "$mid"
+                ;;
+            update_routes)
+                json_get_var nwid nwid
+                json_get_var routes routes
+                cmd_update_routes "$nwid" "$routes"
+                ;;
+            update_ip_pools)
+                json_get_var nwid nwid
+                json_get_var pools pools
+                cmd_update_ip_pools "$nwid" "$pools"
+                ;;
+            easy_setup)
+                json_get_var nwid nwid
+                json_get_var cidr cidr
+                cmd_easy_setup "$nwid" "$cidr"
+                ;;
+            *)
+                echo '{"error": "Unknown method"}'
+                exit 1
+                ;;
+        esac
+        ;;
+    *)
+        echo "Usage: $0 {list|call}"
+        exit 1
+        ;;
+esac

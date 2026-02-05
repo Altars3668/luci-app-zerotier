@@ -25,9 +25,17 @@
 			"path": "zerotier/interface"
 		}
 	},
-	"admin/vpn/zerotier/controller": {
-		"title": "Controller",
+	"admin/vpn/zerotier/networks": {
+		"title": "Networks",
 		"order": 3,
+		"action": {
+			"type": "view",
+			"path": "zerotier/network-controller"
+		}
+	},
+	"admin/vpn/zerotier/controller": {
+		"title": "ZTNCUI",
+		"order": 4,
 		"action": {
 			"type": "view",
 			"path": "zerotier/controller"
@@ -35,7 +43,7 @@
 	},
 	"admin/vpn/zerotier/moon": {
 		"title": "Moon Server",
-		"order": 4,
+		"order": 5,
 		"action": {
 			"type": "view",
 			"path": "zerotier/moon"
@@ -43,7 +51,7 @@
 	},
 	"admin/vpn/zerotier/manual": {
 		"title": "Manual Config",
-		"order": 5,
+		"order": 6,
 		"action": {
 			"type": "view",
 			"path": "zerotier/manual"

@@ -5,9 +5,9 @@
 include $(TOPDIR)/rules.mk
 
 LUCI_TITLE:=LuCI for Zerotier
-LUCI_DEPENDS:=+zerotier +zerotier-idtool
+LUCI_DEPENDS:=+zerotier +zerotier-idtool +curl
 LUCI_PKGARCH:=all
-LUCI_DESCRIPTION:=LuCI support for ZeroTier with Moon node management and ZTNCUI controller
+LUCI_DESCRIPTION:=LuCI support for ZeroTier with Moon node management, ZTNCUI controller and lightweight network controller
 
 include ../../luci.mk
 

@@ -383,6 +383,28 @@ msgstr "網路控制器"
 msgid "ZeroTier Network Controller"
 msgstr "ZeroTier 網路控制器"
 
+# Controller Not Available translations
+msgid "Controller Not Available"
+msgstr "控制器不可用"
+
+msgid "The ZeroTier controller API is not available. This typically means your ZeroTier package was compiled without controller support (ZT_CONTROLLER=0)."
+msgstr "ZeroTier 控制器 API 不可用。這通常意味著您的 ZeroTier 套件在編譯時未啟用控制器支援（ZT_CONTROLLER=0）。"
+
+msgid "Solutions:"
+msgstr "解決方案："
+
+msgid "Install zerotier-controller package: "
+msgstr "安裝 zerotier-controller 套件："
+
+msgid "Build Instructions"
+msgstr "構建說明"
+
+msgid "Use ZTNCUI (available in the ZTNCUI tab) for a full-featured web interface"
+msgstr "使用 ZTNCUI（在 ZTNCUI 標籤頁中）獲得全功能 Web 介面"
+
+msgid "Use ZeroTier Central (my.zerotier.com) for cloud-based network management"
+msgstr "使用 ZeroTier Central（my.zerotier.com）進行雲端網路管理"
+
 msgid "ZTNCUI provides a web-based interface for managing ZeroTier networks locally as a network controller."
 msgstr "ZTNCUI 提供基於 Web 的介面，用於在本地作為網路控制器管理 ZeroTier 網路。"
 

@@ -1,0 +1,159 @@
+name: Build ZeroTier Controller Package
+
+on:
+  workflow_dispatch:
+    inputs:
+      zerotier_version:
+        description: 'ZeroTier version'
+        required: true
+        default: '1.16.0'
+      target:
+        description: 'Target architecture'
+        required: true
+        type: choice
+        options:
+          - x86_64
+          - aarch64_cortex-a53
+          - aarch64_cortex-a72
+          - aarch64_generic
+          - arm_cortex-a7_neon-vfpv4
+          - arm_cortex-a9_vfpv3-d16
+          - mipsel_24kc
+          - mips_24kc
+        default: 'x86_64'
+  push:
+    paths:
+      - 'packages/zerotier-controller/**'
+      - '.github/workflows/build-zerotier-controller.yml'
+  pull_request:
+    paths:
+      - 'packages/zerotier-controller/**'
+
+env:
+  ZT_VERSION: ${{ github.event.inputs.zerotier_version || '1.16.0' }}
+  TARGET: ${{ github.event.inputs.target || 'x86_64' }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup build environment
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential ccache ecj fastjar file g++ gawk \
+          gettext git java-propose-classpath libelf-dev libncurses5-dev \
+          libncursesw5-dev libssl-dev python3 python3-distutils python3-setuptools \
+          unzip wget rsync subversion swig time xsltproc zlib1g-dev
+
+    - name: Download ImmortalWrt SDK
+      run: |
+        case "${{ env.TARGET }}" in
+          x86_64)
+            SDK_URL="https://downloads.immortalwrt.org/snapshots/targets/x86/64/immortalwrt-sdk-x86-64_gcc-14.2.0_musl.Linux-x86_64.tar.zst"
+            ;;
+          aarch64_cortex-a53)
+            SDK_URL="https://downloads.immortalwrt.org/snapshots/targets/rockchip/armv8/immortalwrt-sdk-rockchip-armv8_gcc-14.2.0_musl.Linux-x86_64.tar.zst"
+            ;;
+          aarch64_cortex-a72)
+            SDK_URL="https://downloads.immortalwrt.org/snapshots/targets/bcm27xx/bcm2711/immortalwrt-sdk-bcm27xx-bcm2711_gcc-14.2.0_musl.Linux-x86_64.tar.zst"
+            ;;
+          aarch64_generic)
+            SDK_URL="https://downloads.immortalwrt.org/snapshots/targets/armsr/armv8/immortalwrt-sdk-armsr-armv8_gcc-14.2.0_musl.Linux-x86_64.tar.zst"
+            ;;
+          arm_cortex-a7_neon-vfpv4)
+            SDK_URL="https://downloads.immortalwrt.org/snapshots/targets/sunxi/cortexa7/immortalwrt-sdk-sunxi-cortexa7_gcc-14.2.0_musl_eabi.Linux-x86_64.tar.zst"
+            ;;
+          mipsel_24kc)
+            SDK_URL="https://downloads.immortalwrt.org/snapshots/targets/ramips/mt7621/immortalwrt-sdk-ramips-mt7621_gcc-14.2.0_musl.Linux-x86_64.tar.zst"
+            ;;
+          *)
+            echo "Unsupported target: ${{ env.TARGET }}"
+            exit 1
+            ;;
+        esac
+        
+        wget -q "$SDK_URL" -O sdk.tar.zst
+        sudo apt-get install -y zstd
+        mkdir sdk
+        tar -I zstd -xf sdk.tar.zst -C sdk --strip-components=1
+
+    - name: Prepare package
+      run: |
+        cd sdk
+        
+        # Update package version
+        sed -i "s/PKG_VERSION:=.*/PKG_VERSION:=${{ env.ZT_VERSION }}/" ../packages/zerotier-controller/Makefile
+        sed -i "s/PKG_HASH:=.*/PKG_HASH:=skip/" ../packages/zerotier-controller/Makefile
+        
+        # Copy package
+        mkdir -p package/zerotier-controller
+        cp -r ../packages/zerotier-controller/* package/zerotier-controller/
+        
+        # Update feeds
+        ./scripts/feeds update -a
+        ./scripts/feeds install libstdcpp libpthread libminiupnpc libnatpmp libsodium
+
+    - name: Build package
+      run: |
+        cd sdk
+        make defconfig
+        make package/zerotier-controller/compile V=s -j$(nproc)
+
+    - name: Collect artifacts
+      run: |
+        mkdir -p artifacts
+        find sdk/bin -name "zerotier-controller*.ipk" -exec cp {} artifacts/ \;
+        ls -la artifacts/
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: zerotier-controller-${{ env.TARGET }}-${{ env.ZT_VERSION }}
+        path: artifacts/
+        retention-days: 30
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    
+    steps:
+    - name: Download artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: artifacts
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: zerotier-controller-${{ env.ZT_VERSION }}-${{ env.TARGET }}
+        name: ZeroTier Controller ${{ env.ZT_VERSION }} (${{ env.TARGET }})
+        body: |
+          ZeroTier with built-in controller support for ${{ env.TARGET }}.
+          
+          ## Installation
+          ```bash
+          # Remove existing zerotier (conflicts)
+          opkg remove zerotier
+          
+          # Install controller version
+          opkg install zerotier-controller_*.ipk
+          
+          # Restart service
+          /etc/init.d/zerotier restart
+          ```
+          
+          ## Verify
+          ```bash
+          TOKEN=$(cat /var/lib/zerotier-one/authtoken.secret)
+          curl -s -H "X-ZT1-Auth: $TOKEN" http://localhost:9993/controller
+          ```
+        files: artifacts/**/*
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

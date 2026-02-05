@@ -6,19 +6,38 @@
 			"ubus": {
 				"system": [ "info" ],
 				"network": [ "reload" ],
-				"luci": [ "getInitList", "setInitAction" ]
+				"luci": [ "getInitList", "setInitAction" ],
+				"zerotier-controller": [
+					"status",
+					"list_networks",
+					"get_network",
+					"list_members",
+					"get_member"
+				]
 			},
 			"file": {
 				"/etc/config/zero/local.conf": [ "read" ],
 				"/tmp/zero.info": [ "read" ],
 				"/var/lib/zerotier-one/*.moon": [ "read" ],
-				"/var/lib/zerotier-one/moon.json": [ "read" ]
+				"/var/lib/zerotier-one/moon.json": [ "read" ],
+				"/var/lib/zerotier-one/authtoken.secret": [ "read" ]
 			}
 		},
 		"write": {
 			"uci": [ "zerotier" ],
 			"ubus": {
-				"luci": [ "setInitAction" ]
+				"luci": [ "setInitAction" ],
+				"zerotier-controller": [
+					"create_network",
+					"update_network",
+					"delete_network",
+					"authorize_member",
+					"update_member",
+					"delete_member",
+					"update_routes",
+					"update_ip_pools",
+					"easy_setup"
+				]
 			},
 			"file": {
 				"/etc/config/zero/local.conf": [ "write" ],

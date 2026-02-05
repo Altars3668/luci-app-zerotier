@@ -238,7 +238,316 @@ msgstr "ZeroTier 管理中心"
 msgid "ZeroTier is an open source, cross-platform and easy to use virtual LAN."
 msgstr "ZeroTier 是一个开源、跨平台且易于使用的虚拟局域网 VPN。"
 
-# Moon Manager specific translations
+# Lightweight Network Controller translations
+msgid "ZeroTier Network Controller"
+msgstr "ZeroTier 网络控制器"
+
+msgid "Manage your ZeroTier networks directly from this router. Create networks, authorize members, and configure routes."
+msgstr "直接从此路由器管理您的 ZeroTier 网络。创建网络、授权成员并配置路由。"
+
+msgid "Controller Status"
+msgstr "控制器状态"
+
+msgid "Networks"
+msgstr "网络"
+
+msgid "Create Network"
+msgstr "创建网络"
+
+msgid "Network Name"
+msgstr "网络名称"
+
+msgid "My Network"
+msgstr "我的网络"
+
+msgid "Network created successfully!"
+msgstr "网络创建成功！"
+
+msgid "Failed to create network: %s"
+msgstr "创建网络失败：%s"
+
+msgid "Are you sure you want to delete network \"%s\" (%s)?"
+msgstr "您确定要删除网络 \"%s\" (%s) 吗？"
+
+msgid "Deleting Network"
+msgstr "正在删除网络"
+
+msgid "Network deleted successfully!"
+msgstr "网络删除成功！"
+
+msgid "Failed to delete network: %s"
+msgstr "删除网络失败：%s"
+
+msgid "Edit Network"
+msgstr "编辑网络"
+
+msgid "Private Network"
+msgstr "私有网络"
+
+msgid "Private networks require authorization for members"
+msgstr "私有网络需要对成员进行授权"
+
+msgid "Enable Broadcast"
+msgstr "启用广播"
+
+msgid "Network updated successfully!"
+msgstr "网络更新成功！"
+
+msgid "Failed to update network: %s"
+msgstr "更新网络失败：%s"
+
+msgid "Loading network details..."
+msgstr "正在加载网络详情..."
+
+msgid "Failed to load members: %s"
+msgstr "加载成员失败：%s"
+
+msgid "Network Information"
+msgstr "网络信息"
+
+msgid "Quick Setup"
+msgstr "快速设置"
+
+msgid "Enter a CIDR to automatically configure routes and IP pool"
+msgstr "输入 CIDR 以自动配置路由和 IP 池"
+
+msgid "Please enter a CIDR"
+msgstr "请输入 CIDR"
+
+msgid "Routes"
+msgstr "路由"
+
+msgid "Target"
+msgstr "目标"
+
+msgid "Via"
+msgstr "网关"
+
+msgid "Actions"
+msgstr "操作"
+
+msgid "No routes configured"
+msgstr "未配置路由"
+
+msgid "Add Route"
+msgstr "添加路由"
+
+msgid "IP Assignment Pools"
+msgstr "IP 分配池"
+
+msgid "Start IP"
+msgstr "起始 IP"
+
+msgid "End IP"
+msgstr "结束 IP"
+
+msgid "No IP pools configured"
+msgstr "未配置 IP 池"
+
+msgid "Add IP Pool"
+msgstr "添加 IP 池"
+
+msgid "Members"
+msgstr "成员"
+
+msgid "Member ID"
+msgstr "成员 ID"
+
+msgid "Name"
+msgstr "名称"
+
+msgid "Authorized"
+msgstr "已授权"
+
+msgid "IP Address"
+msgstr "IP 地址"
+
+msgid "No members in this network"
+msgstr "此网络中没有成员"
+
+msgid "Edit IP"
+msgstr "编辑 IP"
+
+msgid "Delete member %s?"
+msgstr "删除成员 %s？"
+
+msgid "Member authorized"
+msgstr "成员已授权"
+
+msgid "Member deauthorized"
+msgstr "成员已取消授权"
+
+msgid "Failed to update member: %s"
+msgstr "更新成员失败：%s"
+
+msgid "Edit IP Assignments"
+msgstr "编辑 IP 分配"
+
+msgid "Enter IP addresses (one per line)"
+msgstr "输入 IP 地址（每行一个）"
+
+msgid "Member IP updated"
+msgstr "成员 IP 已更新"
+
+msgid "Member deleted"
+msgstr "成员已删除"
+
+msgid "Target (CIDR)"
+msgstr "目标 (CIDR)"
+
+msgid "Via (Gateway)"
+msgstr "网关"
+
+msgid "Leave empty for LAN route"
+msgstr "留空表示 LAN 路由"
+
+msgid "Target is required"
+msgstr "目标是必需的"
+
+msgid "Routes updated"
+msgstr "路由已更新"
+
+msgid "Failed to update routes: %s"
+msgstr "更新路由失败：%s"
+
+msgid "Both start and end IP are required"
+msgstr "起始和结束 IP 都是必需的"
+
+msgid "IP pools updated"
+msgstr "IP 池已更新"
+
+msgid "Failed to update IP pools: %s"
+msgstr "更新 IP 池失败：%s"
+
+msgid "Applying Configuration"
+msgstr "正在应用配置"
+
+msgid "Configuration applied successfully!"
+msgstr "配置应用成功！"
+
+msgid "Failed to apply configuration: %s"
+msgstr "应用配置失败：%s"
+
+msgid "Private"
+msgstr "私有"
+
+msgid "Broadcast"
+msgstr "广播"
+
+msgid "Unnamed"
+msgstr "未命名"
+
+msgid "Manage"
+msgstr "管理"
+
+msgid "Edit"
+msgstr "编辑"
+
+msgid "Delete"
+msgstr "删除"
+
+msgid "No networks found. Click \"Create Network\" to get started."
+msgstr "未找到网络。点击"创建网络"开始。"
+
+msgid "Not Running"
+msgstr "未运行"
+
+msgid "ZeroTier daemon is not running. Please start the ZeroTier service first."
+msgstr "ZeroTier 守护进程未运行。请先启动 ZeroTier 服务。"
+
+msgid "Refresh"
+msgstr "刷新"
+
+msgid "Failed to refresh networks: %s"
+msgstr "刷新网络失败：%s"
+
+msgid "Failed to refresh members: %s"
+msgstr "刷新成员失败：%s"
+
+msgid "Network: %s"
+msgstr "网络：%s"
+
+msgid "Network ID copied to clipboard"
+msgstr "网络 ID 已复制到剪贴板"
+
+msgid "(LAN)"
+msgstr "(局域网)"
+
+msgid "Apply"
+msgstr "应用"
+
+msgid "Creating Network"
+msgstr "正在创建网络"
+
+msgid "Loading"
+msgstr "正在加载"
+
+msgid "Saving"
+msgstr "正在保存"
+
+msgid "Please wait..."
+msgstr "请稍候..."
+
+msgid "Cancel"
+msgstr "取消"
+
+msgid "Create"
+msgstr "创建"
+
+msgid "Save"
+msgstr "保存"
+
+msgid "Add"
+msgstr "添加"
+
+msgid "Close"
+msgstr "关闭"
+
+msgid "Yes"
+msgstr "是"
+
+msgid "No"
+msgstr "否"
+
+msgid "Running"
+msgstr "运行中"
+
+msgid "Node ID"
+msgstr "节点 ID"
+
+msgid "Version"
+msgstr "版本"
+
+msgid "Status"
+msgstr "状态"
+
+msgid "Untitled Network"
+msgstr "未命名网络"
+
+# Controller Not Available translations
+msgid "Controller Not Available"
+msgstr "控制器不可用"
+
+msgid "The ZeroTier controller API is not available. This typically means your ZeroTier package was compiled without controller support (ZT_CONTROLLER=0)."
+msgstr "ZeroTier 控制器 API 不可用。这通常意味着您的 ZeroTier 包在编译时未启用控制器支持（ZT_CONTROLLER=0）。"
+
+msgid "Solutions:"
+msgstr "解决方案："
+
+msgid "Install zerotier-controller package: "
+msgstr "安装 zerotier-controller 包："
+
+msgid "Build Instructions"
+msgstr "构建说明"
+
+msgid "Use ZTNCUI (available in the ZTNCUI tab) for a full-featured web interface"
+msgstr "使用 ZTNCUI（在 ZTNCUI 标签页中）获得全功能 Web 界面"
+
+msgid "Use ZeroTier Central (my.zerotier.com) for cloud-based network management"
+msgstr "使用 ZeroTier Central（my.zerotier.com）进行云端网络管理"
+
+msgid "ZTNCUI"
+msgstr "ZTNCUI"
 msgid "Moon Manager"
 msgstr "Moon 节点管理"
 

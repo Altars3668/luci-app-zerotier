@@ -27,6 +27,15 @@ Enhanced LuCI application for ZeroTier with comprehensive Moon node management a
 - 🎛️ **One-click Setup**: Automated Docker installation and configuration
 - 🎛️ **Service Management**: Start, stop, restart with intelligent status detection
 
+### 🖥️ Lightweight Network Controller (NEW!)
+- 🖥️ **Built-in Controller UI**: Manage ZeroTier networks directly from LuCI without external tools
+- 🖥️ **Network Management**: Create, edit, and delete networks with intuitive interface
+- 🖥️ **Member Authorization**: Authorize/deauthorize members and manage IP assignments
+- 🖥️ **Route Configuration**: Add and remove network routes with visual editor
+- 🖥️ **IP Pool Management**: Configure IP assignment pools for auto-assignment
+- 🖥️ **Quick Setup Wizard**: One-click CIDR configuration for routes and IP pools
+- 🖥️ **No External Dependencies**: Works with just curl, no Node.js or Docker required
+
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -112,6 +121,19 @@ Download from [ZTNCUI Releases](https://github.com/key-networks/ztncui/releases)
 4. Verify connection in the connected moons list
 
 ### Advanced Network Configuration
+
+#### Lightweight Network Controller
+1. Navigate to **ZeroTier** → **Networks**
+2. Click **Create Network** to create a new network
+3. In the network row, click the ⚙️ icon for **Quick Setup**:
+   - Enter a CIDR (e.g., `10.147.20.0/24`)
+   - Automatically configures routes and IP assignment pools
+4. Click member icons to manage members:
+   - ✓ Authorize members to allow network access
+   - Assign static IPs or leave for auto-assignment
+5. Use **Routes** and **IP Pools** buttons for advanced configuration
+
+> **Note:** The lightweight controller requires the local ZeroTier service running with controller enabled. No external ZTNCUI or Docker required.
 
 #### Firewall Integration
 - **Input Rules**: Control access to ZeroTier service
