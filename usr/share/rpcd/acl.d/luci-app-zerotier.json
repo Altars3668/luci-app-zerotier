@@ -1,0 +1,29 @@
+{
+	"luci-app-zerotier": {
+		"description": "Grant access to ZeroTier configuration",
+		"read": {
+			"uci": [ "zerotier" ],
+			"ubus": {
+				"system": [ "info" ],
+				"network": [ "reload" ],
+				"luci": [ "getInitList", "setInitAction" ]
+			},
+			"file": {
+				"/etc/config/zero/local.conf": [ "read" ],
+				"/tmp/zero.info": [ "read" ],
+				"/var/lib/zerotier-one/*.moon": [ "read" ],
+				"/var/lib/zerotier-one/moon.json": [ "read" ]
+			}
+		},
+		"write": {
+			"uci": [ "zerotier" ],
+			"ubus": {
+				"luci": [ "setInitAction" ]
+			},
+			"file": {
+				"/etc/config/zero/local.conf": [ "write" ],
+				"/var/lib/zerotier-one/moon.json": [ "write" ]
+			}
+		}
+	}
+}

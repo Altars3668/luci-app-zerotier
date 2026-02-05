@@ -1,0 +1,100 @@
+#!/bin/sh
+
+# ZeroTier ztncui Helper Script
+# This script provides helper functions for ztncui integration
+
+ZTNCUI_CONFIG="/etc/config/zerotier"
+
+# Get controller type from UCI
+get_controller_type() {
+    uci -q get zerotier.sample_config.controller_type 2>/dev/null || echo "official"
+}
+
+# Get ztncui URL from UCI
+get_ztncui_url() {
+    uci -q get zerotier.sample_config.ztncui_url 2>/dev/null || echo ""
+}
+
+# Get ztncui API token from UCI
+get_ztncui_token() {
+    uci -q get zerotier.sample_config.ztncui_token 2>/dev/null || echo ""
+}
+
+# Test ztncui connectivity
+test_ztncui_connection() {
+    local url="$1"
+    if [ -n "$url" ]; then
+        local http_code=$(curl -s -o /dev/null -w '%{http_code}' --connect-timeout 5 "$url" 2>/dev/null)
+        case "$http_code" in
+            200|302|301)
+                echo "success"
+                return 0
+                ;;
+            *)
+                echo "failed"
+                return 1
+                ;;
+        esac
+    else
+        echo "no_url"
+        return 1
+    fi
+}
+
+# Get network list from ztncui (if available)
+get_ztncui_networks() {
+    local url="$1"
+    local token="$2"
+    
+    if [ -n "$url" ] && [ -n "$token" ]; then
+        curl -s -H "Authorization: Bearer $token" "$url/api/networks" 2>/dev/null | \
+        grep -o '"nwid":"[^"]*"' | cut -d'"' -f4
+    fi
+}
+
+# Join network via ztncui API (if available)
+join_ztncui_network() {
+    local url="$1"
+    local token="$2"
+    local network_id="$3"
+    local node_id="$4"
+    
+    if [ -n "$url" ] && [ -n "$token" ] && [ -n "$network_id" ] && [ -n "$node_id" ]; then
+        curl -s -X POST \
+             -H "Authorization: Bearer $token" \
+             -H "Content-Type: application/json" \
+             -d "{\"nodeId\":\"$node_id\",\"authorized\":true}" \
+             "$url/api/network/$network_id/member" 2>/dev/null
+    fi
+}
+
+# Get ZeroTier node ID
+get_node_id() {
+    zerotier-cli info 2>/dev/null | awk '{print $3}'
+}
+
+# Main command handler
+case "$1" in
+    "get_controller_type")
+        get_controller_type
+        ;;
+    "get_ztncui_url")
+        get_ztncui_url
+        ;;
+    "test_connection")
+        test_ztncui_connection "$2"
+        ;;
+    "get_networks")
+        get_ztncui_networks "$2" "$3"
+        ;;
+    "join_network")
+        join_ztncui_network "$2" "$3" "$4" "$5"
+        ;;
+    "get_node_id")
+        get_node_id
+        ;;
+    *)
+        echo "Usage: $0 {get_controller_type|get_ztncui_url|test_connection|get_networks|join_network|get_node_id}"
+        exit 1
+        ;;
+esac

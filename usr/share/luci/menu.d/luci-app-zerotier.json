@@ -1,0 +1,52 @@
+{
+	"admin/vpn/zerotier": {
+		"title": "ZeroTier",
+		"order": 45,
+		"action": {
+			"type": "firstchild"
+		},
+		"depends": {
+			"uci": { "zerotier": true }
+		}
+	},
+	"admin/vpn/zerotier/config": {
+		"title": "Base Setting",
+		"order": 1,
+		"action": {
+			"type": "view",
+			"path": "zerotier/config"
+		}
+	},
+	"admin/vpn/zerotier/interface": {
+		"title": "Interface Info", 
+		"order": 2,
+		"action": {
+			"type": "view",
+			"path": "zerotier/interface"
+		}
+	},
+	"admin/vpn/zerotier/controller": {
+		"title": "Controller",
+		"order": 3,
+		"action": {
+			"type": "view",
+			"path": "zerotier/controller"
+		}
+	},
+	"admin/vpn/zerotier/moon": {
+		"title": "Moon Server",
+		"order": 4,
+		"action": {
+			"type": "view",
+			"path": "zerotier/moon"
+		}
+	},
+	"admin/vpn/zerotier/manual": {
+		"title": "Manual Config",
+		"order": 5,
+		"action": {
+			"type": "view",
+			"path": "zerotier/manual"
+		}
+	}
+}

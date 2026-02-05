@@ -1,0 +1,319 @@
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Gtranslator 2.91.7\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+msgid "Zerotier is an open source, cross-platform and easy to use virtual LAN"
+msgstr "Zerotier是一个开源，跨平台，而且适合内网穿透互联的傻瓜配置虚拟 VPN LAN"
+
+msgid "Auto NAT Clients"
+msgstr "自动允许客户端NAT"
+
+msgid "Allow zerotier clients access your LAN network"
+msgstr "允许Zerotier的拨入客户端访问路由器LAN资源（需要在 Zerotier管理页面设定到LAN网段的路由表）"
+
+msgid "Create or manage your zerotier network, and auth clients who could access"
+msgstr "点击跳转到Zerotier官网管理平台，新建或者管理网络，并允许客户端接入访问你私人网路（新接入的节点默认不允许访问）"
+
+msgid "Interface Info"
+msgstr "接口信息"
+
+msgid "Zerotier access control"
+msgstr "Zerotier 准入控制"
+
+msgid "Manual Config"
+msgstr "手动设置"
+
+msgid "Moon Server"
+msgstr "Moon 服务器"
+
+msgid "Configure ZeroTier Moon server to provide relay service for your network"
+msgstr "配置 ZeroTier Moon 服务器为您的网络提供中继服务"
+
+msgid "Moon Server Configuration"
+msgstr "Moon 服务器配置"
+
+msgid "Enable Moon Server"
+msgstr "启用 Moon 服务器"
+
+msgid "Enable this device as a ZeroTier Moon server"
+msgstr "将此设备设置为 ZeroTier Moon 服务器"
+
+msgid "Moon Server Port"
+msgstr "Moon 服务器端口"
+
+msgid "Port for Moon server (default: 9993)"
+msgstr "Moon 服务器端口（默认：9993）"
+
+msgid "External IP Address"
+msgstr "外部 IP 地址"
+
+msgid "External IP address for Moon server (leave empty for auto-detection)"
+msgstr "Moon 服务器的外部 IP 地址（留空自动检测）"
+
+msgid "Generate Moon Config"
+msgstr "生成 Moon 配置"
+
+msgid "Generate"
+msgstr "生成"
+
+msgid "Generate Moon configuration file"
+msgstr "生成 Moon 配置文件"
+
+msgid "Generate Moon configuration file based on current settings"
+msgstr "基于当前设置生成 Moon 配置文件"
+
+msgid "Could not detect external IP address. Please set it manually."
+msgstr "无法检测外部 IP 地址，请手动设置。"
+
+msgid "Moon configuration generated successfully! Moon ID: "
+msgstr "Moon 配置生成成功！Moon ID："
+
+msgid "Moon configuration generated successfully!"
+msgstr "Moon 配置生成成功！"
+
+msgid "Moon Identity"
+msgstr "Moon 身份标识"
+
+msgid "Moon server identity (share this with clients)"
+msgstr "Moon 服务器身份标识（分享给客户端）"
+
+msgid "Download Moon File"
+msgstr "下载 Moon 文件"
+
+msgid "Download the moon file to distribute to clients"
+msgstr "下载 moon 文件分发给客户端"
+
+msgid "No moon file generated yet"
+msgstr "尚未生成 moon 文件"
+
+msgid "Client Configuration"
+msgstr "客户端配置"
+
+msgid "Moon ID"
+msgstr "Moon ID"
+
+msgid "Enter Moon ID to connect to a Moon server"
+msgstr "输入 Moon ID 连接到 Moon 服务器"
+
+msgid "Add Moon"
+msgstr "添加 Moon"
+
+msgid "Add"
+msgstr "添加"
+
+msgid "Moon added successfully!"
+msgstr "Moon 添加成功！"
+
+msgid "Current Moons"
+msgstr "当前 Moon 列表"
+
+msgid "Currently connected moon servers"
+msgstr "当前连接的 moon 服务器"
+
+msgid "No moons connected"
+msgstr "没有连接的 moon"
+
+msgid "Network Controller URL"
+msgstr "网络控制器 URL"
+
+msgid "ZeroTier network controller URL (use custom ztncui URL if available)"
+msgstr "ZeroTier 网络控制器 URL（如有自定义 ztncui 服务器请使用自定义 URL）"
+
+msgid "Use Custom Controller"
+msgstr "使用自定义控制器"
+
+msgid "Enable to use custom ztncui controller instead of official ZeroTier controller"
+msgstr "启用以使用自定义 ztncui 控制器而非官方 ZeroTier 控制器"
+
+msgid "Open ZeroTier network controller to create or manage networks"
+msgstr "打开 ZeroTier 网络控制器以创建或管理网络"
+
+msgid "Controller"
+msgstr "控制器"
+
+msgid "ZeroTier Network Controller"
+msgstr "ZeroTier 网络控制器"
+
+msgid "Configure ZeroTier network controller settings for ztncui or official controller"
+msgstr "配置 ZeroTier 网络控制器设置，支持 ztncui 或官方控制器"
+
+msgid "Controller Configuration"
+msgstr "控制器配置"
+
+msgid "Controller Type"
+msgstr "控制器类型"
+
+msgid "Official ZeroTier Controller"
+msgstr "官方 ZeroTier 控制器"
+
+msgid "Custom ztncui Controller"
+msgstr "自定义 ztncui 控制器"
+
+msgid "Select the type of ZeroTier network controller to use"
+msgstr "选择要使用的 ZeroTier 网络控制器类型"
+
+msgid "Official Controller Info"
+msgstr "官方控制器信息"
+
+msgid "Using official ZeroTier controller at my.zerotier.com - free for up to 25 devices"
+msgstr "使用 my.zerotier.com 的官方 ZeroTier 控制器 - 最多 25 个设备免费"
+
+msgid "ztncui Server URL"
+msgstr "ztncui 服务器 URL"
+
+msgid "URL of your ztncui server (e.g., http://192.168.1.100:3000)"
+msgstr "您的 ztncui 服务器 URL（例如：http://192.168.1.100:3000）"
+
+msgid "ztncui API Token"
+msgstr "ztncui API 令牌"
+
+msgid "API token for ztncui authentication (optional)"
+msgstr "用于 ztncui 身份验证的 API 令牌（可选）"
+
+msgid "Test Connection"
+msgstr "测试连接"
+
+msgid "Test"
+msgstr "测试"
+
+msgid "Test connection to the selected controller"
+msgstr "测试到所选控制器的连接"
+
+msgid "Connection test successful!"
+msgstr "连接测试成功！"
+
+msgid "Connection test failed. Please check the URL and network connectivity."
+msgstr "连接测试失败。请检查 URL 和网络连接。"
+
+msgid "Controller Access"
+msgstr "控制器访问"
+
+msgid "Access Controller"
+msgstr "访问控制器"
+
+msgid "Open Controller"
+msgstr "打开控制器"
+
+msgid "Network Management"
+msgstr "网络管理"
+
+msgid "Network Creation Helper"
+msgstr "网络创建助手"
+
+msgid "For ztncui: Create networks through the web interface, then join them using Network ID in Base Settings"
+msgstr "对于 ztncui：通过 Web 界面创建网络，然后在基本设置中使用网络 ID 加入网络"
+
+msgid "Steps to create a network:"
+msgstr "创建网络的步骤："
+
+msgid "Open ztncui controller"
+msgstr "打开 ztncui 控制器"
+
+msgid "Click 'Add Network' to create a new network"
+msgstr "点击"添加网络"创建新网络"
+
+msgid "Configure network settings (IP range, routes, etc.)"
+msgstr "配置网络设置（IP 范围、路由等）"
+
+msgid "Copy the Network ID"
+msgstr "复制网络 ID"
+
+msgid "Add the Network ID in Base Settings tab"
+msgstr "在基本设置选项卡中添加网络 ID"
+
+msgid "Authorize this device in ztncui controller"
+msgstr "在 ztncui 控制器中授权此设备"
+
+msgid "Visit my.zerotier.com and sign up/login"
+msgstr "访问 my.zerotier.com 并注册/登录"
+
+msgid "Click 'Create A Network'"
+msgstr "点击"创建网络""
+
+msgid "Configure network settings"
+msgstr "配置网络设置"
+
+msgid "Authorize this device in ZeroTier Central"
+msgstr "在 ZeroTier Central 中授权此设备"
+
+msgid "ztncui Installation Guide"
+msgstr "ztncui 安装指南"
+
+msgid "How to Install ztncui"
+msgstr "如何安装 ztncui"
+
+msgid "ztncui is a web-based network controller for ZeroTier that you can self-host"
+msgstr "ztncui 是一个可以自托管的基于 Web 的 ZeroTier 网络控制器"
+
+msgid "Docker Installation (Recommended)"
+msgstr "Docker 安装（推荐）"
+
+msgid "Pull and run ztncui container"
+msgstr "拉取并运行 ztncui 容器"
+
+msgid "Access ztncui at http://your-server-ip:3000"
+msgstr "通过 http://你的服务器IP:3000 访问 ztncui"
+
+msgid "Default credentials: admin/password"
+msgstr "默认凭据：admin/password"
+
+msgid "Manual Installation"
+msgstr "手动安装"
+
+msgid "Install Node.js and npm"
+msgstr "安装 Node.js 和 npm"
+
+msgid "Install ztncui"
+msgstr "安装 ztncui"
+
+msgid "Start ztncui service"
+msgstr "启动 ztncui 服务"
+
+msgid "Important Notes"
+msgstr "重要说明"
+
+msgid "ztncui requires ZeroTier One to be installed on the same machine"
+msgstr "ztncui 需要在同一台机器上安装 ZeroTier One"
+
+msgid "The server running ztncui will become your network controller"
+msgstr "运行 ztncui 的服务器将成为您的网络控制器"
+
+msgid "Make sure to secure your ztncui installation with proper authentication"
+msgstr "确保使用适当的身份验证保护您的 ztncui 安装"
+
+msgid "Backup your ztncui data directory regularly"
+msgstr "定期备份您的 ztncui 数据目录"
+
+msgid "This Device Node ID"
+msgstr "本设备节点 ID"
+
+msgid "ZeroTier service not running"
+msgstr "ZeroTier 服务未运行"
+
+msgid "This is your device's ZeroTier node ID - you'll need this when authorizing in the controller"
+msgstr "这是您设备的 ZeroTier 节点 ID - 在控制器中授权时需要用到"
+
+msgid "Quick Join Network"
+msgstr "快速加入网络"
+
+msgid "Enter a network ID to quickly join (will be added to the network list)"
+msgstr "输入网络 ID 以快速加入（将添加到网络列表中）"
+
+msgid "Join Network"
+msgstr "加入网络"
+
+msgid "Join"
+msgstr "加入"
+
+msgid "Network joined successfully! Please authorize this device in your controller."
+msgstr "网络加入成功！请在您的控制器中授权此设备。"
+
+msgid "This network is already in your network list."
+msgstr "此网络已在您的网络列表中。"
+
+msgid "Quick guide for creating and managing networks"
+msgstr "创建和管理网络的快速指南"
