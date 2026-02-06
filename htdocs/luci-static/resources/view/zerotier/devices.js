@@ -3,8 +3,9 @@
  * Copyright (C) 2024 AltarsCN
  * ZeroTier LAN Device Gateway Management
  *
- * Allow selected LAN devices to access ZeroTier networks
- * through the router as a gateway (no ZT client needed on devices).
+ * Allow selected LAN devices to access ZeroTier networks through the router.
+ * Supports 1:1 NAT mapping: each device gets its own ZeroTier virtual IP,
+ * enabling bidirectional access without installing ZT client on devices.
  */
 
 'use strict';
@@ -12,13 +13,11 @@
 'require ui';
 'require uci';
 'require view';
-'require poll';
 
-// Parse /tmp/dhcp.leases: "timestamp mac ip hostname clientid"
+// Parse /tmp/dhcp.leases
 function parseDHCPLeases(res) {
 	var leases = [];
 	if (!res || res.code !== 0 || !res.stdout) return leases;
-
 	res.stdout.trim().split('\n').forEach(function(line) {
 		var p = line.trim().split(/\s+/);
 		if (p.length >= 4) {
@@ -37,16 +36,12 @@ function parseDHCPLeases(res) {
 function parseARP(res) {
 	var entries = {};
 	if (!res || res.code !== 0 || !res.stdout) return entries;
-
 	res.stdout.trim().split('\n').forEach(function(line, idx) {
-		if (idx === 0) return; // skip header
+		if (idx === 0) return;
 		var p = line.trim().split(/\s+/);
-		// IP HWtype Flags HWaddress Mask Device
 		if (p.length >= 6 && p[2] !== '0x0' && p[3] !== '00:00:00:00:00:00') {
 			entries[p[3].toLowerCase()] = {
-				ip: p[0],
-				mac: p[3].toLowerCase(),
-				device: p[5]
+				ip: p[0], mac: p[3].toLowerCase(), device: p[5]
 			};
 		}
 	});
@@ -57,23 +52,34 @@ function parseARP(res) {
 function parseZTNetworks(res) {
 	var networks = [];
 	if (!res || res.code !== 0 || !res.stdout) return networks;
-
 	res.stdout.trim().split('\n').forEach(function(line) {
 		if (line.indexOf('200 listnetworks') === 0 && line.indexOf('<nwid>') < 0) {
 			var p = line.split(/\s+/);
-			// 200 listnetworks nwid name mac status type dev ips...
 			if (p.length >= 8) {
+				var ipStr = p.slice(8).join(' ');
+				var subnet = '';
+				var m = ipStr.match(/(\d+\.\d+\.\d+)\.\d+\/\d+/);
+				if (m) subnet = m[1];
 				networks.push({
-					nwid: p[2],
-					name: p[3],
-					status: p[5],
-					dev: p[7],
-					ips: p.slice(8).join(' ')
+					nwid: p[2], name: p[3], status: p[5],
+					dev: p[7], ips: ipStr, subnet: subnet
 				});
 			}
 		}
 	});
 	return networks;
+}
+
+// Suggest ZT IP from LAN IP: 10.0.0.135 → 10.0.1.135
+function suggestZTIP(lanIP, ztSubnet) {
+	if (!ztSubnet) return '';
+	var lastOctet = lanIP.split('.').pop();
+	return ztSubnet + '.' + lastOctet;
+}
+
+// Validate IP format
+function isValidIP(ip) {
+	return /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)$/.test(ip);
 }
 
 return view.extend({
@@ -86,12 +92,10 @@ return view.extend({
 		]);
 	},
 
-	// Get all zt_device UCI sections
 	getDeviceSections: function() {
 		return uci.sections('zerotier', 'zt_device') || [];
 	},
 
-	// Find UCI section for a MAC
 	findDeviceSection: function(mac) {
 		var sections = this.getDeviceSections();
 		for (var i = 0; i < sections.length; i++) {
@@ -100,157 +104,176 @@ return view.extend({
 		return null;
 	},
 
-	// Check if device is enabled
-	isDeviceEnabled: function(mac) {
+	getDeviceInfo: function(mac) {
 		var sections = this.getDeviceSections();
 		for (var i = 0; i < sections.length; i++) {
-			if (sections[i].mac === mac && sections[i].enabled === '1')
-				return true;
+			if (sections[i].mac === mac)
+				return { enabled: sections[i].enabled === '1', zt_ip: sections[i].zt_ip || '' };
 		}
-		return false;
+		return { enabled: false, zt_ip: '' };
 	},
 
-	// Get access mode: 'all', 'selected', 'none'
-	getAccessMode: function() {
-		return uci.get('zerotier', 'global', 'lan_access_mode') || 'all';
-	},
-
-	// Toggle device ZT access
-	handleToggleDevice: function(mac, hostname, ip, row, ev) {
-		var self = this;
-		var enabled = !this.isDeviceEnabled(mac);
+	// Enable device with ZT IP assignment
+	enableDevice: function(mac, hostname, lanIP, ztIP) {
 		var section = this.findDeviceSection(mac);
-
-		if (enabled) {
-			if (!section) {
-				section = 'dev_' + mac.replace(/:/g, '');
-				uci.add('zerotier', 'zt_device', section);
-				uci.set('zerotier', section, 'mac', mac);
-			}
-			uci.set('zerotier', section, 'enabled', '1');
-			uci.set('zerotier', section, 'name', hostname || ip);
-			uci.set('zerotier', section, 'ip', ip);
-		} else {
-			if (section) {
-				uci.set('zerotier', section, 'enabled', '0');
-			}
+		if (!section) {
+			section = 'dev_' + mac.replace(/:/g, '');
+			uci.add('zerotier', 'zt_device', section);
+			uci.set('zerotier', section, 'mac', mac);
 		}
-
-		// Update button state immediately
-		var btn = row.querySelector('.zt-toggle-btn');
-		if (btn) {
-			btn.textContent = enabled ? _('Revoke') : _('Grant');
-			btn.className = 'cbi-button ' + (enabled ? 'cbi-button-remove' : 'cbi-button-action');
-		}
-		var statusCell = row.querySelector('.zt-status');
-		if (statusCell) {
-			statusCell.innerHTML = enabled
-				? '<span style="color:#28a745">' + _('Allowed') + '</span>'
-				: '<span style="color:#6c757d">' + _('Denied') + '</span>';
-		}
+		uci.set('zerotier', section, 'enabled', '1');
+		uci.set('zerotier', section, 'name', hostname || lanIP);
+		uci.set('zerotier', section, 'ip', lanIP);
+		uci.set('zerotier', section, 'zt_ip', ztIP);
 	},
 
-	// Apply all changes: save UCI, regenerate nft rules
-	handleApply: function(ev) {
+	disableDevice: function(mac) {
+		var section = this.findDeviceSection(mac);
+		if (section) uci.set('zerotier', section, 'enabled', '0');
+	},
+
+	// Show add/edit dialog
+	handleAddDevice: function(mac, hostname, lanIP, currentZtIP, ztSubnet, ev) {
+		var self = this;
+		var suggested = currentZtIP || suggestZTIP(lanIP, ztSubnet);
+
+		var ztInput = E('input', {
+			type: 'text', class: 'cbi-input-text',
+			value: suggested, style: 'width:200px',
+			placeholder: 'e.g. ' + (ztSubnet ? ztSubnet + '.x' : '10.0.1.x')
+		});
+
+		ui.showModal(_('Assign ZeroTier IP'), [
+			E('div', { style: 'margin-bottom:12px' }, [
+				E('p', {}, [
+					E('strong', {}, _('Device: ')),
+					hostname ? hostname + ' ' : '',
+					E('code', {}, lanIP), ' (' + mac + ')'
+				])
+			]),
+			E('div', { class: 'cbi-value', style: 'margin-bottom:12px' }, [
+				E('label', { class: 'cbi-value-title', style: 'width:auto; margin-right:12px' }, _('ZeroTier IP')),
+				E('div', { class: 'cbi-value-field' }, [ztInput])
+			]),
+			E('div', { style: 'font-size:0.85em; color:#666; margin-bottom:16px' }, [
+				_('This IP will be added to the ZT interface. LAN IP %s will be mapped 1:1 to this ZT IP via NAT.').format(lanIP),
+				E('br', {}),
+				_('Remote ZT peers can reach this device at this IP (bidirectional).')
+			]),
+			E('div', { class: 'right' }, [
+				E('button', {
+					class: 'cbi-button', style: 'margin-right:8px',
+					click: ui.hideModal
+				}, _('Cancel')),
+				E('button', {
+					class: 'cbi-button cbi-button-action important',
+					click: function() {
+						var ztIP = ztInput.value.trim();
+						if (!ztIP || !isValidIP(ztIP)) {
+							ui.addNotification(null, E('p', _('Invalid IP address')), 'error');
+							return;
+						}
+						self.enableDevice(mac, hostname, lanIP, ztIP);
+						ui.hideModal();
+						self.handleApply();
+					}
+				}, _('Apply'))
+			])
+		]);
+	},
+
+	// Remove device mapping
+	handleRemoveDevice: function(mac, ev) {
+		this.disableDevice(mac);
+		this.handleApply();
+	},
+
+	// Save UCI + apply nft rules + ip addr
+	handleApply: function() {
 		var self = this;
 
 		ui.showModal(_('Applying'), [
-			E('p', { class: 'spinning' }, _('Saving configuration and applying firewall rules...'))
+			E('p', { class: 'spinning' }, _('Saving and applying 1:1 NAT rules...'))
 		]);
 
 		return uci.save().then(function() {
 			return uci.apply();
 		}).then(function() {
-			return self.applyFirewallRules();
+			return self.applyNATRules();
 		}).then(function() {
 			ui.hideModal();
-			ui.addNotification(null, E('p', _('Configuration applied successfully.')), 'info');
+			window.location.reload();
 		}).catch(function(err) {
 			ui.hideModal();
-			ui.addNotification(null, E('p', _('Failed to apply: %s').format(err.message)), 'error');
+			ui.addNotification(null, E('p', _('Failed: %s').format(err.message)), 'error');
 		});
 	},
 
-	// Regenerate nft rules for allowed devices
-	applyFirewallRules: function() {
-		var mode = this.getAccessMode();
+	// Generate and execute 1:1 NAT rules
+	applyNATRules: function() {
 		var sections = this.getDeviceSections();
 
-		// Find ZT interfaces
 		return fs.exec('/usr/bin/zerotier-cli', ['listnetworks']).then(function(res) {
 			var zt_ifaces = [];
 			if (res && res.code === 0 && res.stdout) {
 				res.stdout.trim().split('\n').forEach(function(line) {
 					if (line.indexOf('200 listnetworks') === 0 && line.indexOf('<nwid>') < 0) {
 						var p = line.split(/\s+/);
-						if (p.length >= 8 && p[7].indexOf('zt') === 0) {
+						if (p.length >= 8 && p[7].indexOf('zt') === 0)
 							zt_ifaces.push(p[7]);
-						}
 					}
 				});
 			}
-
 			if (zt_ifaces.length === 0) return;
 
-			var cmds = [];
+			// Build cleanup + setup script
+			var script = '#!/bin/sh\nset -e\n';
 
-			// Build the nft rules script
-			var script = '#!/bin/sh\n';
-
-			// First, remove old device-specific rules
-			script += 'nft -a list chain inet fw4 forward 2>/dev/null | grep "zt_device_access" | awk \'{print $NF}\' | while read handle; do\n';
-			script += '  nft delete rule inet fw4 forward handle $handle 2>/dev/null\n';
-			script += 'done\n';
-			script += 'nft -a list chain inet fw4 srcnat 2>/dev/null | grep "zt_device_masq" | awk \'{print $NF}\' | while read handle; do\n';
-			script += '  nft delete rule inet fw4 srcnat handle $handle 2>/dev/null\n';
+			// 1. Clean old rules (by comment tag)
+			script += '# Cleanup old 1:1 NAT rules\n';
+			script += 'for chain in forward srcnat dstnat; do\n';
+			script += '  nft -a list chain inet fw4 $chain 2>/dev/null | grep "zt_dev_" | awk \'{print $NF}\' | while read h; do\n';
+			script += '    nft delete rule inet fw4 $chain handle $h 2>/dev/null\n';
+			script += '  done\n';
 			script += 'done\n';
 
-			if (mode === 'none') {
-				// No LAN access to ZT at all — done after cleanup
-			} else if (mode === 'selected') {
-				// Per-device rules
-				var enabledIPs = [];
-				sections.forEach(function(s) {
-					if (s.enabled === '1' && s.ip) {
-						enabledIPs.push(s.ip);
-					}
+			// 2. Remove old alias IPs (/32) from ZT interfaces — keep the primary /24
+			zt_ifaces.forEach(function(iface) {
+				script += 'ip addr show dev ' + iface + ' 2>/dev/null | grep "inet " | grep "/32" | awk \'{print $2}\' | while read cidr; do\n';
+				script += '  ip addr del $cidr dev ' + iface + ' 2>/dev/null || true\n';
+				script += 'done\n';
+			});
+
+			// 3. Add rules for each enabled device
+			sections.forEach(function(s) {
+				if (s.enabled !== '1' || !s.ip || !s.zt_ip) return;
+
+				var lanIP = s.ip;
+				var ztIP = s.zt_ip;
+				var devName = (s.name || lanIP).replace(/[^a-zA-Z0-9_.-]/g, '');
+
+				zt_ifaces.forEach(function(iface) {
+					// Add alias IP to ZT interface
+					script += 'ip addr add ' + ztIP + '/32 dev ' + iface + ' 2>/dev/null || true\n';
+
+					// Forward: allow LAN→ZT and ZT→LAN for this device
+					script += 'nft insert rule inet fw4 forward iifname "br-lan" ip saddr ' + lanIP;
+					script += ' oifname "' + iface + '" counter accept comment "zt_dev_fwd_' + devName + '"\n';
+					script += 'nft insert rule inet fw4 forward iifname "' + iface + '" ip daddr ' + lanIP;
+					script += ' oifname "br-lan" counter accept comment "zt_dev_fwd_in_' + devName + '"\n';
+
+					// SNAT: LAN IP → ZT IP (outgoing)
+					script += 'nft insert rule inet fw4 srcnat iifname "br-lan" ip saddr ' + lanIP;
+					script += ' oifname "' + iface + '" counter snat to ' + ztIP + ' comment "zt_dev_snat_' + devName + '"\n';
+
+					// DNAT: ZT IP → LAN IP (incoming)
+					script += 'nft insert rule inet fw4 dstnat iifname "' + iface + '" ip daddr ' + ztIP;
+					script += ' counter dnat to ' + lanIP + ' comment "zt_dev_dnat_' + devName + '"\n';
 				});
+			});
 
-				if (enabledIPs.length > 0) {
-					zt_ifaces.forEach(function(iface) {
-						// Forward rules for allowed device IPs
-						enabledIPs.forEach(function(ip) {
-							script += 'nft insert rule inet fw4 forward iifname "br-lan" ip saddr ' + ip;
-							script += ' oifname "' + iface + '" counter accept comment "zt_device_access"\n';
-						});
-						// Masquerade for allowed devices
-						enabledIPs.forEach(function(ip) {
-							script += 'nft insert rule inet fw4 srcnat iifname "br-lan" ip saddr ' + ip;
-							script += ' oifname "' + iface + '" counter masquerade comment "zt_device_masq"\n';
-						});
-					});
-				}
-			}
-			// mode === 'all': uses the existing blanket forward/masquerade rules from zerotier-fw4
-
-			// Write and execute the script
 			return fs.exec('/bin/sh', ['-c', script]);
 		});
-	},
-
-	// Handle access mode change
-	handleModeChange: function(ev) {
-		var mode = ev.target.value;
-		uci.set('zerotier', 'global', 'lan_access_mode', mode);
-
-		// Show/hide device list based on mode
-		var devTable = document.getElementById('zt-device-table');
-		if (devTable) {
-			devTable.style.display = (mode === 'selected') ? '' : 'none';
-		}
-
-		var applyBtn = document.getElementById('zt-apply-btn');
-		if (applyBtn) applyBtn.disabled = false;
 	},
 
 	render: function(data) {
@@ -258,38 +281,32 @@ return view.extend({
 		var leases = parseDHCPLeases(data[0]);
 		var arpMap = parseARP(data[1]);
 		var ztNetworks = parseZTNetworks(data[3]);
-		var accessMode = this.getAccessMode();
 
-		// Merge DHCP + ARP to get unique device list
+		// Detect ZT subnet prefix (e.g., "10.0.1")
+		var ztSubnet = '';
+		if (ztNetworks.length > 0) ztSubnet = ztNetworks[0].subnet;
+
+		// Build device list from DHCP + ARP
 		var deviceMap = {};
-
-		// DHCP leases (primary)
 		leases.forEach(function(l) {
+			var info = self.getDeviceInfo(l.mac);
 			deviceMap[l.mac] = {
-				mac: l.mac,
-				ip: l.ip,
-				hostname: l.hostname,
-				source: 'DHCP',
-				enabled: self.isDeviceEnabled(l.mac)
+				mac: l.mac, ip: l.ip, hostname: l.hostname,
+				source: 'DHCP', enabled: info.enabled, zt_ip: info.zt_ip
 			};
 		});
-
-		// ARP entries (supplement with non-DHCP devices, filter br-lan only)
 		Object.keys(arpMap).forEach(function(mac) {
 			var arp = arpMap[mac];
 			if (arp.device === 'br-lan' && !deviceMap[mac]) {
+				var info = self.getDeviceInfo(mac);
 				deviceMap[mac] = {
-					mac: mac,
-					ip: arp.ip,
-					hostname: '',
-					source: 'ARP',
-					enabled: self.isDeviceEnabled(mac)
+					mac: mac, ip: arp.ip, hostname: '',
+					source: 'ARP', enabled: info.enabled, zt_ip: info.zt_ip
 				};
 			}
 		});
 
 		var devices = Object.values(deviceMap).sort(function(a, b) {
-			// Sort: enabled first, then by IP
 			if (a.enabled !== b.enabled) return a.enabled ? -1 : 1;
 			var ipA = a.ip.split('.').map(Number);
 			var ipB = b.ip.split('.').map(Number);
@@ -302,20 +319,17 @@ return view.extend({
 		// --- Build UI ---
 		var title = E('h2', { class: 'content' }, _('ZeroTier LAN Gateway'));
 		var desc = E('div', { class: 'cbi-map-descr' },
-			_('Allow LAN devices to access ZeroTier networks through this router without installing ZeroTier client. The router acts as a gateway with NAT.'));
+			_('Assign ZeroTier virtual IPs to LAN devices. Each device gets a dedicated ZT address with 1:1 NAT — bidirectional access without installing ZeroTier client.'));
 
 		// ZT Network Status
-		var netSection = E('div', { class: 'cbi-section' }, [
-			E('h3', {}, _('ZeroTier Networks'))
-		]);
-
+		var netSection = E('div', { class: 'cbi-section' }, [E('h3', {}, _('ZeroTier Networks'))]);
 		if (ztNetworks.length > 0) {
 			var netTable = E('table', { class: 'table cbi-section-table' }, [
 				E('tr', { class: 'tr table-titles' }, [
 					E('th', { class: 'th' }, _('Network ID')),
 					E('th', { class: 'th' }, _('Name')),
 					E('th', { class: 'th' }, _('Interface')),
-					E('th', { class: 'th' }, _('IP')),
+					E('th', { class: 'th' }, _('Router ZT IP')),
 					E('th', { class: 'th' }, _('Status'))
 				])
 			]);
@@ -335,108 +349,87 @@ return view.extend({
 				_('No active ZeroTier networks. Join a network first.')));
 		}
 
-		// Access Mode
-		var modeSection = E('div', { class: 'cbi-section' }, [
-			E('h3', {}, _('LAN Access Mode')),
-			E('div', { class: 'cbi-value' }, [
-				E('label', { class: 'cbi-value-title' }, _('Access Mode')),
-				E('div', { class: 'cbi-value-field' }, [
-					E('select', {
-						class: 'cbi-input-select',
-						style: 'width:300px',
-						change: ui.createHandlerFn(this, 'handleModeChange')
-					}, [
-						E('option', { value: 'all', selected: accessMode === 'all' },
-							_('All LAN devices (no restriction)')),
-						E('option', { value: 'selected', selected: accessMode === 'selected' },
-							_('Selected devices only')),
-						E('option', { value: 'none', selected: accessMode === 'none' },
-							_('Disabled (no LAN access to ZT)'))
-					])
-				])
-			]),
-			E('div', { class: 'cbi-value-description' },
-				_('Controls which LAN devices can reach remote ZeroTier peers. "All" uses the router-level masquerade rules. "Selected" applies per-device firewall rules.'))
-		]);
-
-		// Device Table (only visible in 'selected' mode)
-		var devSection = E('div', {
-			class: 'cbi-section',
-			id: 'zt-device-table',
-			style: accessMode === 'selected' ? '' : 'display:none'
-		}, [
+		// Device Table
+		var devSection = E('div', { class: 'cbi-section' }, [
 			E('h3', {}, _('LAN Devices')),
-			E('div', { class: 'cbi-value-description', style: 'margin-bottom:10px' },
-				_('Grant or revoke ZeroTier network access for individual LAN devices. Devices with access can reach remote ZT peers via this router.'))
+			E('div', { class: 'cbi-value-description', style: 'margin-bottom:12px' },
+				_('Click "Assign IP" to map a LAN device to a ZeroTier virtual IP. The device can then be reached by remote ZT peers at the assigned IP.'))
 		]);
 
 		if (devices.length > 0) {
 			var devTable = E('table', { class: 'table cbi-section-table' }, [
 				E('tr', { class: 'tr table-titles' }, [
 					E('th', { class: 'th' }, _('Hostname')),
-					E('th', { class: 'th' }, _('IP Address')),
-					E('th', { class: 'th' }, _('MAC Address')),
-					E('th', { class: 'th' }, _('Source')),
-					E('th', { class: 'th' }, _('ZT Access')),
+					E('th', { class: 'th' }, _('LAN IP')),
+					E('th', { class: 'th' }, _('ZeroTier IP')),
+					E('th', { class: 'th' }, _('MAC')),
+					E('th', { class: 'th' }, _('Status')),
 					E('th', { class: 'th cbi-section-actions' }, _('Actions'))
 				])
 			]);
 
 			devices.forEach(function(dev) {
-				var row = E('tr', { class: 'tr' }, [
-					E('td', { class: 'td' }, dev.hostname || E('em', {}, _('unknown'))),
+				var ztIPDisplay = dev.enabled && dev.zt_ip
+					? E('code', { style: 'color:#0077be' }, dev.zt_ip)
+					: E('span', { style: 'color:#aaa' }, '-');
+
+				var statusSpan = dev.enabled
+					? E('span', { style: 'color:#28a745; font-weight:bold' }, _('Mapped'))
+					: E('span', { style: 'color:#6c757d' }, _('Not mapped'));
+
+				var actions = [];
+				if (dev.enabled) {
+					actions.push(E('button', {
+						class: 'cbi-button cbi-button-action',
+						style: 'margin-right:4px',
+						title: _('Change ZT IP'),
+						click: ui.createHandlerFn(self, 'handleAddDevice',
+							dev.mac, dev.hostname, dev.ip, dev.zt_ip, ztSubnet)
+					}, _('Edit')));
+					actions.push(E('button', {
+						class: 'cbi-button cbi-button-remove',
+						click: ui.createHandlerFn(self, 'handleRemoveDevice', dev.mac)
+					}, _('Remove')));
+				} else {
+					actions.push(E('button', {
+						class: 'cbi-button cbi-button-action',
+						click: ui.createHandlerFn(self, 'handleAddDevice',
+							dev.mac, dev.hostname, dev.ip, '', ztSubnet)
+					}, _('Assign IP')));
+				}
+
+				devTable.appendChild(E('tr', { class: 'tr' }, [
+					E('td', { class: 'td' }, dev.hostname || E('em', { style: 'color:#aaa' }, _('unknown'))),
 					E('td', { class: 'td' }, dev.ip),
-					E('td', { class: 'td' }, E('code', {}, dev.mac)),
-					E('td', { class: 'td' }, dev.source),
-					E('td', { class: 'td zt-status' },
-						dev.enabled
-							? E('span', { style: 'color:#28a745' }, _('Allowed'))
-							: E('span', { style: 'color:#6c757d' }, _('Denied'))),
-					E('td', { class: 'td' }, [
-						E('button', {
-							class: 'cbi-button zt-toggle-btn ' + (dev.enabled ? 'cbi-button-remove' : 'cbi-button-action'),
-							click: ui.createHandlerFn(self, function(mac, hostname, ip, ev) {
-								var tr = ev.target.closest('tr');
-								self.handleToggleDevice(mac, hostname, ip, tr, ev);
-								document.getElementById('zt-apply-btn').disabled = false;
-							}, dev.mac, dev.hostname, dev.ip)
-						}, dev.enabled ? _('Revoke') : _('Grant'))
-					])
-				]);
-				devTable.appendChild(row);
+					E('td', { class: 'td' }, ztIPDisplay),
+					E('td', { class: 'td' }, E('code', { style: 'font-size:0.85em' }, dev.mac)),
+					E('td', { class: 'td' }, statusSpan),
+					E('td', { class: 'td' }, actions)
+				]));
 			});
 			devSection.appendChild(devTable);
 		} else {
 			devSection.appendChild(E('p', { style: 'color:#6c757d' },
-				_('No LAN devices detected. Devices will appear after connecting to this router.')));
+				_('No LAN devices detected.')));
 		}
-
-		// Apply Button
-		var applySection = E('div', { class: 'cbi-section', style: 'text-align:right' }, [
-			E('button', {
-				class: 'cbi-button cbi-button-action important',
-				id: 'zt-apply-btn',
-				click: ui.createHandlerFn(this, 'handleApply')
-			}, _('Save & Apply'))
-		]);
 
 		// Help Section
 		var helpSection = E('div', { class: 'cbi-section' }, [
 			E('h3', {}, _('How it works')),
 			E('div', { class: 'cbi-value-description' }, [
-				E('p', {}, _('This feature uses the router as a ZeroTier gateway:')),
+				E('p', {}, _('Each mapped device gets full bidirectional access:')),
 				E('ul', {}, [
-					E('li', {}, _('The router joins ZeroTier networks and gets a virtual IP (e.g., 10.0.1.x).')),
-					E('li', {}, _('LAN devices send traffic to the router, which forwards it through the ZeroTier tunnel.')),
-					E('li', {}, _('NAT (masquerade) ensures replies return correctly to the originating LAN device.')),
-					E('li', {}, _('LAN devices can access remote ZT peers without installing any software.'))
+					E('li', {}, _('The assigned ZT IP is added as an alias on the ZeroTier interface.')),
+					E('li', {}, _('Outgoing: device LAN IP is translated (SNAT) to its ZT IP.')),
+					E('li', {}, _('Incoming: traffic to the ZT IP is translated (DNAT) to the device LAN IP.')),
+					E('li', {}, _('Remote ZT peers see each device as a separate IP — like native ZT members.'))
 				]),
-				E('p', { style: 'color:#856404; background:#fff3cd; padding:8px; border-radius:4px; margin-top:8px' },
-					_('Note: LAN devices can reach remote ZeroTier IPs, but remote peers cannot initiate connections to LAN devices (one-way NAT). For bidirectional access, install ZeroTier on the device directly.'))
+				E('p', { style: 'background:#d4edda; padding:8px; border-radius:4px; color:#155724; margin-top:8px' },
+					_('Unlike simple masquerade, 1:1 NAT allows remote peers to initiate connections to your LAN devices via their assigned ZT IPs.'))
 			])
 		]);
 
-		return E('div', {}, [title, desc, netSection, modeSection, devSection, applySection, helpSection]);
+		return E('div', {}, [title, desc, netSection, devSection, helpSection]);
 	},
 
 	handleSaveApply: null,
