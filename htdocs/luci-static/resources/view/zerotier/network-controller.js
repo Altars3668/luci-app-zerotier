@@ -130,12 +130,12 @@ null,
 { total: 346, data: 271, ecc: 18,  groups: [[2, 68], [2, 69]] }
 ];
 
-// Alphanumeric capacity per version (ECC L)
-var ALPHANUM_CAP = [0, 25, 47, 77, 114, 154, 195, 224, 279, 335, 395];
+// Byte mode capacity per version (ECC L)
+var BYTE_CAP = [0, 17, 32, 53, 78, 106, 134, 154, 192, 230, 271];
 
 function selectVersion(len) {
 for (var v = 1; v <= 10; v++)
-if (len <= ALPHANUM_CAP[v]) return v;
+if (len <= BYTE_CAP[v]) return v;
 return -1;
 }
 
@@ -180,27 +180,12 @@ function makeDataCodewords(str, version) {
 var info = VERSIONS[version];
 var totalDataBits = info.data * 8;
 
-// Try alphanumeric first, fall back to byte
-var isAlpha = true;
-var upper = str.toUpperCase();
-for (var i = 0; i < upper.length; i++) {
-if (ALPHANUM_TABLE.indexOf(upper[i]) < 0) { isAlpha = false; break; }
-}
-
+// Always use Byte mode to preserve case (important for hex network IDs)
 var bits = [];
-if (isAlpha) {
-// Mode: Alphanumeric (0010)
-bits.push(0, 0, 1, 0);
-var ccLen = version <= 9 ? 9 : 11;
-for (var b = ccLen - 1; b >= 0; b--) bits.push((upper.length >> b) & 1);
-bits = bits.concat(encodeAlphanumeric(upper));
-} else {
-// Mode: Byte (0100)
 bits.push(0, 1, 0, 0);
-var ccLen2 = version <= 9 ? 8 : 16;
-for (var b2 = ccLen2 - 1; b2 >= 0; b2--) bits.push((str.length >> b2) & 1);
+var ccLen = version <= 9 ? 8 : 16;
+for (var b = ccLen - 1; b >= 0; b--) bits.push((str.length >> b) & 1);
 bits = bits.concat(encodeByte(str));
-}
 
 // Terminator
 var termLen = Math.min(4, totalDataBits - bits.length);
@@ -406,8 +391,7 @@ return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + totalPx + ' ' +
 
 return {
 generate: function(text, svgSize) {
-var upper = text.toUpperCase();
-var version = selectVersion(upper.length);
+var version = selectVersion(text.length);
 if (version < 0) version = 5; // fallback
 
 var data = makeDataCodewords(text, version);
