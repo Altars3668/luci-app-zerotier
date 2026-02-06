@@ -1,0 +1,35 @@
+#!/bin/sh
+# ZeroTier network interface hotplug handler
+# Automatically applies firewall rules when ZeroTier interfaces come up
+
+# Only handle ZeroTier interfaces (zt*)
+case "$INTERFACE" in
+	zt*) ;;
+	*) exit 0 ;;
+esac
+
+case "$ACTION" in
+	add|register)
+		# Wait briefly for interface to be fully ready
+		sleep 1
+
+		# Apply per-interface firewall rules
+		if [ -x /usr/bin/zerotier-fw4 ]; then
+			logger -t zerotier "Applying firewall rules for interface $INTERFACE"
+			/usr/bin/zerotier-fw4 -i "$INTERFACE"
+		fi
+		;;
+	remove|unregister)
+		# Clean up interface-specific rules on removal
+		FW_PATH="/var/run/zerotier-one/_fw4"
+		if [ -d "$FW_PATH" ]; then
+			for f in input.nft forward.nft srcnat.nft; do
+				if [ -f "$FW_PATH/$f" ]; then
+					sed -i "/$INTERFACE/d" "$FW_PATH/$f" 2>/dev/null
+				fi
+			done
+			fw4 reload >/dev/null 2>&1
+			logger -t zerotier "Removed firewall rules for interface $INTERFACE"
+		fi
+		;;
+esac

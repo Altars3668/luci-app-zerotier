@@ -18,7 +18,6 @@
 'require form';
 'require rpc';
 'require uci';
-'require view.zerotier.dynamic-ip as DynamicIP';
 
 // OpenWrt ZTNCUI Configuration
 const OPENWRT_ZTNCUI_CONFIG = {
@@ -72,70 +71,21 @@ const callWrite = rpc.declare({
 });
 
 return view.extend({
-	// Initialize dynamic IP manager
-	init: function() {
-		this.dynamicIPManager = DynamicIP.dynamicIPManager;
-		
-		// Register for IP change notifications
-		this.dynamicIPManager.onIPChange(this.handleOpenWrtControllerIPChange.bind(this));
-	},
-
 	load: function() {
-		// Initialize if not already done
-		if (!this.dynamicIPManager) {
-			this.init();
-		}
-		
 		return Promise.all([
 			this.getOpenWrtZTNCUIStatus(),
 			this.getZeroTierStatus(),
 			this.getOpenWrtZTNCUIConfig(),
 			this.checkPackageAvailability(),
-			uci.load('ztncui'),
-			this.dynamicIPManager.updateCurrentIPs()
+			uci.load('ztncui')
 		]).then(function(results) {
 			return {
 				ztncuiStatus: results[0],
 				zerotierStatus: results[1],
 				ztncuiConfig: results[2],
 				packageInfo: results[3],
-				uciConfig: results[4],
-				currentIPs: results[5]
+				uciConfig: results[4]
 			};
-		});
-	},
-
-	// Handle IP address changes for OpenWrt controller
-	handleOpenWrtControllerIPChange: function(ipInfo) {
-		console.log('OpenWrt Controller IP changed:', ipInfo);
-		
-		// Update UI if visible
-		if (this.currentOpenWrtIPDisplay) {
-			this.updateOpenWrtIPDisplay(ipInfo);
-		}
-		
-		// Update configuration if dynamic IP is enabled
-		if (ipInfo.ipv4 && this.isDynamicIPEnabled) {
-			this.updateOpenWrtControllerEndpoint(ipInfo.ipv4);
-		}
-	},
-
-	// Update OpenWrt controller endpoint
-	updateOpenWrtControllerEndpoint: function(newIP) {
-		const self = this;
-		console.log('Updating OpenWrt controller endpoint to:', newIP);
-		
-		// Update UCI configuration
-		return uci.load('ztncui').then(function() {
-			// Update bind address if needed
-			uci.set('ztncui', 'main', 'bind_address', '0.0.0.0');
-			
-			return uci.save().then(function() {
-				ui.addNotification(null, E('p', {}, _('Controller endpoint updated to %s').format(newIP)), 'info');
-				
-				// Restart service to apply changes
-				return self.restartOpenWrtZTNCUI();
-			});
 		});
 	},
 
@@ -391,32 +341,6 @@ return view.extend({
 		});
 	},
 
-	// Update OpenWrt IP display in UI
-	updateOpenWrtIPDisplay: function(ipInfo) {
-		if (!this.currentOpenWrtIPDisplay) return;
-		
-		const currentIPv4 = ipInfo && ipInfo.ipv4 ? ipInfo.ipv4 : _('Not detected');
-		const currentIPv6 = ipInfo && ipInfo.ipv6 ? ipInfo.ipv6 : _('Not detected');
-		const lastUpdate = ipInfo && ipInfo.timestamp ? 
-			ipInfo.timestamp.toLocaleString() : _('Never');
-		
-		this.currentOpenWrtIPDisplay.innerHTML = '';
-		this.currentOpenWrtIPDisplay.appendChild(E('div', { class: 'cbi-value-title' }, _('Current Public IP Addresses')));
-		this.currentOpenWrtIPDisplay.appendChild(E('div', { class: 'cbi-value-field' }, [
-			E('div', { style: 'margin-bottom: 5px;' }, [
-				E('strong', {}, _('IPv4: ')),
-				E('span', { style: 'color: #0077be;' }, currentIPv4)
-			]),
-			E('div', { style: 'margin-bottom: 5px;' }, [
-				E('strong', {}, _('IPv6: ')),
-				E('span', { style: 'color: #0077be;' }, currentIPv6)
-			]),
-			E('div', { style: 'font-size: 0.8em; color: #666;' }, [
-				E('em', {}, _('Last updated: %s').format(lastUpdate))
-			])
-		]));
-	},
-
 	render: function(data) {
 		var self = this;
 		var title = E('h2', { class: 'content' }, _('OpenWrt ZeroTier Controller'));
@@ -501,12 +425,6 @@ return view.extend({
 		]));
 
 		statusSection.appendChild(statusTable);
-
-		// Add OpenWrt controller IP status display
-		var openWrtIPDisplay = E('div', { class: 'cbi-value', style: 'margin-top: 15px;' });
-		this.currentOpenWrtIPDisplay = openWrtIPDisplay;
-		this.updateOpenWrtIPDisplay(data.currentIPs);
-		statusSection.appendChild(openWrtIPDisplay);
 
 		// Package Management Section
 		var packageSection = E('div', { class: 'cbi-section' }, [

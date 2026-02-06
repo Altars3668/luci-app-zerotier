@@ -9,6 +9,7 @@
 				"luci": [ "getInitList", "setInitAction" ],
 				"zerotier-controller": [
 					"status",
+					"check_controller",
 					"list_networks",
 					"get_network",
 					"list_members",
@@ -16,7 +17,11 @@
 				]
 			},
 			"file": {
+				"/sbin/ifconfig": [ "exec" ],
+				"/usr/bin/zerotier-cli": [ "exec" ],
+				"/usr/bin/zerotier-moon": [ "exec" ],
 				"/etc/config/zero/local.conf": [ "read" ],
+				"/etc/zerotier-controller.conf": [ "read" ],
 				"/tmp/zero.info": [ "read" ],
 				"/var/lib/zerotier-one/*.moon": [ "read" ],
 				"/var/lib/zerotier-one/moon.json": [ "read" ],
@@ -41,6 +46,7 @@
 			},
 			"file": {
 				"/etc/config/zero/local.conf": [ "write" ],
+				"/etc/zerotier-controller.conf": [ "write" ],
 				"/var/lib/zerotier-one/moon.json": [ "write" ]
 			}
 		}

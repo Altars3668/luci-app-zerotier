@@ -48,13 +48,5 @@
 			"type": "view",
 			"path": "zerotier/moon"
 		}
-	},
-	"admin/vpn/zerotier/manual": {
-		"title": "Manual Config",
-		"order": 6,
-		"action": {
-			"type": "view",
-			"path": "zerotier/manual"
-		}
 	}
 }

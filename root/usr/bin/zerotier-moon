@@ -6,6 +6,7 @@ ZT_HOME="/var/lib/zerotier-one"
 ZT_CLI="/usr/bin/zerotier-cli"
 ZT_IDTOOL="/usr/bin/zerotier-idtool"
 MOON_CONFIG="/etc/zerotier-moon.conf"
+FW_RULE_NAME="zerotier_moon"
 
 # Check if ZeroTier is running
 check_zerotier() {
@@ -13,6 +14,67 @@ check_zerotier() {
         echo "ERROR: ZeroTier is not running"
         exit 1
     fi
+}
+
+# Configure firewall rules for Moon
+configure_firewall() {
+    local action="$1"
+    local port="${2:-9993}"
+    
+    case "$action" in
+        "add"|"enable")
+            # Check if rule already exists
+            if uci -q get firewall.$FW_RULE_NAME > /dev/null 2>&1; then
+                echo "Firewall rule already exists, updating..."
+                uci set firewall.$FW_RULE_NAME.dest_port="$port"
+            else
+                echo "Adding firewall rule for port $port/UDP..."
+                uci set firewall.$FW_RULE_NAME=rule
+                uci set firewall.$FW_RULE_NAME.name="Allow-ZeroTier-Moon"
+                uci set firewall.$FW_RULE_NAME.src="wan"
+                uci set firewall.$FW_RULE_NAME.dest_port="$port"
+                uci set firewall.$FW_RULE_NAME.proto="udp"
+                uci set firewall.$FW_RULE_NAME.target="ACCEPT"
+                uci set firewall.$FW_RULE_NAME.enabled="1"
+            fi
+            uci commit firewall
+            /etc/init.d/firewall reload 2>/dev/null
+            echo "Firewall rule added: $port/UDP from WAN"
+            ;;
+            
+        "remove"|"disable")
+            if uci -q get firewall.$FW_RULE_NAME > /dev/null 2>&1; then
+                echo "Removing firewall rule..."
+                uci delete firewall.$FW_RULE_NAME
+                uci commit firewall
+                /etc/init.d/firewall reload 2>/dev/null
+                echo "Firewall rule removed"
+            else
+                echo "No firewall rule found"
+            fi
+            ;;
+            
+        "status")
+            if uci -q get firewall.$FW_RULE_NAME > /dev/null 2>&1; then
+                echo "=== ZeroTier Moon Firewall Rule ==="
+                echo "Status: Enabled"
+                echo "Name: $(uci -q get firewall.$FW_RULE_NAME.name)"
+                echo "Source: $(uci -q get firewall.$FW_RULE_NAME.src)"
+                echo "Port: $(uci -q get firewall.$FW_RULE_NAME.dest_port)/$(uci -q get firewall.$FW_RULE_NAME.proto)"
+                echo "Target: $(uci -q get firewall.$FW_RULE_NAME.target)"
+            else
+                echo "No ZeroTier Moon firewall rule configured"
+            fi
+            ;;
+            
+        *)
+            echo "Usage: $0 firewall {add|remove|status} [port]"
+            echo "  add [port]    - Add firewall rule (default: 9993)"
+            echo "  remove        - Remove firewall rule"
+            echo "  status        - Show firewall rule status"
+            return 1
+            ;;
+    esac
 }
 
 # Detect public IP address
@@ -128,6 +190,9 @@ create_moon() {
             
             # Auto-join own moon
             "$ZT_CLI" orbit "${node_id}" "${node_id}" 2>/dev/null
+            
+            # Auto-configure firewall
+            configure_firewall add "$public_port"
         else
             echo "ERROR: Moon file not generated"
             exit 1
@@ -219,6 +284,9 @@ EOF
             echo "Dynamic IP monitoring enabled"
             echo "Endpoint: $endpoint:$port"
             
+            # Auto-configure firewall
+            configure_firewall add "$port"
+            
             # Create initial moon
             update_moon_ip
             ;;
@@ -273,11 +341,14 @@ update_moon_ip() {
         return 0
     fi
     
-    # Resolve endpoint (domain or IP)
+    # Resolve endpoint (domain or IP or auto)
     local current_ip
-    if echo "$ENDPOINT" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$'; then
-        # It's an IP, detect current public IP
+    if [ "$ENDPOINT" = "auto" ] || [ -z "$ENDPOINT" ]; then
+        # Auto-detect public IP
         current_ip=$(detect_public_ip)
+    elif echo "$ENDPOINT" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$'; then
+        # It's an IP address, use it directly
+        current_ip="$ENDPOINT"
     else
         # It's a domain, resolve it
         current_ip=$(resolve_domain "$ENDPOINT")
@@ -366,8 +437,11 @@ case "$1" in
     "update")
         update_moon_ip
         ;;
+    "firewall")
+        configure_firewall "$2" "$3"
+        ;;
     *)
-        echo "Usage: $0 {create|join|leave|list|info|dynamic|update}"
+        echo "Usage: $0 {create|join|leave|list|info|dynamic|update|firewall}"
         echo ""
         echo "Commands:"
         echo "  create <ip/domain> [port]       - Create a moon node"
@@ -378,6 +452,8 @@ case "$1" in
         echo "  dynamic {enable|disable|status|update} [endpoint] [port]"
         echo "                                  - Configure dynamic IP/domain"
         echo "  update                          - Update moon with current IP"
+        echo "  firewall {add|remove|status} [port]"
+        echo "                                  - Manage firewall rules"
         exit 1
         ;;
 esac

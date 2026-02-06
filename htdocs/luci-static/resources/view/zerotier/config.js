@@ -13,6 +13,7 @@
 
 'use strict';
 'require form';
+'require fs';
 'require poll';
 'require rpc';
 'require uci';
@@ -79,7 +80,34 @@ function renderStatus(isRunning, lastUpdate) {
 }
 
 return view.extend({
-	render() {
+	load: function() {
+		return Promise.all([
+			uci.load('zerotier'),
+			fs.read('/etc/zerotier-controller.conf').catch(function() { return ''; })
+		]);
+	},
+
+	parseControllerConfig: function(content) {
+		if (!content) return {};
+		var config = {};
+		content.split('\n').forEach(function(line) {
+			var match = line.match(/^(\w+)=(.*)$/);
+			if (match) {
+				config[match[1]] = match[2];
+			}
+		});
+		return config;
+	},
+
+	render: function(data) {
+		var savedConfig = this.parseControllerConfig(data[1]);
+		var localControllerUrl = savedConfig.ZTNCUI_URL || savedConfig.ZEROUI_URL || null;
+		var enableController = uci.get('zerotier', 'global', 'enable_controller') === '1';
+		var controllerPort = uci.get('zerotier', 'global', 'controller_port') || '3000';
+		
+		// Determine the best controller URL
+		var hasLocalController = enableController || localControllerUrl;
+		
 		let m, s, o;
 
 		m = new form.Map('zerotier', _('ZeroTier'),
@@ -178,10 +206,28 @@ return view.extend({
 			window.open("https://my.zerotier.com/network", '_blank');
 		}
 
-		o = s.option(form.Button, '_controller', _('Network Controller'),
-			_('Access local ZTNCUI web interface for managing your own ZeroTier networks.'));
-		o.inputtitle = _('Open Controller');
-		o.inputstyle = 'apply';
+		// Smart local controller button - auto-detect configured controller
+		o = s.option(form.Button, '_local_controller', 
+			hasLocalController ? _('Local Controller (Active)') : _('Local Controller'),
+			hasLocalController 
+				? _('Local controller is configured. Click to manage your self-hosted ZeroTier networks.')
+				: _('Configure a local ZTNCUI or Zero-UI controller in the Controller page.'));
+		o.inputtitle = hasLocalController ? _('Open Local Panel') : _('Configure');
+		o.inputstyle = hasLocalController ? 'positive' : 'action';
+		o.onclick = function() {
+			if (localControllerUrl) {
+				window.open(localControllerUrl, '_blank');
+			} else if (enableController) {
+				window.open('http://' + window.location.hostname + ':' + controllerPort, '_blank');
+			} else {
+				location.href = L.url('admin/vpn/zerotier/controller');
+			}
+		}
+
+		o = s.option(form.Button, '_controller', _('Controller Settings'),
+			_('Configure external ZTNCUI or Zero-UI controller connection.'));
+		o.inputtitle = _('Settings');
+		o.inputstyle = 'action';
 		o.onclick = function() {
 			window.open("/cgi-bin/luci/admin/vpn/zerotier/controller", '_self');
 		}

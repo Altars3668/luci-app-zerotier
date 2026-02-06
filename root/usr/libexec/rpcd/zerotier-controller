@@ -133,7 +133,6 @@ cmd_check_controller() {
 # List all networks
 cmd_list_networks() {
     local network_ids
-    local result="[]"
     
     network_ids=$(zt_api_call "controller/network")
     
@@ -142,22 +141,20 @@ cmd_list_networks() {
         return 1
     fi
     
-    # Parse the array of network IDs
-    json_init
-    json_load "$network_ids" 2>/dev/null || {
+    # Use jsonfilter to parse the array (jshn cannot handle top-level arrays)
+    local nwid_list
+    nwid_list=$(echo "$network_ids" | jsonfilter -e '$[*]' 2>/dev/null)
+    
+    if [ -z "$nwid_list" ]; then
         echo '{"networks": []}'
         return 0
-    }
+    fi
     
     # Build network details array
     local networks="["
     local first=1
-    local idx=1
-    local nwid
     
-    while json_get_type type "$idx" && [ "$type" = "string" ]; do
-        json_get_var nwid "$idx"
-        
+    for nwid in $nwid_list; do
         if [ -n "$nwid" ]; then
             local net_details
             net_details=$(zt_api_call "controller/network/$nwid")
@@ -171,16 +168,10 @@ cmd_list_networks() {
                 networks="$networks$net_details"
             fi
         fi
-        
-        idx=$((idx + 1))
     done
     
     networks="$networks]"
-    
-    json_init
-    json_add_string "networks" ""
-    local output="{\"networks\": $networks}"
-    echo "$output"
+    echo "{\"networks\": $networks}"
 }
 
 # Get single network
@@ -317,12 +308,9 @@ cmd_list_members() {
     local members="["
     local first=1
     
-    # Parse the object keys
-    json_init
-    json_load "$member_ids" 2>/dev/null
-    
+    # Extract member IDs (10-char hex) from JSON object keys
     local keys
-    keys=$(json_dump | grep -o '"[a-f0-9]\{10\}"' | tr -d '"')
+    keys=$(echo "$member_ids" | grep -oE '"[a-f0-9]{10}"' | tr -d '"')
     
     for mid in $keys; do
         local member_details
@@ -543,20 +531,22 @@ EOF
 }
 
 # Main entry point
+# Helper: read and parse JSON arguments from stdin
+read_json_args() {
+    local input
+    read -r input
+    json_init
+    if [ -n "$input" ]; then
+        json_load "$input" 2>/dev/null
+    fi
+}
+
 case "$1" in
     list)
         list_methods
         ;;
     call)
-        shift
-        method="$1"
-        shift
-        
-        # Parse JSON arguments if provided
-        if [ -n "$1" ]; then
-            json_init
-            json_load "$1" 2>/dev/null
-        fi
+        method="$2"
         
         case "$method" in
             status)
@@ -569,59 +559,71 @@ case "$1" in
                 cmd_list_networks
                 ;;
             get_network)
+                read_json_args
                 json_get_var nwid nwid
                 cmd_get_network "$nwid"
                 ;;
             create_network)
+                read_json_args
                 json_get_var name name
                 cmd_create_network "$name"
                 ;;
             update_network)
+                read_json_args
                 json_get_var nwid nwid
                 json_get_var config config
                 cmd_update_network "$nwid" "$config"
                 ;;
             delete_network)
+                read_json_args
                 json_get_var nwid nwid
                 cmd_delete_network "$nwid"
                 ;;
             list_members)
+                read_json_args
                 json_get_var nwid nwid
                 cmd_list_members "$nwid"
                 ;;
             get_member)
+                read_json_args
                 json_get_var nwid nwid
                 json_get_var mid mid
                 cmd_get_member "$nwid" "$mid"
                 ;;
             authorize_member)
+                read_json_args
                 json_get_var nwid nwid
                 json_get_var mid mid
                 json_get_var authorized authorized
                 cmd_authorize_member "$nwid" "$mid" "$authorized"
                 ;;
             update_member)
+                read_json_args
                 json_get_var nwid nwid
                 json_get_var mid mid
                 json_get_var config config
                 cmd_update_member "$nwid" "$mid" "$config"
                 ;;
             delete_member)
+                read_json_args
                 json_get_var nwid nwid
                 json_get_var mid mid
                 cmd_delete_member "$nwid" "$mid"
                 ;;
             update_routes)
+                read_json_args
                 json_get_var nwid nwid
                 json_get_var routes routes
                 cmd_update_routes "$nwid" "$routes"
                 ;;
             update_ip_pools)
+                read_json_args
                 json_get_var nwid nwid
                 json_get_var pools pools
                 cmd_update_ip_pools "$nwid" "$pools"
                 ;;
             easy_setup)
+                read_json_args
                 json_get_var nwid nwid
                 json_get_var cidr cidr
                 cmd_easy_setup "$nwid" "$cidr"

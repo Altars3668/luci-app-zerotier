@@ -6,26 +6,66 @@
 				"/sbin/ifconfig": [ "exec" ],
 				"/usr/bin/zerotier-cli": [ "exec" ],
 				"/usr/bin/zerotier-moon": [ "exec" ],
+				"/bin/opkg": [ "exec" ],
 				"/etc/init.d/ztncui": [ "exec" ],
 				"/var/lib/zerotier-one/identity.public": [ "read" ],
 				"/var/lib/zerotier-one/identity.secret": [ "read" ],
 				"/var/lib/zerotier-one/moons.d/*": [ "read" ],
-				"/etc/ztncui/etc/ztncui.conf": [ "read" ]
+				"/var/lib/zerotier-one/moon.json": [ "read" ],
+				"/var/lib/zerotier-one/authtoken.secret": [ "read" ],
+				"/etc/ztncui/etc/ztncui.conf": [ "read" ],
+				"/etc/zerotier-moon.conf": [ "read" ],
+				"/etc/zerotier-controller.conf": [ "read" ]
 			},
 			"ubus": {
-				"service": [ "list" ]
+				"service": [ "list" ],
+				"luci": [ "getInitList", "setInitAction" ],
+				"zerotier-controller": [
+					"status",
+					"list_networks",
+					"get_network",
+					"list_members",
+					"get_member",
+					"moon_info",
+					"moon_list",
+					"dynamic_status"
+				]
 			},
-			"uci": [ "zerotier" ]
+			"uci": [ "zerotier", "ztncui" ]
 		},
 		"write": {
 			"file": {
 				"/usr/bin/zerotier-cli": [ "exec" ],
 				"/usr/bin/zerotier-moon": [ "exec" ],
+				"/bin/opkg": [ "exec" ],
 				"/etc/init.d/ztncui": [ "exec" ],
 				"/var/lib/zerotier-one/moons.d/*": [ "write" ],
-				"/etc/ztncui/etc/ztncui.conf": [ "write" ]
+				"/var/lib/zerotier-one/moon.json": [ "write" ],
+				"/etc/ztncui/etc/ztncui.conf": [ "write" ],
+				"/etc/zerotier-moon.conf": [ "write" ],
+				"/etc/zerotier-controller.conf": [ "write" ]
 			},
-			"uci": [ "zerotier" ]
+			"ubus": {
+				"luci": [ "setInitAction" ],
+				"zerotier-controller": [
+					"create_network",
+					"update_network",
+					"delete_network",
+					"authorize_member",
+					"update_member",
+					"delete_member",
+					"update_routes",
+					"update_ip_pools",
+					"easy_setup",
+					"moon_create",
+					"moon_join",
+					"moon_leave",
+					"dynamic_enable",
+					"dynamic_disable",
+					"dynamic_update"
+				]
+			},
+			"uci": [ "zerotier", "ztncui" ]
 		}
 	}
 }
