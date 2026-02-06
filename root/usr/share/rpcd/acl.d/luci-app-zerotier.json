@@ -25,6 +25,7 @@
 				"service": [ "list" ],
 				"luci": [ "getInitList", "setInitAction" ],
 				"zerotier-controller": [
+					"check_controller",
 					"status",
 					"list_networks",
 					"get_network",
