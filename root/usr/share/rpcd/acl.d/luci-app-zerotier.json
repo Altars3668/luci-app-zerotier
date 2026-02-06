@@ -6,6 +6,8 @@
 				"/sbin/ifconfig": [ "exec" ],
 				"/usr/bin/zerotier-cli": [ "exec" ],
 				"/usr/bin/zerotier-moon": [ "exec" ],
+				"/bin/cat": [ "exec" ],
+				"/bin/sh": [ "exec" ],
 				"/bin/opkg": [ "exec" ],
 				"/etc/init.d/ztncui": [ "exec" ],
 				"/var/lib/zerotier-one/identity.public": [ "read" ],
@@ -15,7 +17,9 @@
 				"/var/lib/zerotier-one/authtoken.secret": [ "read" ],
 				"/etc/ztncui/etc/ztncui.conf": [ "read" ],
 				"/etc/zerotier-moon.conf": [ "read" ],
-				"/etc/zerotier-controller.conf": [ "read" ]
+				"/etc/zerotier-controller.conf": [ "read" ],
+				"/tmp/dhcp.leases": [ "read" ],
+				"/proc/net/arp": [ "read" ]
 			},
 			"ubus": {
 				"service": [ "list" ],

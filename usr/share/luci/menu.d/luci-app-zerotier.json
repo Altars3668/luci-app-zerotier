@@ -33,6 +33,14 @@
 			"path": "zerotier/network-controller"
 		}
 	},
+	"admin/vpn/zerotier/devices": {
+		"title": "LAN Gateway",
+		"order": 3,
+		"action": {
+			"type": "view",
+			"path": "zerotier/devices"
+		}
+	},
 	"admin/vpn/zerotier/controller": {
 		"title": "ZTNCUI",
 		"order": 4,
