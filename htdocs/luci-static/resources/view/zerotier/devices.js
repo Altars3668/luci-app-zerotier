@@ -209,71 +209,9 @@ return view.extend({
 		});
 	},
 
-	// Generate and execute 1:1 NAT rules
+	// Apply 1:1 NAT rules via zerotier-fw4 -d (reads UCI config, persistent across reboots)
 	applyNATRules: function() {
-		var sections = this.getDeviceSections();
-
-		return fs.exec('/usr/bin/zerotier-cli', ['listnetworks']).then(function(res) {
-			var zt_ifaces = [];
-			if (res && res.code === 0 && res.stdout) {
-				res.stdout.trim().split('\n').forEach(function(line) {
-					if (line.indexOf('200 listnetworks') === 0 && line.indexOf('<nwid>') < 0) {
-						var p = line.split(/\s+/);
-						if (p.length >= 8 && p[7].indexOf('zt') === 0)
-							zt_ifaces.push(p[7]);
-					}
-				});
-			}
-			if (zt_ifaces.length === 0) return;
-
-			// Build cleanup + setup script
-			var script = '#!/bin/sh\nset -e\n';
-
-			// 1. Clean old rules (by comment tag)
-			script += '# Cleanup old 1:1 NAT rules\n';
-			script += 'for chain in forward srcnat dstnat; do\n';
-			script += '  nft -a list chain inet fw4 $chain 2>/dev/null | grep "zt_dev_" | awk \'{print $NF}\' | while read h; do\n';
-			script += '    nft delete rule inet fw4 $chain handle $h 2>/dev/null\n';
-			script += '  done\n';
-			script += 'done\n';
-
-			// 2. Remove old alias IPs (/32) from ZT interfaces — keep the primary /24
-			zt_ifaces.forEach(function(iface) {
-				script += 'ip addr show dev ' + iface + ' 2>/dev/null | grep "inet " | grep "/32" | awk \'{print $2}\' | while read cidr; do\n';
-				script += '  ip addr del $cidr dev ' + iface + ' 2>/dev/null || true\n';
-				script += 'done\n';
-			});
-
-			// 3. Add rules for each enabled device
-			sections.forEach(function(s) {
-				if (s.enabled !== '1' || !s.ip || !s.zt_ip) return;
-
-				var lanIP = s.ip;
-				var ztIP = s.zt_ip;
-				var devName = (s.name || lanIP).replace(/[^a-zA-Z0-9_.-]/g, '');
-
-				zt_ifaces.forEach(function(iface) {
-					// Add alias IP to ZT interface
-					script += 'ip addr add ' + ztIP + '/32 dev ' + iface + ' 2>/dev/null || true\n';
-
-					// Forward: allow LAN→ZT and ZT→LAN for this device
-					script += 'nft insert rule inet fw4 forward iifname "br-lan" ip saddr ' + lanIP;
-					script += ' oifname "' + iface + '" counter accept comment "zt_dev_fwd_' + devName + '"\n';
-					script += 'nft insert rule inet fw4 forward iifname "' + iface + '" ip daddr ' + lanIP;
-					script += ' oifname "br-lan" counter accept comment "zt_dev_fwd_in_' + devName + '"\n';
-
-					// SNAT: LAN IP → ZT IP (outgoing)
-					script += 'nft insert rule inet fw4 srcnat iifname "br-lan" ip saddr ' + lanIP;
-					script += ' oifname "' + iface + '" counter snat to ' + ztIP + ' comment "zt_dev_snat_' + devName + '"\n';
-
-					// DNAT: ZT IP → LAN IP (incoming)
-					script += 'nft insert rule inet fw4 dstnat iifname "' + iface + '" ip daddr ' + ztIP;
-					script += ' counter dnat to ' + lanIP + ' comment "zt_dev_dnat_' + devName + '"\n';
-				});
-			});
-
-			return fs.exec('/bin/sh', ['-c', script]);
-		});
+		return fs.exec('/usr/bin/zerotier-fw4', ['-d']);
 	},
 
 	render: function(data) {

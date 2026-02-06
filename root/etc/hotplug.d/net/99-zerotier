@@ -13,20 +13,29 @@ case "$ACTION" in
 		# Wait briefly for interface to be fully ready
 		sleep 1
 
-		# Apply per-interface firewall rules
+		# Apply per-interface firewall rules and 1:1 NAT device rules
 		if [ -x /usr/bin/zerotier-fw4 ]; then
 			logger -t zerotier "Applying firewall rules for interface $INTERFACE"
 			/usr/bin/zerotier-fw4 -i "$INTERFACE"
+			# Apply 1:1 NAT rules for configured LAN devices
+			/usr/bin/zerotier-fw4 -d
 		fi
 		;;
 	remove|unregister)
 		# Clean up interface-specific rules on removal
 		FW_PATH="/var/run/zerotier-one/_fw4"
 		if [ -d "$FW_PATH" ]; then
-			for f in input.nft forward.nft srcnat.nft; do
+			for f in input.nft forward.nft srcnat.nft devices.nft; do
 				if [ -f "$FW_PATH/$f" ]; then
 					sed -i "/$INTERFACE/d" "$FW_PATH/$f" 2>/dev/null
 				fi
+			done
+			# Clean device NAT nft rules
+			for chain in dstnat srcnat forward; do
+				nft -a list chain inet fw4 "$chain" 2>/dev/null | grep "zt_dev_" | while read line; do
+					handle="$(echo "$line" | grep -o 'handle [0-9]*' | awk '{print $2}')"
+					[ -n "$handle" ] && nft delete rule inet fw4 "$chain" handle "$handle" 2>/dev/null
+				done
 			done
 			fw4 reload >/dev/null 2>&1
 			logger -t zerotier "Removed firewall rules for interface $INTERFACE"
