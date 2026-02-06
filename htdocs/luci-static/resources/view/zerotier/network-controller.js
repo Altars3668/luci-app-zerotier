@@ -597,10 +597,10 @@ E('td', { class: 'td' }, formatTime(network.creationTime))
 ]),
 // QR Code panel
 E('div', { style: 'text-align:center; padding:12px; background:#f8f9fa; border-radius:12px; min-width:220px' }, [
-QRCode.generate(nwid, 180),
+QRCode.generate('zerotier://network/' + nwid, 180),
 E('p', { style: 'margin:8px 0 0; font-size:0.85em; color:#666' }, _('Scan to join this network')),
-E('p', { style: 'margin:4px 0 0; font-size:0.75em; color:#999' },
-'zerotier-cli join ' + nwid)
+E('p', { style: 'margin:4px 0 0; font-size:0.75em; color:#999; word-break:break-all' },
+'zerotier://network/' + nwid)
 ])
 ])
 ]);
@@ -822,10 +822,53 @@ E('button', { class: 'btn', click: ui.hideModal }, _('Close'))
 // ── Share Modal with QR ──
 showShareModal: function(nwid, name) {
 var joinCmd = 'zerotier-cli join ' + nwid;
+var ztUri = 'zerotier://network/' + nwid;
+var qrContainer = E('div', { id: 'share-qr-container' });
+var qrLabel = E('p', { style: 'margin:4px 0 0; font-size:0.75em; color:#999; word-break:break-all', id: 'share-qr-label' });
+var currentFormat = 'uri';
+
+function updateQR(format) {
+	currentFormat = format;
+	var content, label;
+	switch(format) {
+		case 'uri': content = ztUri; label = ztUri; break;
+		case 'id': content = nwid; label = _('Network ID: ') + nwid; break;
+		case 'cmd': content = joinCmd; label = joinCmd; break;
+		default: content = ztUri; label = ztUri;
+	}
+	qrContainer.innerHTML = '';
+	qrContainer.appendChild(QRCode.generate(content, 250));
+	qrLabel.textContent = label;
+	// Update button styles
+	document.querySelectorAll('.qr-format-btn').forEach(function(btn) {
+		btn.classList.remove('cbi-button-positive');
+		btn.classList.add('cbi-button-neutral');
+	});
+	var activeBtn = document.getElementById('qr-fmt-' + format);
+	if (activeBtn) { activeBtn.classList.remove('cbi-button-neutral'); activeBtn.classList.add('cbi-button-positive'); }
+}
+
+// Initial QR generation
+qrContainer.appendChild(QRCode.generate(ztUri, 250));
+qrLabel.textContent = ztUri;
+
 ui.showModal(_('Share Network'), [
 E('div', { style: 'text-align:center; padding:16px' }, [
 E('h3', { style: 'margin-top:0' }, name || _('ZeroTier Network')),
-QRCode.generate(nwid, 250),
+// QR Format selector
+E('div', { style: 'display:flex; gap:4px; justify-content:center; margin-bottom:12px; flex-wrap:wrap' }, [
+E('button', { id: 'qr-fmt-uri', class: 'btn cbi-button-positive qr-format-btn', style: 'font-size:0.8em; padding:2px 8px',
+click: function() { updateQR('uri'); }
+}, 'URI'),
+E('button', { id: 'qr-fmt-id', class: 'btn cbi-button-neutral qr-format-btn', style: 'font-size:0.8em; padding:2px 8px',
+click: function() { updateQR('id'); }
+}, _('Network ID')),
+E('button', { id: 'qr-fmt-cmd', class: 'btn cbi-button-neutral qr-format-btn', style: 'font-size:0.8em; padding:2px 8px',
+click: function() { updateQR('cmd'); }
+}, _('Join Command'))
+]),
+qrContainer,
+qrLabel,
 E('p', { style: 'margin:16px 0 8px; font-size:1.1em' }, [
 _('Network ID: '),
 E('code', { style: 'font-size:1.1em; user-select:all; cursor:pointer',
@@ -835,7 +878,7 @@ click: function() { copyToClipboard(nwid, _('Network ID')); }
 E('div', { style: 'background:#f5f5f5; padding:12px; border-radius:8px; margin:12px 0; text-align:left' }, [
 E('p', { style: 'margin:0 0 8px; font-weight:bold' }, _('How to join:')),
 E('p', { style: 'margin:4px 0' }, [
-'\u{1F4F1} ', E('strong', {}, _('Mobile: ')), _('Open ZeroTier app → "+" → scan QR code or enter Network ID')
+'\u{1F4F1} ', E('strong', {}, _('Mobile: ')), _('Open ZeroTier app → "+" → enter Network ID below')
 ]),
 E('p', { style: 'margin:4px 0' }, [
 '\u{1F4BB} ', E('strong', {}, _('Desktop: ')),
@@ -844,7 +887,9 @@ E('code', { style: 'background:#e9ecef; padding:2px 6px; border-radius:3px' }, j
 E('p', { style: 'margin:4px 0' }, [
 '\u{1F5A5}\uFE0F ', E('strong', {}, _('OpenWrt: ')),
 _('Add network ID in ZeroTier Configuration page')
-])
+]),
+E('p', { style: 'margin:8px 0 0; font-size:0.8em; color:#888; font-style:italic' },
+_('Note: ZeroTier official app does not support QR scan to join. Please copy the Network ID and paste it manually.'))
 ]),
 E('div', { style: 'display:flex; gap:8px; justify-content:center; margin-top:12px' }, [
 E('button', { class: 'btn cbi-button-action',
@@ -852,7 +897,10 @@ click: function() { copyToClipboard(nwid, _('Network ID')); }
 }, '\u{1F4CB} ' + _('Copy ID')),
 E('button', { class: 'btn cbi-button-action',
 click: function() { copyToClipboard(joinCmd, _('Join command')); }
-}, '\u{1F4CB} ' + _('Copy Command'))
+}, '\u{1F4CB} ' + _('Copy Command')),
+E('button', { class: 'btn cbi-button-action',
+click: function() { copyToClipboard(ztUri, _('URI')); }
+}, '\u{1F4CB} ' + _('Copy URI'))
 ])
 ]),
 E('div', { class: 'right', style: 'margin-top:12px' }, [
