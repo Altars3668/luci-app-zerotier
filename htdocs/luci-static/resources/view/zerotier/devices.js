@@ -85,10 +85,10 @@ function isValidIP(ip) {
 return view.extend({
 	load: function() {
 		return Promise.all([
-			fs.exec('/bin/cat', ['/tmp/dhcp.leases']),
-			fs.exec('/bin/cat', ['/proc/net/arp']),
+			fs.exec('/bin/cat', ['/tmp/dhcp.leases']).catch(function(e) { return null; }),
+			fs.exec('/bin/cat', ['/proc/net/arp']).catch(function(e) { return null; }),
 			uci.load('zerotier'),
-			fs.exec('/usr/bin/zerotier-cli', ['listnetworks'])
+			fs.exec('/usr/bin/zerotier-cli', ['listnetworks']).catch(function(e) { return { code: -1, stderr: String(e) }; })
 		]);
 	},
 

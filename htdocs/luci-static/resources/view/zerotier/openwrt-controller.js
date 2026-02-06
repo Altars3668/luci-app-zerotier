@@ -77,7 +77,7 @@ return view.extend({
 			this.getZeroTierStatus(),
 			this.getOpenWrtZTNCUIConfig(),
 			this.checkPackageAvailability(),
-			uci.load('ztncui')
+			uci.load('ztncui').catch(function() { return null; })
 		]).then(function(results) {
 			return {
 				ztncuiStatus: results[0],
