@@ -220,7 +220,7 @@ return view.extend({
 			} else if (enableController) {
 				window.open('http://' + window.location.hostname + ':' + controllerPort, '_blank');
 			} else {
-				location.href = L.url('admin/vpn/zerotier/controller');
+				location.href = L.url('admin/vpn/zerotier/local-controller');
 			}
 		}
 
@@ -229,7 +229,7 @@ return view.extend({
 		o.inputtitle = _('Settings');
 		o.inputstyle = 'action';
 		o.onclick = function() {
-			window.open("/cgi-bin/luci/admin/vpn/zerotier/controller", '_self');
+			location.href = L.url('admin/vpn/zerotier/external-controller');
 		}
 
 		o = s.option(form.Button, '_moon', _('Moon Manager'),
