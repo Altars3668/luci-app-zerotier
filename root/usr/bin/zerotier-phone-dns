@@ -1,0 +1,57 @@
+#!/bin/sh
+# Keep a stable local hostname pointing at whichever address currently
+# reaches the phone: its native ZeroTier identity when the ZT app is
+# running, falling back to the 1:1 NAT LAN-gateway alias when it's only
+# present on a trusted LAN. Run from cron (see uci-defaults).
+#
+# Config lives in /etc/config/zerotier-phone-dns so it's editable without
+# touching this script (multiple phones/devices can each get a section).
+
+CONF="/etc/config/zerotier-phone-dns"
+STATE_DIR="/tmp/zerotier-phone-dns"
+mkdir -p "$STATE_DIR"
+
+probe() { ping -c2 -W2 "$1" >/dev/null 2>&1; }
+
+process_entry() {
+	local section="$1"
+	local hostname primary fallback state_file target last_candidate current
+
+	config_get hostname "$section" hostname
+	config_get primary "$section" primary_ip
+	config_get fallback "$section" fallback_ip
+	[ -n "$hostname" ] && [ -n "$primary" ] || return
+
+	state_file="$STATE_DIR/$section"
+
+	target=""
+	probe "$primary" && target="$primary"
+	if [ -z "$target" ] && [ -n "$fallback" ]; then
+		probe "$fallback" && target="$fallback"
+	fi
+	[ -n "$target" ] || return
+
+	# Debounce: require the same candidate on two consecutive runs before
+	# committing, so a single dropped ping (common over cellular) doesn't
+	# bounce dnsmasq back and forth.
+	last_candidate="$(cat "$state_file" 2>/dev/null)"
+	if [ "$target" != "$last_candidate" ]; then
+		echo "$target" > "$state_file"
+		return
+	fi
+
+	current="$(uci -q get "dhcp.zt_dns_$section.ip" 2>/dev/null)"
+	[ "$current" = "$target" ] && return
+
+	uci -q set "dhcp.zt_dns_$section=domain"
+	uci -q set "dhcp.zt_dns_$section.name=$hostname"
+	uci -q set "dhcp.zt_dns_$section.ip=$target"
+	uci -q commit dhcp
+	/etc/init.d/dnsmasq restart >/dev/null 2>&1
+	logger -t zerotier-phone-dns "$hostname -> $target"
+}
+
+[ -f "$CONF" ] || exit 0
+. /lib/functions.sh
+config_load zerotier-phone-dns
+config_foreach process_entry device
