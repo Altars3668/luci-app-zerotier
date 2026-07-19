@@ -10,9 +10,23 @@
 
 'use strict';
 'require fs';
+'require rpc';
 'require ui';
 'require uci';
 'require view';
+
+/* Commit staged uci changes WITHOUT the rollback safety net.
+ * The stock uci.apply() arms a rollback timer that is only confirmed by a
+ * page-side setTimeout; reloading the page right after apply kills that
+ * timer and rpcd reverts the whole config ~10s later — which silently
+ * wiped all zt_device mappings ("Not mapped" bug). zerotier config can
+ * never lock the admin out, so a plain apply is safe here.
+ * Signature matches LuCI's own uci.js callApply: (timeout, rollback). */
+var callUciApply = rpc.declare({
+	object: 'uci',
+	method: 'apply',
+	params: [ 'timeout', 'rollback' ]
+});
 
 // Parse /tmp/dhcp.leases
 function parseDHCPLeases(res) {
@@ -71,10 +85,18 @@ function parseZTNetworks(res) {
 }
 
 // Suggest ZT IP from LAN IP: 10.0.0.135 → 10.0.1.135
-function suggestZTIP(lanIP, ztSubnet) {
+// Skips addresses already mapped on this router (usedIPs) so that two
+// devices are never suggested the same ZT address.
+function suggestZTIP(lanIP, ztSubnet, usedIPs) {
 	if (!ztSubnet) return '';
-	var lastOctet = lanIP.split('.').pop();
-	return ztSubnet + '.' + lastOctet;
+	var last = parseInt(lanIP.split('.').pop(), 10) || 1;
+	for (var i = 0; i < 253; i++) {
+		var octet = ((last - 1 + i) % 253) + 1; /* 1..253, wraps */
+		var cand = ztSubnet + '.' + octet;
+		if (!usedIPs || usedIPs.indexOf(cand) < 0)
+			return cand;
+	}
+	return ztSubnet + '.' + last;
 }
 
 // Validate IP format
@@ -132,16 +154,31 @@ return view.extend({
 		if (section) uci.set('zerotier', section, 'enabled', '0');
 	},
 
+	// Probe whether a candidate ZT IP already answers on the network
+	// (a mapping on another site, or a controller-assigned member).
+	// Resolves to true when the address is already in use.
+	probeZTIP: function(ip) {
+		return fs.exec('/bin/ping', ['-c', '1', '-W', '1', ip]).then(function(res) {
+			return res && res.code === 0;
+		}).catch(function() { return false; });
+	},
+
 	// Show add/edit dialog
-	handleAddDevice: function(mac, hostname, lanIP, currentZtIP, ztSubnet, ev) {
+	handleAddDevice: function(mac, hostname, lanIP, currentZtIP, ztSubnet, usedIPs, ev) {
 		var self = this;
-		var suggested = currentZtIP || suggestZTIP(lanIP, ztSubnet);
+		var suggested = currentZtIP || suggestZTIP(lanIP, ztSubnet, usedIPs);
 
 		var ztInput = E('input', {
 			type: 'text', class: 'cbi-input-text',
 			value: suggested, style: 'width:200px',
 			placeholder: 'e.g. ' + (ztSubnet ? ztSubnet + '.x' : '10.0.1.x')
 		});
+
+		var doApply = function(ztIP) {
+			self.enableDevice(mac, hostname, lanIP, ztIP);
+			ui.hideModal();
+			self.handleApply();
+		};
 
 		ui.showModal(_('Assign ZeroTier IP'), [
 			E('div', { style: 'margin-bottom:12px' }, [
@@ -158,7 +195,9 @@ return view.extend({
 			E('div', { style: 'font-size:0.85em; color:#666; margin-bottom:16px' }, [
 				_('This IP will be added to the ZT interface. LAN IP %s will be mapped 1:1 to this ZT IP via NAT.').format(lanIP),
 				E('br', {}),
-				_('Remote ZT peers can reach this device at this IP (bidirectional).')
+				_('Remote ZT peers can reach this device at this IP (bidirectional).'),
+				E('br', {}),
+				_('Pick an address outside the controller auto-assign pool to avoid collisions with regular ZT members.')
 			]),
 			E('div', { class: 'right' }, [
 				E('button', {
@@ -167,15 +206,32 @@ return view.extend({
 				}, _('Cancel')),
 				E('button', {
 					class: 'cbi-button cbi-button-action important',
-					click: function() {
+					click: function(ev) {
 						var ztIP = ztInput.value.trim();
 						if (!ztIP || !isValidIP(ztIP)) {
 							ui.addNotification(null, E('p', _('Invalid IP address')), 'error');
 							return;
 						}
-						self.enableDevice(mac, hostname, lanIP, ztIP);
-						ui.hideModal();
-						self.handleApply();
+						if (usedIPs && usedIPs.indexOf(ztIP) >= 0 && ztIP !== currentZtIP) {
+							ui.addNotification(null, E('p',
+								_('%s is already mapped to another device on this router').format(ztIP)), 'error');
+							return;
+						}
+						/* unchanged IP on edit: our own alias answers ping, skip probe */
+						if (ztIP === currentZtIP)
+							return doApply(ztIP);
+
+						var btn = ev.currentTarget;
+						btn.disabled = true;
+						btn.textContent = _('Checking...');
+						self.probeZTIP(ztIP).then(function(inUse) {
+							if (!inUse)
+								return doApply(ztIP);
+							btn.disabled = false;
+							btn.textContent = _('Apply');
+							if (confirm(_('%s already responds on the network (possibly mapped at another site or assigned by the controller). Use it anyway?').format(ztIP)))
+								doApply(ztIP);
+						});
 					}
 				}, _('Apply'))
 			])
@@ -196,10 +252,16 @@ return view.extend({
 			E('p', { class: 'spinning' }, _('Saving and applying 1:1 NAT rules...'))
 		]);
 
+		/* NOTE: deliberately NOT uci.apply() — see callUciApply above.
+		 * timeout 0, rollback false → apply immediately, no confirm timer. */
 		return uci.save().then(function() {
-			return uci.apply();
+			return callUciApply(0, false);
 		}).then(function() {
-			return self.applyNATRules();
+			return self.applyNATRules().catch(function(err) {
+				/* config is committed at this point; only rule refresh failed */
+				ui.addNotification(null, E('p',
+					_('Mapping saved, but applying firewall rules failed: %s').format(err.message)), 'error');
+			});
 		}).then(function() {
 			ui.hideModal();
 			window.location.reload();
@@ -252,6 +314,17 @@ return view.extend({
 				if (ipA[i] !== ipB[i]) return ipA[i] - ipB[i];
 			}
 			return 0;
+		});
+
+		// Addresses already taken locally: mapped device IPs + the router's own ZT IPs
+		var usedIPs = [];
+		this.getDeviceSections().forEach(function(s) {
+			if (s.enabled === '1' && s.zt_ip) usedIPs.push(s.zt_ip);
+		});
+		ztNetworks.forEach(function(net) {
+			(net.ips.match(/\d+\.\d+\.\d+\.\d+/g) || []).forEach(function(ip) {
+				usedIPs.push(ip);
+			});
 		});
 
 		// --- Build UI ---
@@ -322,7 +395,7 @@ return view.extend({
 						style: 'margin-right:4px',
 						title: _('Change ZT IP'),
 						click: ui.createHandlerFn(self, 'handleAddDevice',
-							dev.mac, dev.hostname, dev.ip, dev.zt_ip, ztSubnet)
+							dev.mac, dev.hostname, dev.ip, dev.zt_ip, ztSubnet, usedIPs)
 					}, _('Edit')));
 					actions.push(E('button', {
 						class: 'cbi-button cbi-button-remove',
@@ -332,7 +405,7 @@ return view.extend({
 					actions.push(E('button', {
 						class: 'cbi-button cbi-button-action',
 						click: ui.createHandlerFn(self, 'handleAddDevice',
-							dev.mac, dev.hostname, dev.ip, '', ztSubnet)
+							dev.mac, dev.hostname, dev.ip, '', ztSubnet, usedIPs)
 					}, _('Assign IP')));
 				}
 

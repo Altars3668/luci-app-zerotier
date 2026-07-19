@@ -7,15 +7,11 @@
 				"/usr/bin/zerotier-cli": [ "exec" ],
 				"/usr/bin/zerotier-moon": [ "exec" ],
 				"/bin/cat": [ "exec" ],
-				"/bin/sh": [ "exec" ],
-				"/bin/opkg": [ "exec" ],
-				"/etc/init.d/ztncui": [ "exec" ],
+				"/bin/ping": [ "exec" ],
 				"/var/lib/zerotier-one/identity.public": [ "read" ],
-				"/var/lib/zerotier-one/identity.secret": [ "read" ],
+				"/var/lib/zerotier-one/authtoken.secret": [ "read" ],
 				"/var/lib/zerotier-one/moons.d/*": [ "read" ],
 				"/var/lib/zerotier-one/moon.json": [ "read" ],
-				"/var/lib/zerotier-one/authtoken.secret": [ "read" ],
-				"/etc/ztncui/etc/ztncui.conf": [ "read" ],
 				"/etc/zerotier-moon.conf": [ "read" ],
 				"/etc/zerotier-controller.conf": [ "read" ],
 				"/tmp/dhcp.leases": [ "read" ],
@@ -23,35 +19,28 @@
 			},
 			"ubus": {
 				"service": [ "list" ],
-				"luci": [ "getInitList", "setInitAction" ],
 				"zerotier-controller": [
 					"check_controller",
 					"status",
 					"list_networks",
 					"get_network",
 					"list_members",
-					"get_member",
-					"moon_info",
-					"moon_list",
-					"dynamic_status"
+					"get_member"
 				]
 			},
-			"uci": [ "zerotier", "ztncui" ]
+			"uci": [ "zerotier" ]
 		},
 		"write": {
 			"file": {
 				"/usr/bin/zerotier-cli": [ "exec" ],
 				"/usr/bin/zerotier-moon": [ "exec" ],
-				"/bin/opkg": [ "exec" ],
-				"/etc/init.d/ztncui": [ "exec" ],
+				"/usr/bin/zerotier-fw4": [ "exec" ],
 				"/var/lib/zerotier-one/moons.d/*": [ "write" ],
 				"/var/lib/zerotier-one/moon.json": [ "write" ],
-				"/etc/ztncui/etc/ztncui.conf": [ "write" ],
 				"/etc/zerotier-moon.conf": [ "write" ],
 				"/etc/zerotier-controller.conf": [ "write" ]
 			},
 			"ubus": {
-				"luci": [ "setInitAction" ],
 				"zerotier-controller": [
 					"create_network",
 					"update_network",
@@ -61,16 +50,10 @@
 					"delete_member",
 					"update_routes",
 					"update_ip_pools",
-					"easy_setup",
-					"moon_create",
-					"moon_join",
-					"moon_leave",
-					"dynamic_enable",
-					"dynamic_disable",
-					"dynamic_update"
+					"easy_setup"
 				]
 			},
-			"uci": [ "zerotier", "ztncui" ]
+			"uci": [ "zerotier" ]
 		}
 	}
 }

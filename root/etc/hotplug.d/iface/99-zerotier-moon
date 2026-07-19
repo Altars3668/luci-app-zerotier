@@ -1,0 +1,21 @@
+#!/bin/sh
+# Refresh the ZeroTier moon endpoint when the WAN address changes.
+# No-op unless dynamic moon mode was enabled (config file present).
+
+[ "$ACTION" = "ifup" ] || [ "$ACTION" = "ifupdate" ] || exit 0
+
+case "$INTERFACE" in
+	wan|wan_4|wan6) ;;
+	*) exit 0 ;;
+esac
+
+[ -f /etc/zerotier-moon.conf ] || exit 0
+grep -q '^ENABLED=1' /etc/zerotier-moon.conf 2>/dev/null || exit 0
+
+# Give PPPoE/DHCP a moment to settle, then update in the background so
+# hotplug processing is not blocked.
+(
+	sleep 5
+	/usr/bin/zerotier-moon update >/dev/null 2>&1 && \
+		logger -t zerotier-moon "WAN $INTERFACE $ACTION: moon endpoint check done"
+) &

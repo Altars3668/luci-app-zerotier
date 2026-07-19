@@ -12,7 +12,7 @@ return view.extend({
 	load() {
 		return fs.exec('/sbin/ifconfig').then(function(res) {
 			if (res.code !== 0 || !res.stdout || res.stdout.trim() === '') {
-				ui.addNotification(null, E('p', {}, _('Unable to get interface info: %s.').format(res.message)));
+				ui.addNotification(null, E('p', {}, _('Unable to get interface info: %s.').format(res.stderr || '?')));
 				return '';
 			}
 
@@ -66,6 +66,10 @@ return view.extend({
 					return parsedInfo;
 				});
 			});
+		}).catch(function(err) {
+			/* missing ifconfig / exec denied must degrade, not blank the page */
+			ui.addNotification(null, E('p', {}, _('Unable to get interface info: %s.').format(err.message)));
+			return '';
 		});
 	},
 

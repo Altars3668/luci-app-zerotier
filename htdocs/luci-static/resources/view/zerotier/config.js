@@ -128,8 +128,11 @@ return view.extend({
 					
 					if (errorElement) {
 						if (status.error) {
-							errorElement.innerHTML = '<div class="alert-message warning">' + 
-								_('Error checking service status') + ': ' + status.error + '</div>';
+							/* build via DOM, not innerHTML: status.error may echo attacker-influenced text */
+							while (errorElement.firstChild)
+								errorElement.removeChild(errorElement.firstChild);
+							errorElement.appendChild(E('div', { class: 'alert-message warning' },
+								_('Error checking service status') + ': ' + status.error));
 							errorElement.style.display = 'block';
 						} else {
 							errorElement.style.display = 'none';

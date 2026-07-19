@@ -77,19 +77,40 @@ configure_firewall() {
     esac
 }
 
+is_public_ip4() {
+    echo "$1" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$' || return 1
+    # RFC1918 / CGNAT / loopback / link-local are not publicly reachable
+    case "$1" in
+        10.*|127.*|169.254.*|192.168.*) return 1 ;;
+        172.1[6-9].*|172.2[0-9].*|172.3[01].*) return 1 ;;
+        100.6[4-9].*|100.[7-9][0-9].*|100.1[01][0-9].*|100.12[0-7].*) return 1 ;;
+    esac
+    return 0
+}
+
 # Detect public IP address
 detect_public_ip() {
     local ip=""
-    
-    # Try multiple services
-    for service in "ifconfig.me" "ipinfo.io/ip" "api.ipify.org" "icanhazip.com"; do
-        ip=$(curl -s --connect-timeout 5 "$service" 2>/dev/null)
+
+    # Fastest and most reliable: the WAN interface itself (PPPoE/direct)
+    for iface_name in wan wan_4 pppoe-wan; do
+        ip=$(ubus call network.interface.$iface_name status 2>/dev/null | \
+            jsonfilter -qe '@["ipv4-address"][0].address')
+        if is_public_ip4 "$ip"; then
+            echo "$ip"
+            return 0
+        fi
+    done
+
+    # Fall back to external services (needed behind NAT)
+    for service in "https://ifconfig.me" "https://ipinfo.io/ip" "https://api.ipify.org" "https://icanhazip.com"; do
+        ip=$(curl -s --connect-timeout 5 "$service" 2>/dev/null | tr -d ' \r\n')
         if echo "$ip" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$'; then
             echo "$ip"
             return 0
         fi
     done
-    
+
     return 1
 }
 
@@ -117,13 +138,13 @@ resolve_domain() {
         return 0
     fi
     
-    # Try ping
-    ip=$(ping -c1 -W2 "$domain" 2>/dev/null | grep -oP '\(\K[0-9.]+(?=\))')
+    # Try ping (busybox-safe extraction, no PCRE)
+    ip=$(ping -c1 -W2 "$domain" 2>/dev/null | sed -n 's/.*(\([0-9.]*\)).*/\1/p' | head -1)
     if [ -n "$ip" ]; then
         echo "$ip"
         return 0
     fi
-    
+
     return 1
 }
 
@@ -155,16 +176,22 @@ create_moon() {
     
     # Work in ZT_HOME directory
     cd "$ZT_HOME"
-    
-    # Step 1: Generate initial moon.json using initmoon
-    "$ZT_IDTOOL" initmoon "$ZT_HOME/identity.public" > "$moon_json" 2>/dev/null
+
+    # Step 1: Generate initial moon.json using initmoon — but only if we
+    # don't already have one with its signing key. Re-keying an existing
+    # moon would break every node that already orbits it (updates are
+    # verified against the original updatesMustBeSignedBy).
+    if [ ! -s "$moon_json" ] || ! grep -q 'signingKey_SECRET' "$moon_json"; then
+        "$ZT_IDTOOL" initmoon "$ZT_HOME/identity.public" > "$moon_json" 2>/dev/null
+    fi
     if [ ! -f "$moon_json" ] || [ ! -s "$moon_json" ]; then
         echo "ERROR: Failed to initialize moon configuration"
         exit 1
     fi
-    
-    # Step 2: Add stableEndpoints to moon.json
-    sed -i "s|\"stableEndpoints\": \[\]|\"stableEndpoints\": [\"${public_ip}/${public_port}\"]|" "$moon_json"
+
+    # Step 2: Set stableEndpoints in moon.json (works for both a fresh
+    # "[]" and a previous non-empty list)
+    sed -i "s|\"stableEndpoints\": \[[^]]*\]|\"stableEndpoints\": [\"${public_ip}/${public_port}\"]|" "$moon_json"
     
     echo "=== Moon configuration ==="
     cat "$moon_json"
@@ -255,12 +282,46 @@ get_info() {
     "$ZT_CLI" info
 }
 
+# Values are later read back with conf_get — never sourced — but reject
+# anything that is not a plain IP/hostname/port up front anyway.
+valid_endpoint() {
+    echo "$1" | grep -qE '^(auto|[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+|[A-Za-z0-9]([A-Za-z0-9.-]*[A-Za-z0-9])?)$'
+}
+
+valid_port() {
+    echo "$1" | grep -qE '^[0-9]{1,5}$' && [ "$1" -ge 1 ] && [ "$1" -le 65535 ]
+}
+
+# Read one KEY=value from the config without sourcing it as shell
+conf_get() {
+    sed -n "s/^$1=//p" "$MOON_CONFIG" 2>/dev/null | head -1
+}
+
+CRON_FILE="/etc/crontabs/root"
+CRON_LINE="*/10 * * * * /usr/bin/zerotier-moon update >/dev/null 2>&1"
+
+# Keep the moon endpoint fresh without anyone watching a browser tab:
+# a cron entry re-checks every 10 minutes (hotplug covers WAN bounces).
+register_cron() {
+    grep -qF "zerotier-moon update" "$CRON_FILE" 2>/dev/null && return
+    echo "$CRON_LINE" >> "$CRON_FILE"
+    /etc/init.d/cron restart >/dev/null 2>&1
+    echo "Registered periodic IP check (every 10 min via cron)"
+}
+
+unregister_cron() {
+    [ -f "$CRON_FILE" ] || return
+    grep -qF "zerotier-moon update" "$CRON_FILE" || return
+    sed -i '\|zerotier-moon update|d' "$CRON_FILE"
+    /etc/init.d/cron restart >/dev/null 2>&1
+}
+
 # Configure dynamic IP/domain for moon
 configure_dynamic() {
     local action="$1"
     local endpoint="$2"
     local port="${3:-9993}"
-    
+
     case "$action" in
         "enable")
             if [ -z "$endpoint" ]; then
@@ -271,7 +332,16 @@ configure_dynamic() {
                     return 1
                 fi
             fi
-            
+
+            if ! valid_endpoint "$endpoint"; then
+                echo "ERROR: Invalid endpoint: $endpoint"
+                return 1
+            fi
+            if ! valid_port "$port"; then
+                echo "ERROR: Invalid port: $port"
+                return 1
+            fi
+
             # Save configuration
             cat > "$MOON_CONFIG" << EOF
 # ZeroTier Moon Dynamic IP Configuration
@@ -283,17 +353,20 @@ LAST_UPDATE=$(date +%s)
 EOF
             echo "Dynamic IP monitoring enabled"
             echo "Endpoint: $endpoint:$port"
-            
+
             # Auto-configure firewall
             configure_firewall add "$port"
-            
+
+            register_cron
+
             # Create initial moon
             update_moon_ip
             ;;
-            
+
         "disable")
             if [ -f "$MOON_CONFIG" ]; then
                 sed -i 's/ENABLED=1/ENABLED=0/' "$MOON_CONFIG"
+                unregister_cron
                 echo "Dynamic IP monitoring disabled"
             else
                 echo "Not configured"
@@ -327,68 +400,86 @@ EOF
     esac
 }
 
-# Update moon with current IP (called by cron or manually)
+# Update moon with current IP (called by cron, hotplug or manually)
 update_moon_ip() {
     if [ ! -f "$MOON_CONFIG" ]; then
         echo "ERROR: Not configured. Run: $0 dynamic enable [endpoint] [port]"
         return 1
     fi
-    
-    . "$MOON_CONFIG"
-    
-    if [ "$ENABLED" != "1" ]; then
+
+    # Values are read individually (conf_get), never sourced: a hostile
+    # ENDPOINT line must not become executable shell.
+    local enabled endpoint port last_ip
+    enabled=$(conf_get ENABLED)
+    endpoint=$(conf_get ENDPOINT)
+    port=$(conf_get PORT)
+    last_ip=$(conf_get LAST_IP)
+    valid_port "$port" || port=9993
+
+    if [ "$enabled" != "1" ]; then
         echo "Dynamic IP monitoring is disabled"
         return 0
     fi
-    
+
     # Resolve endpoint (domain or IP or auto)
     local current_ip
-    if [ "$ENDPOINT" = "auto" ] || [ -z "$ENDPOINT" ]; then
-        # Auto-detect public IP
+    if [ "$endpoint" = "auto" ] || [ -z "$endpoint" ]; then
         current_ip=$(detect_public_ip)
-    elif echo "$ENDPOINT" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$'; then
-        # It's an IP address, use it directly
-        current_ip="$ENDPOINT"
+    elif echo "$endpoint" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$'; then
+        current_ip="$endpoint"
     else
-        # It's a domain, resolve it
-        current_ip=$(resolve_domain "$ENDPOINT")
+        current_ip=$(resolve_domain "$endpoint")
     fi
-    
-    if [ -z "$current_ip" ]; then
-        echo "ERROR: Failed to resolve endpoint: $ENDPOINT"
+
+    if ! echo "$current_ip" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$'; then
+        echo "ERROR: Failed to resolve endpoint: $endpoint"
         return 1
     fi
-    
+
+    # Optional second endpoint: global IPv6 on the WAN side
+    local current_ip6
+    current_ip6=$(ip -6 addr show scope global 2>/dev/null | \
+        sed -n 's/.*inet6 \([0-9a-f:]*\)\/[0-9]*.*/\1/p' | grep -v '^fd' | head -1)
+
     # Check if IP changed
-    if [ "$current_ip" = "$LAST_IP" ]; then
+    if [ "$current_ip" = "$last_ip" ]; then
         echo "IP unchanged: $current_ip"
         return 0
     fi
-    
-    echo "IP changed: $LAST_IP -> $current_ip"
+
+    echo "IP changed: ${last_ip:-<none>} -> $current_ip"
     echo "Updating moon configuration..."
-    
-    # Recreate moon with new IP
+
     check_zerotier
-    
+
     # Get node ID
     if [ ! -f "$ZT_HOME/identity.public" ]; then
         "$ZT_IDTOOL" getpublic "$ZT_HOME/identity.secret" > "$ZT_HOME/identity.public"
     fi
     local node_id=$(cat "$ZT_HOME/identity.public" | cut -d':' -f1)
-    
-    cd "$ZT_HOME"
-    
-    # Generate new moon
-    "$ZT_IDTOOL" initmoon "$ZT_HOME/identity.public" > "$ZT_HOME/moon.json" 2>/dev/null
-    sed -i "s|\"stableEndpoints\": \[\]|\"stableEndpoints\": [\"${current_ip}/${PORT}\"]|" "$ZT_HOME/moon.json"
-    
+
+    cd "$ZT_HOME" || return 1
+
+    # CRITICAL: reuse the existing moon.json (it holds signingKey_SECRET).
+    # Re-running initmoon would mint a NEW signing key; nodes that orbited
+    # the old moon verify updates against updatesMustBeSignedBy and would
+    # silently reject the re-signed world — the moon would never recover
+    # for remote peers. Only endpoints may change; the key must not.
+    if [ ! -s "$ZT_HOME/moon.json" ] || ! grep -q 'signingKey_SECRET' "$ZT_HOME/moon.json"; then
+        echo "No reusable moon.json, initializing a fresh one..."
+        "$ZT_IDTOOL" initmoon "$ZT_HOME/identity.public" > "$ZT_HOME/moon.json" 2>/dev/null
+    fi
+
+    local endpoints="\"${current_ip}/${port}\""
+    [ -n "$current_ip6" ] && endpoints="$endpoints,\"${current_ip6}/${port}\""
+    sed -i "s|\"stableEndpoints\": \[[^]]*\]|\"stableEndpoints\": [$endpoints]|" "$ZT_HOME/moon.json"
+
     # Remove old moon files
     rm -f "$ZT_HOME"/000000*.moon "$ZT_HOME/moons.d"/000000*.moon 2>/dev/null
-    
+
     if "$ZT_IDTOOL" genmoon "$ZT_HOME/moon.json"; then
         mkdir -p "$ZT_HOME/moons.d"
-        
+
         # Find and move generated moon file (genmoon creates file in current directory)
         for moon_file in 000000*.moon; do
             if [ -f "$moon_file" ]; then
@@ -396,17 +487,18 @@ update_moon_ip() {
                 echo "Moved $moon_file to moons.d/"
             fi
         done
-        
+
         # Update config with new IP
         sed -i "s/LAST_IP=.*/LAST_IP=$current_ip/" "$MOON_CONFIG"
         sed -i "s/LAST_UPDATE=.*/LAST_UPDATE=$(date +%s)/" "$MOON_CONFIG"
-        
-        # Re-join own moon
-        "$ZT_CLI" deorbit "$node_id" 2>/dev/null
-        sleep 1
-        "$ZT_CLI" orbit "$node_id" "$node_id" 2>/dev/null
-        
+
+        # Restart so the daemon loads the updated moon definition, then
+        # push the new world revision out to connected peers.
+        /etc/init.d/zerotier restart >/dev/null 2>&1
+        logger -t zerotier-moon "Moon endpoint updated: $current_ip:$port (v6: ${current_ip6:-none})"
+
         echo "SUCCESS: Moon updated with IP $current_ip"
+        [ -n "$current_ip6" ] && echo "IPv6 endpoint: $current_ip6"
         echo "Moon ID: $node_id"
     else
         echo "ERROR: Failed to generate moon"
