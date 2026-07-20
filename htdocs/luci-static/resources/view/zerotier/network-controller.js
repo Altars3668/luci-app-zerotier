@@ -755,8 +755,13 @@ var memberRows = this.members.map(function(member) {
 var mid = member.id || member.address;
 var ips = (member.ipAssignments || []).join(', ') || '-';
 var auth = member.authorized;
+// `online` is computed by the backend from the service's /peer table.
+// The controller member API itself has no lastSeen/online field, so the
+// legacy check below is only a fallback for older backends.
 var lastSeen = member.lastSeen || member.lastOnline || 0;
-var isOnline = lastSeen && (Date.now() - lastSeen < 300000); // 5 min threshold
+var isOnline = (member.online === true) ||
+	(member.online === undefined && lastSeen && (Date.now() - lastSeen < 300000));
+var latency = (typeof member.latency === 'number' && member.latency >= 0) ? member.latency : null;
 var memberName = member.name || '';
 
 return E('tr', { class: 'tr' }, [
@@ -767,8 +772,14 @@ memberName ? E('div', { style: 'font-size:0.8em; color:#666' }, memberName) : ''
 E('td', { class: 'td' }, [
 auth ? badge(_('Authorized'), '#28a745') : badge(_('Pending'), '#ffc107'),
 isOnline ?
-E('span', { style: 'margin-left:6px; color:#28a745; font-size:0.85em' }, '\u25CF ' + _('Online')) :
-E('span', { style: 'margin-left:6px; color:#999; font-size:0.85em' }, '\u25CB ' + _('Offline'))
+E('span', {
+	style: 'margin-left:6px; color:#28a745; font-size:0.85em',
+	title: latency !== null ? _('Latency: %d ms').format(latency) : ''
+}, '\u25CF ' + _('Online') + (latency !== null ? ' (' + latency + 'ms)' : '')) :
+E('span', {
+	style: 'margin-left:6px; color:#999; font-size:0.85em',
+	title: lastSeen ? _('Last seen: %s').format(new Date(lastSeen).toLocaleString()) : _('Never connected')
+}, '\u25CB ' + _('Offline'))
 ]),
 E('td', { class: 'td' }, ips),
 E('td', { class: 'td' }, [

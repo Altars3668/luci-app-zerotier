@@ -297,37 +297,81 @@ cmd_delete_network() {
     echo '{"success": true, "nwid": "'"$nwid"'"}'
 }
 
+# Online threshold: a peer counts as online if we received a packet from
+# it within this many milliseconds.
+PEER_ONLINE_WINDOW_MS=300000
+
+# Merge live peer status into a controller member object.
+# The controller's member API has NO lastSeen/online field (that only
+# exists in ZeroTier Central), so online state must come from the
+# service's /peer endpoint — otherwise every member renders as offline.
+# $1: member JSON (single line), $2: member id, $3: cached /peer JSON,
+# $4: this node's own address
+inject_peer_status() {
+    local member_json="$1" mid="$2" peers="$3" self_addr="$4"
+    local last_recv latency online now
+
+    # Newest lastReceive across all active, non-expired paths
+    last_recv=$(echo "$peers" | jsonfilter -qe \
+        "@[@.address=\"$mid\"].paths[@.active=true].lastReceive" | sort -rn | head -1)
+    latency=$(echo "$peers" | jsonfilter -qe "@[@.address=\"$mid\"].latency")
+
+    online="false"
+    now=$(($(date +%s) * 1000))
+    if [ -n "$last_recv" ] && [ "$last_recv" -gt 0 ] 2>/dev/null; then
+        [ $((now - last_recv)) -lt "$PEER_ONLINE_WINDOW_MS" ] && online="true"
+    fi
+
+    # A node never lists itself in its own peer table, so the controller
+    # would otherwise always report itself as offline.
+    if [ -n "$self_addr" ] && [ "$mid" = "$self_addr" ]; then
+        online="true"
+        latency=0
+        last_recv="$now"
+    fi
+
+    # Values injected here are all locally derived numbers/booleans,
+    # never caller input, so plain concatenation is safe.
+    echo "$member_json" | sed "s|}\$|,\"online\":$online,\"latency\":${latency:--1},\"lastSeen\":${last_recv:-0}}|"
+}
+
 # List network members
 cmd_list_members() {
     local nwid="$1"
-    
+
     if ! valid_nwid "$nwid"; then
         echo '{"error": "Invalid network ID"}'
         return 1
     fi
-    
+
     local member_ids
     member_ids=$(zt_api_call "controller/network/$nwid/member")
-    
+
     if [ -z "$member_ids" ]; then
         echo '{"members": []}'
         return 0
     fi
-    
+
     # member_ids is an object like {"memberid": 1, ...}
     # Get detailed info for each member
     local members="["
     local first=1
-    
+
+    # Fetch the peer table and our own address once, reuse for every member
+    local peers self_addr
+    peers=$(zt_api_call "peer")
+    self_addr=$(zt_api_call "status" | jsonfilter -qe '@.address')
+
     # Extract member IDs (10-char hex) from JSON object keys
     local keys
     keys=$(echo "$member_ids" | grep -oE '"[a-f0-9]{10}"' | tr -d '"')
-    
+
     for mid in $keys; do
         local member_details
         member_details=$(zt_api_call "controller/network/$nwid/member/$mid")
-        
+
         if [ -n "$member_details" ] && ! echo "$member_details" | grep -q '"error"'; then
+            member_details=$(inject_peer_status "$member_details" "$mid" "$peers" "$self_addr")
             if [ "$first" = "1" ]; then
                 first=0
             else
@@ -336,7 +380,7 @@ cmd_list_members() {
             members="$members$member_details"
         fi
     done
-    
+
     members="$members]"
     echo "{\"members\": $members}"
 }
@@ -353,13 +397,14 @@ cmd_get_member() {
     
     local result
     result=$(zt_api_call "controller/network/$nwid/member/$mid")
-    
+
     if [ -z "$result" ]; then
         echo '{"error": "Member not found"}'
         return 1
     fi
-    
-    echo "$result"
+
+    inject_peer_status "$result" "$mid" "$(zt_api_call "peer")" \
+        "$(zt_api_call "status" | jsonfilter -qe '@.address')"
 }
 
 # Authorize or deauthorize member
