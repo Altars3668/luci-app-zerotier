@@ -484,19 +484,23 @@ update_moon_ip() {
     [ -n "$current_ip6" ] && endpoints="$endpoints,\"${current_ip6}/${port}\""
     sed -i "s|\"stableEndpoints\": \[[^]]*\]|\"stableEndpoints\": [$endpoints]|" "$ZT_HOME/moon.json"
 
-    # Remove old moon files
-    rm -f "$ZT_HOME"/000000*.moon "$ZT_HOME/moons.d"/000000*.moon 2>/dev/null
+    # Remove only OUR OWN previous moon file. A bare 000000*.moon glob would
+    # also delete the moons of other nodes we have orbited (they live in the
+    # same directory), silently dropping us out of their moons on every
+    # endpoint update.
+    rm -f "$ZT_HOME/000000${node_id}.moon" "$ZT_HOME/moons.d/000000${node_id}.moon" 2>/dev/null
 
     if "$ZT_IDTOOL" genmoon "$ZT_HOME/moon.json"; then
         mkdir -p "$ZT_HOME/moons.d"
 
-        # Find and move generated moon file (genmoon creates file in current directory)
-        for moon_file in 000000*.moon; do
-            if [ -f "$moon_file" ]; then
-                mv "$moon_file" "$ZT_HOME/moons.d/"
-                echo "Moved $moon_file to moons.d/"
-            fi
-        done
+        # Move the moon genmoon just wrote (it lands in the current directory).
+        # Match our own id explicitly rather than globbing, so a stray moon
+        # file belonging to another node is never touched.
+        moon_file="000000${node_id}.moon"
+        if [ -f "$moon_file" ]; then
+            mv "$moon_file" "$ZT_HOME/moons.d/"
+            echo "Moved $moon_file to moons.d/"
+        fi
 
         # Update config with new IP
         sed -i "s/LAST_IP=.*/LAST_IP=$current_ip/" "$MOON_CONFIG"
