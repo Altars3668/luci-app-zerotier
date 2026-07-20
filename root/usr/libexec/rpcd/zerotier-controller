@@ -306,19 +306,26 @@ PEER_ONLINE_WINDOW_MS=300000
 # exists in ZeroTier Central), so online state must come from the
 # service's /peer endpoint — otherwise every member renders as offline.
 # $1: member JSON (single line), $2: member id, $3: cached /peer JSON,
-# $4: this node's own address
+# $4: this node's own address, $5: current time in ms (hoisted by caller)
+#
+# Runs once per member, so keep the process count down: one awk over a
+# single jsonfilter pass, and pure shell for the rest. Spawning date/sed/
+# sort/head here instead cost ~6 processes per member and made this the
+# slowest ubus call by a wide margin.
 inject_peer_status() {
-    local member_json="$1" mid="$2" peers="$3" self_addr="$4"
-    local last_recv latency online now
+    local member_json="$1" mid="$2" peers="$3" self_addr="$4" now="$5"
+    local vals last_recv latency online
 
-    # Newest lastReceive across all active, non-expired paths
-    last_recv=$(echo "$peers" | jsonfilter -qe \
-        "@[@.address=\"$mid\"].paths[@.active=true].lastReceive" | sort -rn | head -1)
-    latency=$(echo "$peers" | jsonfilter -qe "@[@.address=\"$mid\"].latency")
+    # One pass: latency first, then every active path's lastReceive.
+    # awk keeps the first value as latency and the max of the rest.
+    vals=$(echo "$peers" | jsonfilter -qe "@[@.address=\"$mid\"].latency" \
+        -e "@[@.address=\"$mid\"].paths[@.active=true].lastReceive" \
+        | awk 'NR==1{lat=$0; next} $0>m{m=$0} END{printf "%s %s", (lat==""?"-1":lat), (m==""?0:m)}')
+    latency="${vals% *}"
+    last_recv="${vals#* }"
 
     online="false"
-    now=$(($(date +%s) * 1000))
-    if [ -n "$last_recv" ] && [ "$last_recv" -gt 0 ] 2>/dev/null; then
+    if [ "$last_recv" -gt 0 ] 2>/dev/null; then
         [ $((now - last_recv)) -lt "$PEER_ONLINE_WINDOW_MS" ] && online="true"
     fi
 
@@ -330,9 +337,10 @@ inject_peer_status() {
         last_recv="$now"
     fi
 
-    # Values injected here are all locally derived numbers/booleans,
-    # never caller input, so plain concatenation is safe.
-    echo "$member_json" | sed "s|}\$|,\"online\":$online,\"latency\":${latency:--1},\"lastSeen\":${last_recv:-0}}|"
+    # Strip the closing brace and re-append with our fields. Pure shell —
+    # no sed. Injected values are locally derived numbers/booleans, never
+    # caller input, so plain concatenation is safe.
+    echo "${member_json%\}},\"online\":$online,\"latency\":${latency:--1},\"lastSeen\":${last_recv:-0}}"
 }
 
 # List network members
@@ -361,6 +369,7 @@ cmd_list_members() {
     local peers self_addr
     peers=$(zt_api_call "peer")
     self_addr=$(zt_api_call "status" | jsonfilter -qe '@.address')
+    local now_ms=$(($(date +%s) * 1000))
 
     # Extract member IDs (10-char hex) from JSON object keys
     local keys
@@ -371,7 +380,7 @@ cmd_list_members() {
         member_details=$(zt_api_call "controller/network/$nwid/member/$mid")
 
         if [ -n "$member_details" ] && ! echo "$member_details" | grep -q '"error"'; then
-            member_details=$(inject_peer_status "$member_details" "$mid" "$peers" "$self_addr")
+            member_details=$(inject_peer_status "$member_details" "$mid" "$peers" "$self_addr" "$now_ms")
             if [ "$first" = "1" ]; then
                 first=0
             else
@@ -404,7 +413,7 @@ cmd_get_member() {
     fi
 
     inject_peer_status "$result" "$mid" "$(zt_api_call "peer")" \
-        "$(zt_api_call "status" | jsonfilter -qe '@.address')"
+        "$(zt_api_call "status" | jsonfilter -qe '@.address')" "$(($(date +%s) * 1000))"
 }
 
 # Authorize or deauthorize member
