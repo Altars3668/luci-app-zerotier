@@ -436,10 +436,20 @@ update_moon_ip() {
         return 1
     fi
 
-    # Optional second endpoint: global IPv6 on the WAN side
-    local current_ip6
-    current_ip6=$(ip -6 addr show scope global 2>/dev/null | \
-        sed -n 's/.*inet6 \([0-9a-f:]*\)\/[0-9]*.*/\1/p' | grep -v '^fd' | head -1)
+    # Optional second endpoint: the WAN-side global IPv6.
+    # MUST take it from the WAN (default-route) interface, not just the
+    # first global v6 — a LAN bridge (br-lan) usually also carries a
+    # delegated global prefix whose ::1 gateway address sorts first but
+    # is NOT reachable from outside. Picking that silently broke the v6
+    # endpoint. Also skip ::1-suffixed gateway-style addresses.
+    local current_ip6 wan6dev
+    wan6dev=$(ip -4 route show default 2>/dev/null | sed -n 's/.*dev \([^ ]*\).*/\1/p' | head -1)
+    if [ -n "$wan6dev" ]; then
+        current_ip6=$(ip -6 addr show dev "$wan6dev" scope global 2>/dev/null | \
+            sed -n 's|.*inet6 \([0-9a-f:]*\)/.*|\1|p' | grep -v '^fd' | grep -v '::1$' | head -1)
+    fi
+    [ -z "$current_ip6" ] && current_ip6=$(ip -6 addr show scope global 2>/dev/null | \
+        sed -n 's|.*inet6 \([0-9a-f:]*\)/.*|\1|p' | grep -v '^fd' | grep -v '::1$' | head -1)
 
     # Check if IP changed
     if [ "$current_ip" = "$last_ip" ]; then
