@@ -31,26 +31,25 @@ return view.extend({
 		return r;
 	},
 
-	renderIsolation(n) {
+	isolationText(n) {
 		if (!n.joined)
-			return zt.badge(_('Not joined here'), 'muted', _('Member isolation is configured on the network section of a joined network'));
+			return E('span', { 'title': _('Member isolation is configured on the network section of a joined network') }, _('Not joined here'));
 		if (n.isolation)
-			return (n.isolationState == 'on') ? zt.badge(_('Members isolated'), 'ok')
-				: zt.badge(_('Isolation not applied yet'), 'warn');
-		return zt.badge(_('Members see each other'), 'muted');
+			return (n.isolationState == 'on') ? _('Members isolated') : zt.label(_('Isolation not applied yet'), 'warning');
+		return _('Members see each other');
 	},
 
 	renderList() {
 		const t = new ui.Table([
 			_('Network'), _('Network ID'), _('Members'), _('Address pools'), _('Member isolation'), ''
-		], { sortable: true }, E('em', _('No networks yet: create one below.')));
+		], { sortable: true }, E('em', {}, _('No networks yet: create one below.')));
 
 		t.update(this.ctl.networks.map((n) => [
-			E('div', [ E('strong', n.name || _('(unnamed)')), n.joined ? zt.small(_('joined here as "%s"').format(n.section)) : '' ]),
-			E('div', [ zt.mono(n.id), zt.copyButton(n.id) ]),
+			zt.text(n.name || _('(unnamed)'), n.joined ? _('joined here as "%s"').format(n.section) : null),
+			n.id,
 			[ n.members, String(n.members) ],
-			n.pools.length ? E('div', n.pools.map((p) => zt.small('%s – %s'.format(p.ipRangeStart, p.ipRangeEnd)))) : '-',
-			this.renderIsolation(n),
+			n.pools.length ? zt.lines(n.pools.map((p) => '%s – %s'.format(p.ipRangeStart, p.ipRangeEnd))) : '-',
+			this.isolationText(n),
 			E('div', { 'class': 'nowrap' }, [
 				E('button', { 'class': 'cbi-button cbi-button-edit', 'click': ui.createHandlerFn(this, 'openNetwork', n.id) }, _('Manage')),
 				' ',
@@ -71,9 +70,9 @@ return view.extend({
 
 	showQR(n) {
 		ui.showModal(_('Join %s').format(n.name || n.id), [
-			E('p', _('Scan with a phone to copy the network ID, then join it in the ZeroTier app. A new member stays unauthorized until it is admitted here.')),
-			E('div', { 'style': 'text-align:center' }, [ zt.qr(n.id), E('p', {}, zt.mono(n.id)) ]),
-			E('div', { 'class': 'right' }, E('button', { 'class': 'cbi-button', 'click': ui.hideModal }, _('Close')))
+			E('p', {}, _('Scan with a phone to copy the network ID, then join it in the ZeroTier app. A new member stays unauthorized until it is admitted here.')),
+			E('div', { 'class': 'center' }, [ zt.qr(n.id), E('p', {}, n.id) ]),
+			E('div', { 'class': 'right' }, [ E('button', { 'class': 'cbi-button', 'click': ui.hideModal }, _('Close')) ])
 		]);
 	},
 
@@ -124,7 +123,7 @@ return view.extend({
 			}
 		};
 		const m = new form.JSONMap(data);
-		const s = m.section(form.NamedSection, 'net', 'net');
+		const s = m.section(form.NamedSection, 'net', 'net', _('Settings of %s').format(n.name || n.id));
 		let o;
 
 		s.tab('general', _('General'));
@@ -247,6 +246,7 @@ return view.extend({
 	},
 
 	handleEditMember(id, m) {
+		const self = (m.id == this.ctl.self);
 		const data = {
 			member: {
 				name: m.name,
@@ -261,7 +261,8 @@ return view.extend({
 		let o;
 
 		o = s.option(form.Value, 'name', _('Name'));
-		if (m.id != this.ctl.self)
+		// The router cannot turn itself away from its own network
+		if (!self)
 			o = s.option(form.Flag, 'authorized', _('Authorized'));
 		o = s.option(form.DynamicList, 'ips', _('Addresses'),
 			_('Managed addresses of the member; leave empty to have one assigned from the pools.'));
@@ -284,7 +285,7 @@ return view.extend({
 							ui.hideModal();
 							return this.handleMember(id, m.id, {
 								name: get('name') || '',
-								authorized: (m.id == this.ctl.self) || get('authorized') == '1',
+								authorized: self || get('authorized') == '1',
 								ipAssignments: L.toArray(get('ips')).filter((x) => x),
 								activeBridge: get('bridge') == '1',
 								noAutoAssignIps: get('noauto') == '1'
@@ -300,31 +301,38 @@ return view.extend({
 		const known = this.memberSections();
 		const t = new ui.Table([
 			_('Member'), _('Admitted'), _('Addresses'), _('Seen'), _('Permissions'), ''
-		], { sortable: true }, E('em', _('No member has asked to join yet')));
+		], { sortable: true }, E('em', {}, _('No member has asked to join yet')));
 
 		t.update(members.map((m) => {
 			const p = m.peer;
 			const perm = known[m.id];
+			const who = [ m.id ];
+			if (m.name)
+				who.push(E('small', {}, m.name));
+			if (m.id == self)
+				who.push(zt.label(_('This router'), 'notice'));
+			if (m.activeBridge)
+				who.push(zt.label(_('Active bridge'), 'warning', _('Can send for any MAC address')));
+
+			let seen;
+			if (m.id == self)
+				seen = [ 2, _('Local') ];
+			else if (p)
+				seen = [ p.lastReceive || 1, zt.text(p.direct ? _('Online') : _('Relayed'),
+					[ p.version ? 'v' + p.version : '', (p.latency >= 0) ? '%d ms'.format(p.latency) : '' ].filter((x) => x).join(' · ')) ];
+			else
+				seen = [ 0, zt.text(_('Offline'), m.version ? 'v' + m.version : null) ];
+
 			return [
-				[ m.name || m.id, E('div', [
-					zt.mono(m.id),
-					m.name ? zt.small(m.name) : '',
-						m.activeBridge ? zt.badge(_('Active bridge'), 'warn', _('Can send for any MAC address')) : ''
-				]) ],
-				[ (m.id == self) ? 2 : m.authorized ? 1 : 0, (m.id == self)
-					? zt.badge(_('This router'), 'info')
-					: m.authorized ? zt.badge(_('Admitted'), 'ok') : zt.badge(_('Waiting'), 'warn', _('Asked to join, not authorized yet')) ],
-				m.ipAssignments.length ? E('div', m.ipAssignments.map((ip) => E('div', {}, zt.mono(ip)))) : '-',
-				(m.id == self) ? [ 2, zt.badge(_('Local'), 'info') ] : [ p ? (p.lastReceive || 1) : 0, p ? E('div', [
-					zt.badge(p.direct ? _('Online') : _('Relayed'), p.direct ? 'ok' : 'warn', p.path || ''),
-					zt.small([ p.version ? 'v' + p.version : '', (p.latency >= 0) ? '%d ms'.format(p.latency) : '' ].filter((x) => x).join(' · '))
-				]) : E('div', [ zt.badge(_('Offline'), 'muted'), m.version ? zt.small('v' + m.version) : '' ]) ],
-				perm ? E('div', [
-					zt.badge(perm.enabled == '0' ? _('Disabled') : (perm.name || _('Configured')), perm.enabled == '0' ? 'muted' : 'ok'),
-					perm.gateway == '1' ? zt.badge(_('Gateway'), 'info') : ''
-				]) : (m.id == self ? '-' : E('a', { 'href': L.url('admin/vpn/zerotier/permissions') }, _('none') + ' »')),
+				[ m.name || m.id, zt.lines(who) ],
+				[ (m.id == self) ? 2 : m.authorized ? 1 : 0, (m.id == self) ? '-'
+					: m.authorized ? _('Admitted') : zt.label(_('Waiting'), 'warning', _('Asked to join, not authorized yet')) ],
+				m.ipAssignments.length ? zt.lines(m.ipAssignments) : '-',
+				seen,
+				perm ? zt.text(perm.enabled == '0' ? _('Disabled') : (perm.name || _('Configured')),
+						L.toArray(perm.role).join(', ') || null)
+					: (m.id == self) ? '-' : E('a', { 'href': L.url('admin/vpn/zerotier/permissions') }, _('none')),
 				E('div', { 'class': 'nowrap' }, [
-					// The router cannot turn itself away from its own network
 					(m.id == self) ? '' : E('button', {
 						'class': 'cbi-button ' + (m.authorized ? 'cbi-button-neutral' : 'cbi-button-positive'),
 						'click': ui.createHandlerFn(this, 'handleMember', id, m.id, { authorized: !m.authorized },
@@ -350,22 +358,22 @@ return view.extend({
 			const pending = res.members.filter((m) => !m.authorized && m.id != this.ctl.self);
 
 			return this.renderSettings(n).render().then((settingsNode) => {
-				dom.content(this.detailNode, E('div', { 'class': 'cbi-section' }, [
-					E('h3', [ _('Network %s').format(n.name || n.id), ' ', zt.mono(n.id) ]),
-					E('div', [
-						this.renderIsolation(listed),
-						zt.badge(_('%d flow rule(s)').format(n.rules), 'muted', _('Actions in the rule set the controller distributes')),
-						!listed.joined ? zt.small(_('This router is not a member of this network. Join it on the Settings page to use it here, or to isolate its members.')) : ''
+				dom.content(this.detailNode, [
+					pending.length ? zt.alert('warning', _('%d member(s) wait for authorization.').format(pending.length)) : '',
+					zt.section(_('Network %s').format(n.name || n.id), [
+						zt.kvTable([
+							[ _('Network ID'), n.id ],
+							[ _('Member isolation'), this.isolationText(listed) ],
+							[ _('Flow rules'), _('%d rule(s)').format(n.rules) ],
+							listed.joined ? null : [ _('This router'), _('Not a member of this network. Join it on the Settings page to use it here, or to isolate its members.') ]
+						])
 					]),
-					pending.length ? zt.note('warn', _('%d member(s) wait for authorization.').format(pending.length)) : '',
-					E('h4', { 'class': 'zt-sub' }, _('Members')),
-					this.renderMembers(id, res.members, this.ctl.self),
-					E('h4', { 'class': 'zt-sub' }, _('Settings')),
+					zt.section(_('Members of %s').format(n.name || n.id), [ this.renderMembers(id, res.members, this.ctl.self) ]),
 					settingsNode,
-					E('div', { 'class': 'zt-actions' }, [
-						E('button', { 'class': 'cbi-button cbi-button-positive', 'click': ui.createHandlerFn(this, 'handleSaveSettings', id) }, _('Save settings'))
+					E('div', { 'class': 'cbi-section-create' }, [
+						E('button', { 'class': 'cbi-button cbi-button-save', 'click': ui.createHandlerFn(this, 'handleSaveSettings', id) }, _('Save settings'))
 					])
-				]));
+				]);
 			});
 		});
 	},
@@ -376,8 +384,8 @@ return view.extend({
 
 		if (!ctl.controller)
 			return E([], [
-				E('h2', _('Network controller')),
-				zt.note('info', _('ZeroTier is not running, or this build of it has no network controller.'))
+				E('h2', {}, _('Network controller')),
+				zt.alert('warning', _('ZeroTier is not running, or this build of it has no network controller.'))
 			]);
 
 		this.ctl = ctl;
@@ -390,14 +398,14 @@ return view.extend({
 			this.openNetwork(want);
 
 		return E([], [
-			E('h2', _('Network controller')),
+			E('h2', {}, _('Network controller')),
 			E('div', { 'class': 'cbi-map-descr' },
 				_('Networks this router is the controller of: who is admitted, which addresses members get, and the routes they learn. What members may reach through a router is set on the Permissions page.')),
-			E('div', { 'class': 'cbi-section' }, [
-				E('h3', _('Networks')),
+			zt.section(_('Networks'), [
 				this.listNode,
-				E('div', { 'class': 'zt-actions' }, [
+				E('div', { 'class': 'cbi-section-create' }, [
 					E('input', { 'id': 'zt-new-network', 'type': 'text', 'class': 'cbi-input-text', 'placeholder': _('Name of a new network') }),
+					' ',
 					E('button', { 'class': 'cbi-button cbi-button-add', 'click': ui.createHandlerFn(this, 'handleCreate') }, _('Create network'))
 				])
 			]),

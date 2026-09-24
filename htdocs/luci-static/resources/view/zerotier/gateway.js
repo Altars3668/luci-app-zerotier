@@ -21,14 +21,15 @@ function int2ip(n) {
 	return [ n >>> 24, (n >>> 16) & 255, (n >>> 8) & 255, n & 255 ].join('.');
 }
 
-// "10.0.1.36/24" -> { net, mask, bits }
+// "10.0.1.36/24" -> { net, mask, bits, text }
 function subnetOf(cidr) {
 	const p = (cidr || '').split('/');
 	if (!zt.isIPv4(p[0]) || !/^\d+$/.test(p[1] || '') || +p[1] > 32)
 		return null;
 	const bits = +p[1];
 	const mask = bits ? (0xffffffff << (32 - bits)) >>> 0 : 0;
-	return { net: (ip2int(p[0]) & mask) >>> 0, mask, bits, text: '%s/%d'.format(int2ip((ip2int(p[0]) & mask) >>> 0), bits) };
+	const net = (ip2int(p[0]) & mask) >>> 0;
+	return { net, mask, bits, text: '%s/%d'.format(int2ip(net), bits) };
 }
 
 function inSubnet(ip, sn) {
@@ -73,25 +74,7 @@ return view.extend({
 		return used;
 	},
 
-	// Same last octet in the router's ZeroTier subnet, unless taken
-	suggest(lanIp, sid) {
-		const sn = this.subnets()[0];
-		if (!sn || !zt.isIPv4(lanIp))
-			return null;
-		const used = this.usedAddresses(sid);
-		const host = ip2int(lanIp) & ~sn.mask;
-		const first = int2ip((sn.net | host) >>> 0);
-		if (!used[first] && host > 0 && (host | sn.mask) >>> 0 != 0xffffffff)
-			return first;
-		for (let h = 2; h < Math.min(~sn.mask >>> 0, 65534); h++) {
-			const ip = int2ip((sn.net | h) >>> 0);
-			if (!used[ip])
-				return ip;
-		}
-		return null;
-	},
-
-	// Controller pools a mapping address falls into
+	// Controller pools an address falls into
 	poolsHolding(ip) {
 		const out = [];
 		this.controlled.forEach((c) => (c.network.ipAssignmentPools || []).forEach((p) => {
@@ -100,6 +83,24 @@ return view.extend({
 				out.push('%s (%s-%s)'.format(c.network.name || c.network.id, p.ipRangeStart, p.ipRangeEnd));
 		}));
 		return out;
+	},
+
+	// A free address in the router's ZeroTier subnet, outside the controller
+	// pools: the LAN address's own host part if that is free, else the first
+	suggest(lanIp, sid) {
+		const sn = this.subnets()[0];
+		if (!sn || !zt.isIPv4(lanIp))
+			return null;
+		const used = this.usedAddresses(sid);
+		const free = (ip) => !used[ip] && !this.poolsHolding(ip).length;
+		const size = (~sn.mask) >>> 0;
+		const host = ip2int(lanIp) & size;
+		if (host > 0 && host < size && free(int2ip((sn.net | host) >>> 0)))
+			return int2ip((sn.net | host) >>> 0);
+		for (let h = 1; h < Math.min(size, 65535); h++)
+			if (free(int2ip((sn.net | h) >>> 0)))
+				return int2ip((sn.net | h) >>> 0);
+		return null;
 	},
 
 	lanHosts() {
@@ -147,18 +148,19 @@ return view.extend({
 	handlePickHost() {
 		const mapped = {};
 		uci.sections('zerotier', 'zt_device').forEach((d) => { if (d.ip) mapped[d.ip] = true; });
-		const t = new ui.Table([ _('Host'), _('LAN address'), _('MAC'), '' ], { sortable: true }, E('em', _('No LAN hosts known')));
+		const t = new ui.Table([ _('Host'), _('LAN address'), _('MAC address'), '' ], { sortable: true },
+			E('em', {}, _('No LAN hosts known')));
 		t.update(this.lanHosts().map((h) => [
 			h.name || '-',
-			zt.mono(h.ip),
-			zt.mono(h.mac),
-			mapped[h.ip] ? zt.badge(_('Mapped'), 'ok')
+			h.ip,
+			h.mac,
+			mapped[h.ip] ? _('Mapped')
 				: E('button', { 'class': 'cbi-button cbi-button-add', 'click': ui.createHandlerFn(this, 'handleMapHost', h) }, _('Map'))
 		]));
 		ui.showModal(_('Map a LAN host'), [
-			E('p', _('Hosts the router knows from DHCP and its neighbour table.')),
+			E('p', {}, _('Hosts the router knows from DHCP and its neighbour table.')),
 			t.render(),
-			E('div', { 'class': 'right' }, E('button', { 'class': 'cbi-button', 'click': ui.hideModal }, _('Cancel')))
+			E('div', { 'class': 'right' }, [ E('button', { 'class': 'cbi-button', 'click': ui.hideModal }, _('Cancel')) ])
 		], 'cbi-modal');
 	},
 
@@ -188,7 +190,6 @@ return view.extend({
 			return uci.sections('zerotier', 'zt_device').some((d) => d['.name'] != sid && d.name == v)
 				? _('Another device already has this name') : true;
 		};
-		o.textvalue = (sid) => E('strong', uci.get('zerotier', sid, 'name') || '-');
 
 		o = s.option(form.Value, 'ip', _('LAN address'));
 		o.datatype = 'ip4addr("nomask")';
@@ -197,11 +198,11 @@ return view.extend({
 		o.textvalue = (sid) => {
 			const ip = uci.get('zerotier', sid, 'ip');
 			const host = this.lanHosts().filter((h) => h.ip == ip)[0];
-			return E('div', [ zt.mono(ip || '-'), host && host.name ? zt.small(host.name) : '' ]);
+			return zt.text(ip || '-', host ? host.name : null);
 		};
 
 		o = s.option(form.Value, 'zt_ip', _('ZeroTier address'),
-			_('The address members reach the device at. It has to lie in a ZeroTier subnet of this router and must not be taken.'));
+			_('The address members reach the device at. It has to lie in a ZeroTier subnet of this router, must not be taken, and should stay outside the address pools of the controller.'));
 		o.datatype = 'ip4addr("nomask")';
 		o.rmempty = false;
 		o.validate = (sid, v) => {
@@ -216,11 +217,10 @@ return view.extend({
 		o.textvalue = (sid) => {
 			const ip = uci.get('zerotier', sid, 'zt_ip');
 			const pools = ip ? this.poolsHolding(ip) : [];
-			return E('div', [
-				zt.mono(ip || '-'),
-				pools.length ? E('div', {}, zt.badge(_('In an auto-assign pool'), 'warn',
-					_('The controller may hand this address to a new member: %s. Narrow the pool on the Controller page.').format(pools.join(', ')))) : ''
-			]);
+			return pools.length
+				? zt.text(ip, zt.label(_('In an auto-assign pool'), 'warning',
+					_('The controller may hand this address to a new member: %s. Narrow the pool on the Controller page.').format(pools.join(', '))))
+				: (ip || '-');
 		};
 
 		o = s.option(form.Value, 'mac', _('MAC address'),
@@ -232,7 +232,7 @@ return view.extend({
 		o.modalonly = false;
 		o.textvalue = (sid) => {
 			const users = this.grantsUsing(uci.get('zerotier', sid, 'name'));
-			return users.length ? users.join(', ') : E('span', { 'class': 'zt-small' }, _('nobody (on networks with member permissions)'));
+			return users.length ? users.join(', ') : E('em', {}, _('nobody (on networks with member permissions)'));
 		};
 
 		return m;
@@ -266,7 +266,7 @@ return view.extend({
 		o.modalonly = false;
 		o.textvalue = (sid) => {
 			const h = this.hosts.filter((x) => x.section == sid)[0];
-			return (h && h.current) ? zt.mono(h.current) : '-';
+			return (h && h.current) ? h.current : '-';
 		};
 
 		return m;
@@ -287,14 +287,15 @@ return view.extend({
 			maps.push(this.renderHostMap());
 
 		return Promise.all(maps.map((m) => m.render())).then((nodes) => E([], [
-			E('h2', _('LAN gateway')),
+			E('h2', {}, _('LAN gateway')),
 			E('div', { 'class': 'cbi-map-descr' },
 				_('Give devices on the LAN an address on the ZeroTier network, so that members reach them without ZeroTier installed on the device (1:1 NAT through this router). Who may reach them is decided on the Permissions page.')),
-			sns.length
-				? zt.note('info', _('ZeroTier subnets of this router: %s').format(sns.map((sn) => '%s (%s, %s)'.format(sn.text, sn.network, _('own address %s').format(sn.own))).join('; ')))
-				: zt.note('warn', _('This router has no IPv4 address on a ZeroTier network yet, so no device can be mapped.')),
-			E('div', { 'class': 'zt-actions' }, [
-				E('button', { 'class': 'cbi-button cbi-button-add', 'click': ui.createHandlerFn(this, 'handlePickHost') }, _('Map a LAN host…'))
+			sns.length ? '' : zt.alert('warning', _('This router has no IPv4 address on a ZeroTier network yet, so no device can be mapped.')),
+			zt.section(null, [
+				zt.kvTable(sns.map((sn) => [ _('ZeroTier subnet'), _('%s on %s, this router at %s').format(sn.text, sn.network, sn.own) ])),
+				E('div', { 'class': 'cbi-section-create' }, [
+					E('button', { 'class': 'cbi-button cbi-button-add', 'click': ui.createHandlerFn(this, 'handlePickHost') }, _('Map a LAN host…'))
+				])
 			]),
 			nodes[0],
 			nodes[1] || ''

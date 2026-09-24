@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [99.3.0] - 2026-09-24
+
+### Changed
+- Every page follows the OpenWrt design language: the status tables, labels,
+  sections, alerts and buttons LuCI's own pages use, no custom styling. Only
+  a rule hiding the Argon theme's duplicate section name is left.
+
+### Added
+- Groups: every role is also a group. With "Members reach each other" its
+  members reach one another directly under member isolation, and
+  `group:ROLE` grants reach every member holding the role.
+
 ## [99.2.0] - 2026-09-24
 
 A rewrite. The version jumps to 99.x so that the upstream luci-app-zerotier of

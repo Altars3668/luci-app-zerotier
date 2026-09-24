@@ -4,8 +4,8 @@
 'require ui';
 'require uqr';
 
-// Shared by the ZeroTier views: backend calls, ZeroTier specifics and a few
-// small rendering helpers.
+// Shared by the ZeroTier views: backend calls, ZeroTier specifics, and small
+// helpers that build the same elements LuCI's own pages use.
 
 function declare(method, params, expect) {
 	return rpc.declare({
@@ -17,46 +17,21 @@ function declare(method, params, expect) {
 }
 
 const STATUS = {
-	OK: [ 'ok', _('Connected') ],
-	REQUESTING_CONFIGURATION: [ 'warn', _('Waiting for the controller') ],
-	ACCESS_DENIED: [ 'bad', _('Not authorized') ],
-	NOT_FOUND: [ 'bad', _('Network not found') ],
-	PORT_ERROR: [ 'bad', _('Interface error') ],
-	CLIENT_TOO_OLD: [ 'bad', _('Client too old') ],
-	AUTHENTICATION_REQUIRED: [ 'warn', _('Authentication required') ],
-	NOT_JOINED: [ 'muted', _('Not joined') ],
-	DISABLED: [ 'muted', _('Disabled') ]
+	OK: [ 'success', _('Connected') ],
+	REQUESTING_CONFIGURATION: [ 'notice', _('Waiting for the controller') ],
+	ACCESS_DENIED: [ 'important', _('Not authorized') ],
+	NOT_FOUND: [ 'important', _('Network not found') ],
+	PORT_ERROR: [ 'important', _('Interface error') ],
+	CLIENT_TOO_OLD: [ 'important', _('Client too old') ],
+	AUTHENTICATION_REQUIRED: [ 'warning', _('Authentication required') ],
+	NOT_JOINED: [ null, _('Not joined') ],
+	DISABLED: [ null, _('Disabled') ]
 };
 
-// The last rule: newer LuCI gives the name of a named section a cell of its
-// own, while the Argon theme still prints it in front of the row as well -
-// hide Argon's copy, but only where LuCI's cell is there
+// Newer LuCI gives the name of a named section a cell of its own, while the
+// Argon theme still prints it in front of the row as well: hide Argon's copy,
+// but only where LuCI's cell is there.
 const CSS = `
-.zt-badge{display:inline-block;padding:0 .6em;border-radius:1em;font-size:.85em;line-height:1.7;white-space:nowrap;border:1px solid rgba(128,128,128,.35);margin:.1em .25em .1em 0}
-.zt-ok{background:rgba(46,160,67,.14);color:#2a9142;border-color:rgba(46,160,67,.45)}
-.zt-warn{background:rgba(210,153,34,.15);color:#a36d0b;border-color:rgba(210,153,34,.5)}
-.zt-bad{background:rgba(218,54,51,.13);color:#cf2c29;border-color:rgba(218,54,51,.45)}
-.zt-info{background:rgba(56,139,253,.13);color:#2f6fd0;border-color:rgba(56,139,253,.45)}
-.zt-muted{opacity:.75}
-.zt-mono{font-family:monospace;white-space:nowrap}
-.zt-small{font-size:.85em;opacity:.8}
-.zt-cards{display:flex;flex-wrap:wrap;gap:1em;margin:0 0 1.5em}
-.zt-card{flex:1 1 230px;border:1px solid rgba(128,128,128,.3);border-radius:6px;padding:.8em 1em}
-.zt-card h4{margin:0 0 .5em;font-size:.9em;font-weight:normal;opacity:.75;text-transform:uppercase;letter-spacing:.03em}
-.zt-card .zt-big{font-size:1.35em;font-weight:bold;margin:.1em 0 .3em}
-.zt-card .cbi-button{margin:.4em .4em 0 0}
-.zt-note{border-left:3px solid #388bfd;padding:.5em .9em;margin:.6em 0;background:rgba(56,139,253,.07)}
-.zt-note.zt-warn{border-left-color:#d29922;background:rgba(210,153,34,.08);color:inherit}
-.zt-note.zt-bad{border-left-color:#da3633;background:rgba(218,54,51,.07);color:inherit}
-.zt-note.zt-info{border-left-color:#388bfd;background:rgba(56,139,253,.07);color:inherit}
-.zt-note ul{margin:.3em 0 0 1.2em}
-.zt-pre{max-height:28em;overflow:auto;font-size:.85em;white-space:pre;padding:.6em;border:1px solid rgba(128,128,128,.3);border-radius:4px}
-.zt-actions{display:flex;flex-wrap:wrap;gap:.4em;margin:.6em 0}
-.zt-qr svg{width:180px;height:180px}
-.zt-sub{font-size:1.1em;font-weight:600;margin:1.4em 0 .5em}
-.zt-body{padding:0 1em}
-.zt-body>div{margin:.25em 0}
-.zt-descr{font-size:.9em;opacity:.8;margin:.4em 0}
 @media screen and (min-width:768px){
 #cbi-zerotier .cbi-section-table-titles.named.cbi-value-first-field::before,#cbi-zerotier .cbi-section-table-row[data-title]:has(>td.cbi-value-first-field)::before,
 #cbi-zerotier-phone-dns .cbi-section-table-titles.named.cbi-value-first-field::before,#cbi-zerotier-phone-dns .cbi-section-table-row[data-title]:has(>td.cbi-value-first-field)::before{content:none!important;display:none!important}
@@ -99,25 +74,52 @@ return baseclass.extend({
 			document.head.appendChild(E('style', { id: 'zt-style' }, CSS));
 	},
 
-	badge(text, kind, title) {
-		return E('span', { 'class': 'zt-badge zt-' + (kind || 'muted'), 'title': title || '' }, text);
+	// A status label, as LuCI's own pages show them; kind is one of the
+	// theme's label classes: success, notice, warning, important
+	label(text, kind, title) {
+		return E('span', { 'class': kind ? 'label ' + kind : 'label', 'title': title || null }, text);
 	},
 
-	statusBadge(status) {
-		const s = STATUS[status] || [ 'warn', status || _('Unknown') ];
-		return this.badge(s[1], s[0], status);
+	statusLabel(status) {
+		const s = STATUS[status] || [ 'warning', status || _('Unknown') ];
+		return this.label(s[1], s[0], status);
 	},
 
-	mono(text) {
-		return E('span', { 'class': 'zt-mono' }, text);
+	// Items one per line (LuCI's dom.append does not flatten nested arrays)
+	lines(items) {
+		const out = [];
+		items.forEach((it, i) => {
+			if (i)
+				out.push(E('br'));
+			out.push(it);
+		});
+		return E('span', {}, out);
 	},
 
-	small(text) {
-		return E('div', { 'class': 'zt-small' }, text);
+	// Main text with a smaller second line
+	text(main, sub) {
+		return sub ? E('span', {}, [ main, E('br'), E('small', {}, sub) ]) : main;
 	},
 
-	note(kind, content) {
-		return E('div', { 'class': 'zt-note zt-' + kind }, content);
+	// A two-column table of names and values, as on Status > Overview
+	kvTable(rows) {
+		return E('table', { 'class': 'table' }, rows.filter((r) => r).map((r) =>
+			E('tr', { 'class': 'tr' }, [
+				E('td', { 'class': 'td left', 'width': '33%' }, r[0]),
+				E('td', { 'class': 'td left' }, r[1])
+			])));
+	},
+
+	// kind: warning or error
+	alert(kind, content) {
+		return E('div', { 'class': 'alert-message ' + kind }, content);
+	},
+
+	section(title, children, descr) {
+		return E('div', { 'class': 'cbi-section' }, [
+			title ? E('h3', {}, title) : '',
+			descr ? E('div', { 'class': 'cbi-section-descr' }, descr) : ''
+		].concat(children));
 	},
 
 	bytes(n) {
@@ -139,40 +141,17 @@ return baseclass.extend({
 	// Result of a backend call that answers { error: ... } on failure
 	check(res, okText) {
 		if (res && res.error) {
-			ui.addNotification(null, E('p', _('Failed: %s').format(res.error)), 'error');
+			ui.addNotification(null, E('p', {}, _('Failed: %s').format(res.error)), 'error');
 			return false;
 		}
 		if (okText)
-			ui.addTimeLimitedNotification(null, E('p', okText), 4000, 'info');
+			ui.addTimeLimitedNotification(null, E('p', {}, okText), 4000, 'info');
 		return true;
 	},
 
-	copyButton(text) {
-		return E('button', {
-			'class': 'cbi-button cbi-button-neutral',
-			'style': 'padding:0 .5em;margin-left:.4em',
-			'title': _('Copy'),
-			'click': function(ev) {
-				ev.preventDefault();
-				const done = () => ui.addTimeLimitedNotification(null, E('p', _('Copied: %s').format(text)), 2500, 'info');
-				if (navigator.clipboard && window.isSecureContext)
-					navigator.clipboard.writeText(text).then(done);
-				else {
-					const t = E('textarea', { 'style': 'position:fixed;opacity:0' }, text);
-					document.body.appendChild(t);
-					t.select();
-					document.execCommand('copy');
-					document.body.removeChild(t);
-					done();
-				}
-			}
-		}, '⧉');
-	},
-
 	qr(text) {
-		const svg = uqr.renderSVG(text, { pixelSize: 4, ecc: 'M' });
-		const node = E('div', { 'class': 'zt-qr' });
-		node.innerHTML = svg;
+		const node = E('div', { 'style': 'display:inline-block;width:180px' });
+		node.innerHTML = uqr.renderSVG(text, { pixelSize: 4, ecc: 'M' });
 		return node;
 	},
 
@@ -226,9 +205,9 @@ return baseclass.extend({
 		return lo >= 1 && hi <= 65535 && lo <= hi;
 	},
 
-	// Validate one grant ("<target> [<port>...]"); names are the zt_device
-	// and zt_member names known in the configuration
-	checkGrant(value, devices, members) {
+	// Validate one grant ("<target> [<port>...]") against the zt_device,
+	// zt_member and zt_role names of the configuration
+	checkGrant(value, devices, members, roles) {
 		const parts = String(value || '').trim().split(/\s+/);
 		const target = parts.shift();
 		let m;
@@ -248,6 +227,10 @@ return baseclass.extend({
 		else if ((m = /^member:(.+)$/.exec(target))) {
 			if (members && members.indexOf(m[1]) < 0 && !/^[0-9a-f]{10}$/.test(m[1]))
 				return _('No member named "%s"').format(m[1]);
+		}
+		else if ((m = /^group:(.+)$/.exec(target))) {
+			if (roles && roles.indexOf(m[1]) < 0)
+				return _('No role named "%s"').format(m[1]);
 		}
 		else
 			return _('Unknown target "%s"').format(target);
@@ -280,6 +263,8 @@ return baseclass.extend({
 			what = _('network %s').format(m[1]);
 		else if ((m = /^member:(.+)$/.exec(target)))
 			what = _('member %s').format(m[1]);
+		else if ((m = /^group:(.+)$/.exec(target)))
+			what = _('group %s').format(m[1]);
 		else
 			what = target;
 

@@ -73,15 +73,15 @@ return view.extend({
 		o.rmempty = false;
 		o.validate = (sid, v) => /^[0-9a-fA-F]{16}$/.test(v || '') ? true : _('A network ID has 16 hexadecimal digits');
 		o.write = (sid, v) => uci.set('zerotier', sid, 'id', v.toLowerCase());
-		o.textvalue = (sid) => zt.mono(uci.get('zerotier', sid, 'id') || '-');
+		o.textvalue = (sid) => uci.get('zerotier', sid, 'id') || '-';
 
 		o = s.taboption('general', form.DummyValue, '_status', _('Status'));
 		o.modalonly = false;
 		o.textvalue = (sid) => {
 			const n = joined[uci.get('zerotier', sid, 'id')];
 			if (uci.get('zerotier', sid, 'enabled') == '0')
-				return zt.statusBadge('DISABLED');
-			return n ? E('div', [ zt.statusBadge(n.status), n.name ? zt.small(n.name) : '' ]) : zt.statusBadge('NOT_JOINED');
+				return zt.statusLabel('DISABLED');
+			return n ? zt.text(zt.statusLabel(n.status), n.name) : zt.statusLabel('NOT_JOINED');
 		};
 
 		o = s.taboption('general', form.Flag, 'allow_managed', _('Managed addresses and routes'),
@@ -108,8 +108,7 @@ return view.extend({
 		o.value('acl', _('Member permissions: default deny'));
 		o.default = 'open';
 		o.textvalue = (sid) => (uci.get('zerotier', sid, 'fw_policy') == 'acl')
-			? zt.badge(_('Member permissions'), 'ok')
-			: zt.badge(_('Open to all members'), 'warn');
+			? _('Member permissions') : _('Open to all members');
 
 		o = s.taboption('firewall', form.Flag, 'fw_allow_input', _('Allow access to this router'),
 			_('Every member may reach every service of this router.'));
@@ -160,14 +159,13 @@ return view.extend({
 		o.modalonly = true;
 
 		o = s.taboption('controller', form.Flag, 'member_isolation', _('Isolate members'),
-			_('Only when this router is the network\'s controller. Members then reach only the gateways - this router, and members marked as gateway on the Permissions page - and what their "member:" grants allow. ZeroTier itself drops everything else between members, on both ends.'));
+			_('Only when this router is the network\'s controller. Members then reach only the gateways - this router, and members marked as gateway on the Permissions page - the other members of their groups, and what their "member:" and "group:" grants allow. ZeroTier itself drops everything else between members, on both ends.'));
 		o.textvalue = (sid) => {
 			const n = joined[uci.get('zerotier', sid, 'id')];
 			if (!n || !n.controlled)
 				return '-';
 			return (uci.get('zerotier', sid, 'member_isolation') == '1')
-				? zt.badge(_('Members isolated'), 'ok')
-				: zt.badge(_('Members see each other'), 'muted');
+				? _('Members isolated') : _('Members see each other');
 		};
 
 		return m.render();

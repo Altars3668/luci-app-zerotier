@@ -6,15 +6,13 @@
 'require uci';
 'require zerotier.common as zt';
 
-const ROLE_KIND = { PLANET: 'info', MOON: 'ok', LEAF: 'muted' };
-
 return view.extend({
 	load() {
 		return Promise.all([
 			zt.getStatus(),
 			zt.getPeers(),
 			zt.getDevices(),
-			zt.getLog(60),
+			zt.getLog(100),
 			uci.load('zerotier')
 		]);
 	},
@@ -35,98 +33,87 @@ return view.extend({
 			.then(() => this.refresh());
 	},
 
-	renderCards(st) {
+	problems(st) {
+		const out = [];
+		st.networks.forEach((n) => {
+			if (n.policy == 'acl' && n.status == 'OK' && !n.guarded)
+				out.push(zt.alert('warning', _('The permission rules of network %s are not loaded: its members are only held back by the default firewall rules.').format(n.name || n.section || n.id)));
+		});
+		return out;
+	},
+
+	renderStatus(st) {
 		const acl = st.networks.filter((n) => n.policy == 'acl' && n.status == 'OK');
 		const open = st.networks.filter((n) => n.policy != 'acl' && n.status == 'OK');
 		const controlled = st.networks.filter((n) => n.controlled);
-		const unguarded = acl.filter((n) => !n.guarded);
 
-		const service = E('div', { 'class': 'zt-card' }, [
-			E('h4', _('Service')),
-			E('div', { 'class': 'zt-big' }, st.running ? zt.badge(_('Running'), 'ok') : zt.badge(_('Stopped'), 'bad')),
-			E('div', [
-				st.running
-					? E('button', { 'class': 'cbi-button cbi-button-action', 'click': ui.createHandlerFn(this, 'handleService', 'restart') }, _('Restart'))
-					: E('button', { 'class': 'cbi-button cbi-button-positive', 'click': ui.createHandlerFn(this, 'handleService', 'start') }, _('Start')),
-				st.running
-					? E('button', { 'class': 'cbi-button cbi-button-negative', 'click': ui.createHandlerFn(this, 'handleService', 'stop') }, _('Stop'))
-					: ''
-			])
+		const service = E('span', {}, [
+			st.running ? _('Running') : _('Stopped'), ' ',
+			st.running
+				? E('button', { 'class': 'cbi-button cbi-button-action', 'click': ui.createHandlerFn(this, 'handleService', 'restart') }, _('Restart'))
+				: E('button', { 'class': 'cbi-button cbi-button-apply', 'click': ui.createHandlerFn(this, 'handleService', 'start') }, _('Start')),
+			' ',
+			st.running
+				? E('button', { 'class': 'cbi-button cbi-button-reset', 'click': ui.createHandlerFn(this, 'handleService', 'stop') }, _('Stop'))
+				: ''
 		]);
 
-		const node = E('div', { 'class': 'zt-card' }, [
-			E('h4', _('This node')),
-			st.address
-				? E('div', { 'class': 'zt-big' }, [ zt.mono(st.address), zt.copyButton(st.address) ])
-				: E('div', { 'class': 'zt-big' }, '-'),
-			E('div', [
-				st.running ? (st.online ? zt.badge(_('Online'), 'ok') : zt.badge(_('Offline'), 'bad')) : '',
-				st.tcpFallback ? zt.badge(_('TCP relay'), 'warn', _('No UDP path: traffic goes through the ZeroTier TCP relay')) : '',
-				st.version ? zt.badge('v' + st.version, 'muted') : ''
-			]),
-			st.running ? zt.small(_('Ports: %s').format(st.ports.filter((p) => p).join(', '))) : ''
-		]);
+		const firewall = [];
+		if (acl.length)
+			firewall.push(_('%d network(s) under member permissions').format(acl.length));
+		if (open.length)
+			firewall.push(_('%d network(s) open to every member').format(open.length));
+		if (st.firewall.catchall)
+			firewall.push(_('ZeroTier interfaces not identified yet are denied'));
 
-		const controller = E('div', { 'class': 'zt-card' }, [
-			E('h4', _('Controller')),
-			E('div', { 'class': 'zt-big' }, st.controller
-				? zt.badge(_('Available'), 'ok')
-				: zt.badge(_('Not available'), 'muted')),
-			st.controller
-				? E('div', [
-					zt.small(_('Networks joined here that this node controls: %d').format(controlled.length)),
-					E('a', { 'href': L.url('admin/vpn/zerotier/controller') }, _('Manage networks and members') + ' »')
-				])
-				: zt.small(_('Networks are managed by another controller'))
+		return zt.kvTable([
+			[ _('Service'), service ],
+			st.running ? [ _('Node address'), st.address ] : null,
+			st.running ? [ _('Version'), st.version || '-' ] : null,
+			st.running ? [ _('Connection'), st.online
+				? (st.tcpFallback ? _('Online, through the ZeroTier TCP relay (no UDP path)') : _('Online'))
+				: _('Offline') ] : null,
+			st.running ? [ _('Ports'), st.ports.filter((p) => p).join(', ') ] : null,
+			[ _('Network controller'), st.controller
+				? E('span', {}, [ _('Available, controls %d of the joined networks').format(controlled.length), ' ',
+					E('a', { 'href': L.url('admin/vpn/zerotier/controller') }, _('Manage networks and members')) ])
+				: _('Not available') ],
+			[ _('Firewall'), E('span', {}, [
+				firewall.length ? firewall.join('; ') : _('No networks'), ' ',
+				E('a', { 'href': L.url('admin/vpn/zerotier/permissions') }, _('Member permissions'))
+			]) ]
 		]);
-
-		const fw = E('div', { 'class': 'zt-card' }, [
-			E('h4', _('Firewall')),
-			E('div', { 'class': 'zt-big' }, unguarded.length
-				? zt.badge(_('Rules missing'), 'bad')
-				: acl.length ? zt.badge(_('Member permissions'), 'ok') : open.length ? zt.badge(_('Open'), 'warn') : zt.badge(_('No networks'), 'muted')),
-			acl.length ? zt.small(_('%d network(s) under member permissions').format(acl.length)) : '',
-			open.length ? zt.small(_('%d network(s) open to every member').format(open.length)) : '',
-			st.firewall.catchall ? zt.small(_('ZeroTier interfaces not identified yet are denied')) : '',
-			E('a', { 'href': L.url('admin/vpn/zerotier/permissions') }, _('Member permissions') + ' »')
-		]);
-
-		return E('div', { 'class': 'zt-cards' }, [ service, node, controller, fw ]);
 	},
 
 	renderAccess(n) {
-		const out = [];
-		if (n.policy == 'acl') {
-			out.push(zt.badge(_('Member permissions'), 'ok', _('Default deny: members only reach what they were granted')));
-			if (n.status == 'OK' && !n.guarded)
-				out.push(zt.badge(_('Rules missing'), 'bad', _('The permission rules of this interface are not loaded')));
-		}
+		let text;
+		if (n.policy == 'acl')
+			text = (n.status == 'OK' && !n.guarded) ? zt.label(_('Rules missing'), 'important') : _('Member permissions');
 		else if (n.status == 'OK' || n.status == 'REQUESTING_CONFIGURATION')
-			out.push(zt.badge(_('Open to all members'), 'warn', _('Every member gets what fw_allow_input / fw_allow_forward open')));
+			text = _('Open to all members');
+		else
+			text = '-';
 
-		if (n.controlled)
-			out.push(n.isolation
-				? zt.badge(_('Members isolated'), 'ok', _('Members only reach the gateways and what member grants allow'))
-				: zt.badge(_('Members see each other'), 'muted', _('Member to member traffic is not restricted')));
-
-		return out;
+		if (!n.controlled)
+			return text;
+		return zt.text(text, n.isolation ? _('Members isolated') : _('Members see each other'));
 	},
 
 	renderNetworks(st, devices) {
 		const table = new ui.Table([
 			_('Network'), _('Network ID'), _('Status'), _('Interface'), _('Addresses'), _('Traffic'), _('Access')
-		], { sortable: true }, E('em', _('No network joined yet. Add one on the Settings page.')));
+		], { sortable: true }, E('em', {}, _('No network joined yet. Add one on the Settings page.')));
 
 		table.update(st.networks.map((n) => {
 			const stats = (devices[n.dev] || {}).stats || {};
 			return [
-				[ n.name || n.section || '-', E('div', [ E('strong', n.name || '-'), n.section ? zt.small(n.section) : '' ]) ],
-				E('div', [ zt.mono(n.id), zt.copyButton(n.id) ]),
-				[ n.status, zt.statusBadge(n.status) ],
-				n.dev ? E('div', [ zt.mono(n.dev), n.mac ? zt.small(n.mac) : '' ]) : '-',
-				n.addresses.length ? E('div', n.addresses.map((a) => E('div', {}, zt.mono(a)))) : '-',
-				n.dev ? E('div', [ zt.small('↓ ' + zt.bytes(stats.rx_bytes)), zt.small('↑ ' + zt.bytes(stats.tx_bytes)) ]) : '-',
-				E('div', {}, this.renderAccess(n))
+				zt.text(n.name || '-', n.section),
+				n.id,
+				[ n.status, zt.statusLabel(n.status) ],
+				n.dev ? zt.text(E('span', { 'class': 'ifacebadge' }, n.dev), n.mac) : '-',
+				n.addresses.length ? zt.lines(n.addresses) : '-',
+				n.dev ? zt.text('↓ ' + zt.bytes(stats.rx_bytes), '↑ ' + zt.bytes(stats.tx_bytes)) : '-',
+				this.renderAccess(n)
 			];
 		}));
 
@@ -138,18 +125,17 @@ return view.extend({
 		const order = { LEAF: 0, MOON: 1, PLANET: 2 };
 		const table = new ui.Table([
 			_('Peer'), _('Role'), _('Version'), _('Latency'), _('Path'), _('Last activity')
-		], { sortable: true }, E('em', _('No peers')));
+		], { sortable: true }, E('em', {}, _('No peers')));
 
 		table.update(peers.slice().sort((a, b) => (order[a.role] - order[b.role]) || (a.address > b.address ? 1 : -1)).map((p) => {
 			const active = p.paths.filter((x) => x.active);
 			const path = active.filter((x) => x.preferred)[0] || active[0];
 			return [
-				E('div', [ zt.mono(p.address), names[p.address] ? zt.small(names[p.address]) : '' ]),
-				[ p.role, zt.badge(p.role, ROLE_KIND[p.role] || 'muted') ],
+				zt.text(p.address, names[p.address]),
+				p.role,
 				p.version || '-',
 				[ p.latency, (p.latency >= 0) ? '%d ms'.format(p.latency) : '-' ],
-				path ? E('div', [ zt.mono(path.address), active.length > 1 ? zt.small(_('%d paths').format(active.length)) : '' ])
-					: zt.badge(_('Relayed'), 'warn', _('No direct path to this peer')),
+				path ? zt.text(path.address, active.length > 1 ? _('%d paths').format(active.length) : null) : _('Relayed'),
 				[ path ? path.lastReceive : 0, zt.ago(path ? path.lastReceive : 0) ]
 			];
 		}));
@@ -158,12 +144,14 @@ return view.extend({
 	},
 
 	refresh() {
-		return Promise.all([ zt.getStatus(), zt.getPeers(), zt.getDevices(), zt.getLog(60) ]).then((data) => {
+		return Promise.all([ zt.getStatus(), zt.getPeers(), zt.getDevices(), zt.getLog(100) ]).then((data) => {
 			const [ st, peers, devices, log ] = data;
-			dom.content(document.getElementById('zt-cards'), this.renderCards(st));
+			dom.content(document.getElementById('zt-problems'), this.problems(st));
+			dom.content(document.getElementById('zt-status'), this.renderStatus(st));
 			dom.content(document.getElementById('zt-networks'), this.renderNetworks(st, devices));
 			dom.content(document.getElementById('zt-peers'), this.renderPeers(peers));
-			dom.content(document.getElementById('zt-log'), log || _('Nothing logged yet'));
+			const log_el = document.getElementById('zt-log');
+			log_el.value = log || _('Nothing logged yet');
 		});
 	},
 
@@ -171,29 +159,27 @@ return view.extend({
 		const [ st, peers, devices, log ] = data;
 		zt.css();
 
-		const view = E([], [
-			E('h2', _('ZeroTier')),
+		poll.add(L.bind(this.refresh, this), 5);
+
+		return E([], [
+			E('h2', {}, _('ZeroTier')),
 			E('div', { 'class': 'cbi-map-descr' },
 				_('Status of the ZeroTier service, the networks this router has joined and the peers it talks to.')),
-			E('div', { 'id': 'zt-cards' }, this.renderCards(st)),
-			E('div', { 'class': 'cbi-section' }, [
-				E('h3', _('Networks')),
-				E('div', { 'id': 'zt-networks' }, this.renderNetworks(st, devices))
-			]),
-			E('div', { 'class': 'cbi-section' }, [
-				E('h3', _('Peers')),
-				E('div', { 'class': 'cbi-section-descr' },
-					_('Planets and moons are the root servers that introduce peers to each other; leaves are other ZeroTier nodes.')),
-				E('div', { 'id': 'zt-peers' }, this.renderPeers(peers))
-			]),
-			E('div', { 'class': 'cbi-section' }, [
-				E('h3', _('Log')),
-				E('pre', { 'id': 'zt-log', 'class': 'zt-pre' }, log || _('Nothing logged yet'))
+			E('div', { 'id': 'zt-problems' }, this.problems(st)),
+			zt.section(_('Status'), [ E('div', { 'id': 'zt-status' }, this.renderStatus(st)) ]),
+			zt.section(_('Networks'), [ E('div', { 'id': 'zt-networks' }, this.renderNetworks(st, devices)) ]),
+			zt.section(_('Peers'), [ E('div', { 'id': 'zt-peers' }, this.renderPeers(peers)) ],
+				_('Planets and moons are the root servers that introduce peers to each other; leaves are other ZeroTier nodes.')),
+			zt.section(_('Log'), [
+				E('textarea', {
+					'id': 'zt-log',
+					'style': 'width:100%;font-size:12px',
+					'rows': 12,
+					'readonly': 'readonly',
+					'wrap': 'off'
+				}, log || _('Nothing logged yet'))
 			])
 		]);
-
-		poll.add(L.bind(this.refresh, this), 5);
-		return view;
 	},
 
 	handleSave: null,
