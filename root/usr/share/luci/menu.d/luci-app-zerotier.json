@@ -10,52 +10,58 @@
 			"uci": { "zerotier": true }
 		}
 	},
-	"admin/vpn/zerotier/config": {
-		"title": "Configuration",
+
+	"admin/vpn/zerotier/overview": {
+		"title": "Overview",
 		"order": 10,
 		"action": {
 			"type": "view",
-			"path": "zerotier/config"
+			"path": "zerotier/overview"
 		}
 	},
-	"admin/vpn/zerotier/interface": {
-		"title": "Interface Info",
+
+	"admin/vpn/zerotier/settings": {
+		"title": "Settings",
 		"order": 20,
 		"action": {
 			"type": "view",
-			"path": "zerotier/interface"
+			"path": "zerotier/settings"
 		}
 	},
-	"admin/vpn/zerotier/devices": {
-		"title": "LAN Gateway",
-		"order": 25,
-		"action": {
-			"type": "view",
-			"path": "zerotier/devices"
-		}
-	},
-	"admin/vpn/zerotier/moon": {
-		"title": "Moon Manager",
+
+	"admin/vpn/zerotier/permissions": {
+		"title": "Permissions",
 		"order": 30,
 		"action": {
 			"type": "view",
-			"path": "zerotier/moon"
+			"path": "zerotier/permissions"
 		}
 	},
-	"admin/vpn/zerotier/local-controller": {
-		"title": "Local Controller",
+
+	"admin/vpn/zerotier/gateway": {
+		"title": "LAN Gateway",
 		"order": 40,
 		"action": {
 			"type": "view",
-			"path": "zerotier/network-controller"
+			"path": "zerotier/gateway"
 		}
 	},
-	"admin/vpn/zerotier/external-controller": {
-		"title": "External Controller",
+
+	"admin/vpn/zerotier/controller": {
+		"title": "Controller",
 		"order": 50,
 		"action": {
 			"type": "view",
 			"path": "zerotier/controller"
+		}
+	},
+
+	"admin/vpn/zerotier/moon": {
+		"title": "Moons",
+		"order": 60,
+		"action": {
+			"type": "view",
+			"path": "zerotier/moon"
 		}
 	}
 }

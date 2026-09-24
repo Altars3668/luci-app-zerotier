@@ -5,6 +5,45 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [99.2.0] - 2026-09-24
+
+A rewrite. The version jumps to 99.x so that the upstream luci-app-zerotier of
+the feeds (26.x) does not replace this package on an upgrade.
+
+### Added
+- Permissions page: members and roles with grants, the MAC the firewall
+  recognizes each member by, online state and packet counters; per network
+  whether the rules are loaded, refused packets, member isolation state and
+  the problems zerotier-fw4 reports; authorized members without permissions,
+  with a prefilled entry one click away.
+- Member isolation (controller flow rules generated from the grants) in the
+  network settings.
+- Overview page: service control, networks with traffic and access policy,
+  peers with paths, log; merged the old interface page.
+- Stable host names (zerotier-phone-dns) on the LAN Gateway page.
+- Network ID QR code, subnet quick setup, IPv6 modes and DNS on the
+  Controller page; moon endpoint check against the current WAN addresses.
+- Simplified Chinese translation of every page.
+
+### Changed
+- The backend is a ucode rpcd plugin (luci.zerotier). The browser no longer
+  reads the API token or runs commands; arguments are validated, the token
+  never appears on a command line, and the ACL only grants what the pages use.
+- Saving permissions or firewall options no longer restarts zerotier-one.
+- The router cannot deauthorize itself on its own network.
+
+### Fixed
+- zerotier-moon never updated a moon whose endpoint list spanned several
+  lines in moon.json, and compared only the IPv4 address: moons kept
+  announcing stale addresses. moon.json (it holds the moon's signing key) is
+  now kept at mode 600; domains are resolved before they are announced.
+- Executables were packaged without the executable bit.
+
+### Removed
+- The ztncui integration and the external controller page (which stored the
+  API token in /etc/zerotier-controller.conf), the legacy Lua pages, and the
+  hotplug script that now ships with the zerotier package.
+
 ## [2.1.0] - 2024-09-11 (Enhanced Edition)
 
 ### Added ✨

@@ -1,361 +1,61 @@
-# LuCI ZeroTier 应用 - 增强版
+# luci-app-zerotier
 
-增强版 LuCI ZeroTier 应用，具备全面的 Moon 节点管理和 ZTNCUI 网络控制器集成功能。
+OpenWrt 上 ZeroTier 的 LuCI 管理界面：状态、设置、按成员分配的防火墙权限、
+局域网网关（1:1 NAT）、内置网络控制器和 Moon。[English](README.md)
 
-## 🌟 特性
+它是 [zerotier-openwrt](https://git.altarscn.com/Geoffrey/zerotier-openwrt) 软件包的网页界面：
+防火墙规则由其中的 `zerotier-fw4` 生成和加载，页面只负责编辑配置、展示结果。
 
-### 核心 ZeroTier 管理
-- ✅ **高级配置**: 完整的 ZeroTier 服务配置，支持实时监控
-- ✅ **网络管理**: 加入/退出网络，具备高级路由和防火墙集成
-- ✅ **接口监控**: 实时网络接口状态和流量统计
-- ✅ **多语言支持**: 英文、简体中文、繁体中文，提供全面翻译
+## 页面
 
-### 🌙 Moon 节点管理
-- 🌙 **创建 Moon 节点**: 将您的路由器转换为 ZeroTier Moon，增强连接性
-- 🌙 **加入 Moon 网络**: 连接到现有 Moon 节点，支持自动发现
-- 🌙 **连接管理**: 监控和管理 Moon 连接，显示健康状态
-- 🌙 **自动创建**: 启动时智能创建 Moon 节点，带验证功能
-- 🌙 **输入验证**: 全面的 IP 地址和端口验证
+| 页面 | 功能 |
+|------|------|
+| **概览** | 启动、停止、重启服务；本节点地址与版本；已加入网络的状态、地址、流量和访问策略；对等节点的角色、延迟和路径（直连或中继）；日志。每 5 秒自动刷新。 |
+| **设置** | 服务参数（端口、持久化目录、local.conf）以及本路由器加入的网络：受管地址、路由、DNS，每个网络的防火墙策略——*开放*（所有成员获得相同访问）或*成员权限*（默认拒绝），以及本路由器作为控制器时的成员隔离。 |
+| **权限** | 成员和角色及其授权（`router`、`lan`、`wan`、`device:名称`、`net:前缀`、`member:名称`，可限定端口）。按网络显示规则是否已加载、拒绝了多少包、成员隔离是否生效、`zerotier-fw4` 报告的配置问题，以及所有"已被控制器准入、但还没有权限"的成员——点一下即可打开预填好的权限条目。成员列表显示防火墙识别它所用的 MAC、是否在线、授权放行了多少包。 |
+| **局域网网关** | 把局域网设备映射为 ZeroTier 网络中的地址（1:1 NAT），可从 DHCP/邻居表直接选取，自动建议地址并检查冲突，包括控制器地址池可能分配出去的地址。稳定主机名：让一个主机名跟随设备在"自身 ZeroTier 客户端"与"映射地址"之间切换。 |
+| **控制器** | 本路由器控制的网络：创建、删除、网络 ID 二维码；名称、私有/公开、广播、MTU、IPv4 地址池和路由（支持按子网快速设置）、IPv6 分配方式、DNS；成员的准入、地址、主动桥接、在线状态，以及到其权限的链接。 |
+| **Moon** | 本路由器作为 Moon：创建；检查它发布的地址是否仍是路由器当前的地址；跟随 WAN 地址变化；开放防火墙端口；加入或退出其他 Moon。 |
 
-### 🎛️ 网络控制器（ZTNCUI 集成）
-- 🎛️ **本地控制器**: 运行您自己的 ZeroTier 网络控制器，具备完整管理功能
-- 🎛️ **Web 界面**: 通过 ZTNCUI 提供现代化的浏览器网络管理
-- 🎛️ **多种安装**: Docker、系统服务、二进制文件和 Node.js 安装方式
-- 🎛️ **健康监控**: 实时服务健康检查和自动恢复
-- 🎛️ **一键设置**: 自动化 Docker 安装和配置
-- 🎛️ **服务管理**: 启动、停止、重启，智能状态检测
+## 设计
 
-### 🖥️ 轻量级网络控制器（新功能！）
-- 🖥️ **内置控制器界面**: 无需外部工具，直接在 LuCI 中管理 ZeroTier 网络
-- 🖥️ **网络管理**: 通过直观界面创建、编辑和删除网络
-- 🖥️ **成员授权**: 授权/取消授权成员并管理 IP 分配
-- 🖥️ **路由配置**: 使用可视化编辑器添加和删除网络路由
-- 🖥️ **IP 池管理**: 配置用于自动分配的 IP 分配池
-- 🖥️ **快速设置向导**: 一键 CIDR 配置路由和 IP 池
-- 🖥️ **无需外部依赖**: 只需 curl，无需 Node.js 或 Docker
+- **后端**：一个 rpcd ucode 插件（`/usr/share/rpcd/ucode/luci.zerotier`）。浏览器既拿不到
+  zerotier-one 的 API token，也不能自行执行命令；插件按白名单校验每个参数，token 通过私有的
+  请求头文件交给 curl，绝不出现在命令行上。ACL 只授权这些调用、`zerotier` /
+  `zerotier-phone-dns` 两份 uci 配置和 init 脚本。
+- **配置**仍然在 `/etc/config/zerotier`。只改权限或防火墙选项时，保存后重新应用规则，
+  不重启 zerotier-one（`zerotier-fw4 -R -c`）；其他改动才会重启。
+- **前端**：LuCI 客户端视图，公共函数在 `htdocs/luci-static/resources/zerotier/common.js`，
+  简体中文翻译在 `po/zh_Hans`。
 
-## 🚀 快速开始
+## 依赖
 
-### 系统要求
-- **OpenWrt/ImmortalWrt**: 19.07+ 或兼容版本
-- **存储空间**: 最少 10MB（完整 ZTNCUI 功能需要 100MB+）
-- **网络连接**: 需要互联网连接
-- **可选 Docker**: 用于简化 ZTNCUI 安装
+- 带 fw4 和 ucode 的 OpenWrt / ImmortalWrt（23.05 或更新）
+- zerotier-openwrt 的 `zerotier` 包（成员权限、成员隔离、局域网网关需要它）；
+  用 feed 里的原版包时，设置、控制器和 Moon 页面仍可使用
+- `rpcd-mod-ucode`、`ucode-mod-fs`、`ucode-mod-uci`、`curl`
 
-### 1. 安装
+## 构建
 
-#### 软件包管理器安装
-```bash
-# 更新软件包列表
-opkg update
+在带 LuCI feed 的 OpenWrt SDK 中：
 
-# 安装 ZeroTier 核心
-opkg install zerotier zerotier-idtool
-
-# 安装 LuCI 应用
-opkg install luci-app-zerotier
-
-# 重启 LuCI
-/etc/init.d/uhttpd restart
+```sh
+cp -r luci-app-zerotier package/
+echo 'CONFIG_PACKAGE_luci-app-zerotier=m' >> .config
+echo 'CONFIG_LUCI_LANG_zh_Hans=y' >> .config
+make defconfig
+make package/luci-app-zerotier/compile
 ```
 
-#### 手动安装
-1. 下载适合您架构的 IPK 软件包
-2. 通过 LuCI 安装：**系统** → **软件包** → **上传软件包**
-3. 或使用命令行：`opkg install luci-app-zerotier_*.ipk`
+生成的包与架构无关（`noarch`）。版本号定为 99.x，保证 feed 里上游的
+`luci-app-zerotier`（26.x）升级时不会把它替换掉。
 
-### 2. 基础配置
-1. 导航到 **网络** → **VPN** → **ZeroTier** → **配置**
-2. 启用 ZeroTier 服务
-3. 添加您的网络 ID（16 位字符）
-4. 根据需要配置网络设置
-5. 点击 **保存&应用**
+## 命令行辅助工具
 
-### 3. 授权设备
-1. 访问 [ZeroTier Central](https://my.zerotier.com/network)
-2. 在网络成员列表中找到您的设备
-3. 勾选 **已授权** 以允许连接
-4. 可选择分配静态 IP 地址
+- `zerotier-moon`：创建 Moon、跟随 WAN 地址变化（`dynamic`，由 cron 和 WAN 热插拔触发）、
+  用 `endpoints` / `current` 对比"应发布"与"实际发布"的地址、加入或退出 Moon、管理 Moon 端口的防火墙规则。
+- `zerotier-phone-dns`：稳定主机名（cron 每分钟运行），配置在 `/etc/config/zerotier-phone-dns`。
 
-## 📋 高级功能
+## 许可证
 
-### 网络控制器设置
-
-#### 快速 ZTNCUI 安装（Docker）
-1. 进入 **ZeroTier** → **网络控制器**
-2. 如果 Docker 可用，点击 **通过 Docker 安装**
-3. 等待安装完成
-4. 在 `http://[路由器IP]:3000` 访问 Web 界面
-5. 使用默认凭据登录：
-   - 用户名：`admin`
-   - 密码：`password`
-6. **重要**: 首次登录后请更改密码
-
-#### 其他安装方法
-
-**Node.js 安装：**
-```bash
-opkg install node npm
-npm install -g ztncui
-ztncui-manager start
-```
-
-**手动二进制安装：**
-从 [ZTNCUI 发布页](https://github.com/key-networks/ztncui/releases) 下载
-
-### Moon 节点配置
-
-#### 创建 Moon 节点
-1. 导航到 **ZeroTier** → **Moon 管理器**
-2. 输入您的 **公网 IP 地址**
-3. 设置 **公网端口**（默认：9993）
-4. 点击 **创建 Moon**
-5. 与其他用户分享生成的 Moon ID
-
-#### 加入 Moon 网络
-1. 获取 Moon ID（10 位十六进制字符串）
-2. 在 Moon 管理器中输入 Moon ID
-3. 点击 **加入 Moon**
-4. 在已连接 Moon 列表中验证连接
-
-### 高级网络配置
-
-#### 轻量级网络控制器
-1. 导航到 **ZeroTier** → **网络**
-2. 点击 **创建网络** 创建新网络
-3. 在网络行中，点击 ⚙️ 图标进行 **快速设置**：
-   - 输入 CIDR（例如 `10.147.20.0/24`）
-   - 自动配置路由和 IP 分配池
-4. 点击成员图标管理成员：
-   - ✓ 授权成员以允许网络访问
-   - 分配静态 IP 或保留自动分配
-5. 使用 **路由** 和 **IP 池** 按钮进行高级配置
-
-> **注意:** 轻量级控制器需要本地 ZeroTier 服务运行并启用控制器功能。无需外部 ZTNCUI 或 Docker。
-
-#### 防火墙集成
-- **入站规则**: 控制对 ZeroTier 服务的访问
-- **转发规则**: 允许网络间流量
-- **地址伪装**: 启用 NAT 访问互联网
-- **接口选择**: 为规则选择特定接口
-
-#### 路由选项
-- **管理路由**: 让 ZeroTier 自动处理路由
-- **全局路由**: 允许到公网的路由（谨慎使用）
-- **默认路由**: 使用 ZeroTier 作为默认网关
-- **DNS 管理**: 允许 ZeroTier 配置 DNS 设置
-
-## 🛠️ 配置选项
-
-### 全局设置
-```yaml
-监听端口: 9993              # ZeroTier 守护进程端口
-客户端密钥: [可选]          # 认证密钥
-配置路径: /etc/zerotier     # 持久配置目录
-复制配置: true             # 复制到内存（保护闪存）
-自动 Moon: false           # 启动时自动创建 Moon
-启用控制器: false          # 启用 ZTNCUI 功能
-```
-
-### 网络设置（每个网络）
-```yaml
-网络 ID: [16位十六进制]     # ZeroTier 网络标识符
-允许管理 IP: true          # ZeroTier IP 管理
-允许全局 IP: false         # 公网 IP 路由
-允许默认路由: false        # 默认网关
-允许 DNS: true             # DNS 配置
-防火墙规则:                # 自定义防火墙设置
-  - 入站: 允许/拒绝
-  - 转发: 允许/拒绝
-  - 伪装: 启用/禁用
-```
-
-## 📚 文档
-
-### 用户文档
-- 📖 **[用户手册](docs/USER_MANUAL.md)** - 全面使用指南
-- 🔧 **[故障排除指南](docs/USER_MANUAL.md#故障排除)** - 常见问题和解决方案
-- ⚙️ **[配置示例](docs/USER_MANUAL.md#高级配置)** - 高级设置场景
-
-### 开发者文档
-- 🏗️ **[架构指南](ARCHITECTURE.md)** - 系统设计和组件
-- 👨‍💻 **[开发者指南](docs/DEVELOPER_GUIDE.md)** - 开发标准和实践
-- 📊 **[项目总结](PROJECT_SUMMARY.md)** - 优化概览和改进
-
-### 其他资源
-- 📝 **[更新日志](CHANGELOG.md)** - 版本历史和更新
-- 🌙 **[Moon 设置指南](README-moon.md)** - 详细的 Moon 配置
-- 🎛️ **[ZTNCUI 集成](README-ztncui.md)** - 控制器设置指南
-
-## 🔧 命令行工具
-
-### ZeroTier 管理
-```bash
-# 服务控制
-/etc/init.d/zerotier start|stop|restart|status
-
-# 网络管理
-zerotier-cli join <网络ID>
-zerotier-cli leave <网络ID>
-zerotier-cli listnetworks
-
-# 节点信息
-zerotier-cli info
-zerotier-cli peers
-```
-
-### Moon 管理
-```bash
-# 创建 Moon
-zerotier-moon create <公网IP> [端口]
-
-# 加入 Moon
-zerotier-moon join <Moon-ID>
-
-# 列出 Moon
-zerotier-moon list
-
-# 离开 Moon
-zerotier-moon leave <Moon-ID>
-```
-
-### ZTNCUI 管理
-```bash
-# 服务控制
-ztncui-manager start|stop|restart|status
-
-# 安装帮助
-ztncui-manager install
-
-# 配置
-ztncui-manager setup
-ztncui-manager show-config
-
-# 健康检查
-ztncui-manager health-check [端口]
-```
-
-## 🐛 故障排除
-
-### 常见问题
-
-**服务无法启动**
-```bash
-# 检查服务状态
-/etc/init.d/zerotier status
-
-# 查看日志
-logread | grep zerotier
-
-# 重启服务
-/etc/init.d/zerotier restart
-```
-
-**网络连接问题**
-1. 验证设备在 ZeroTier Central 中已授权
-2. 检查防火墙规则和路由
-3. 确认网络 ID 正确
-4. 使用 `ping` 测试其他网络成员
-
-**ZTNCUI 访问问题**
-1. 验证服务正在运行：`ztncui-manager status`
-2. 检查端口可访问性和防火墙
-3. 尝试健康检查：`ztncui-manager health-check`
-4. 查看 Docker 日志：`docker logs ztncui`
-
-**Moon 创建失败**
-1. 确保公网 IP 可从互联网访问
-2. 验证防火墙允许 ZeroTier 端口
-3. 检查网络连接
-4. 确认 zerotier-idtool 可用
-
-### 获取帮助
-- 📋 **问题报告**: [GitHub Issues](https://github.com/AltarsCN/luci-app-zerotier/issues)
-- 💬 **论坛**: OpenWrt 和 ImmortalWrt 社区论坛
-- 📖 **文档**: 查看全面的用户手册
-- 🔍 **搜索**: 现有问题和社区讨论
-
-## 🔐 安全考虑
-
-### 网络安全
-- 使用 **私有网络** 而不是公开网络
-- 定期 **审核网络成员** 并移除未使用的设备
-- 为您的使用场景配置 **适当的防火墙规则**
-- 监控 **未授权访问尝试**
-
-### 系统安全
-- 设置后立即 **更改默认 ZTNCUI 密码**
-- 保持 **ZeroTier 和 OpenWrt 更新** 到最新版本
-- 为所有账户使用 **强密码**
-- 如需要，**限制 ZTNCUI Web 界面访问**
-- 定期 **查看网络访问日志**
-
-## ⚡ 性能提示
-
-### 网络优化
-- 选择 **邻近的 Moon 节点** 以获得更好的延迟
-- 为您的网络配置 **适当的 MTU** 设置
-- 使用 **私有网络** 减少开销
-- 监控 **带宽使用** 并根据需要优化
-
-### 系统优化
-- 启用 **"复制配置"** 减少闪存磨损
-- 定期监控 **内存和 CPU 使用**
-- 配置 **适当的轮询间隔**
-- 定期 **清理旧日志文件**
-
-## 🤝 贡献
-
-我们欢迎社区贡献！以下是您可以帮助的方式：
-
-### 贡献方式
-- 🐛 **报告错误**: 提交详细的错误报告和日志
-- 💡 **建议功能**: 提出新功能或改进建议
-- 📝 **改进文档**: 帮助使文档更清晰、更全面
-- 🌍 **翻译**: 添加更多语言支持
-- 💻 **代码贡献**: 提交修复和功能的拉取请求
-
-### 开发设置
-1. Fork 仓库
-2. 创建功能分支
-3. 进行更改并进行适当测试
-4. 提交带有详细描述的拉取请求
-
-### 代码标准
-- 遵循现有的代码风格和约定
-- 添加全面的注释和文档
-- 为新功能包含测试
-- 确保向后兼容性
-
-## 📄 许可证
-
-本项目采用 **GPL-3.0-only** 许可证 - 详情请参阅 [LICENSE](LICENSE) 文件。
-
-## 🙏 致谢
-
-### 核心贡献者
-- **ImmortalWrt 社区** - 原始开发和持续维护
-- **OpenWrt 项目** - 基础平台和生态系统
-- **ZeroTier 团队** - 优秀的网络技术和文档
-
-### 特别感谢
-- **ZTNCUI 开发者** - 网络控制器 Web 界面
-- **社区贡献者** - 错误报告、功能请求和反馈
-- **翻译者** - 多语言支持
-- **Beta 测试者** - 早期采用和测试
-
-### 相关项目
-- [ZeroTier](https://github.com/zerotier/ZeroTierOne) - 核心 VPN 技术
-- [ZTNCUI](https://github.com/key-networks/ztncui) - 网络控制器界面
-- [OpenWrt](https://github.com/openwrt/openwrt) - 路由器操作系统
-- [ImmortalWrt](https://github.com/immortalwrt/immortalwrt) - 增强版 OpenWrt 发行版
-
----
-
-<div align="center">
-
-**🌐 用 ZeroTier 构建更好的网络 🌐**
-
-[文档](docs/) • [问题](https://github.com/AltarsCN/luci-app-zerotier/issues) • [讨论](https://github.com/AltarsCN/luci-app-zerotier/discussions) • [发布](https://github.com/AltarsCN/luci-app-zerotier/releases)
-
-</div>
+GPL-3.0-only

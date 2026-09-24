@@ -1,0 +1,770 @@
+// SPDX-License-Identifier: Apache-2.0
+//
+// rpcd backend of luci-app-zerotier.
+//
+// Everything the web interface reads or changes outside of uci goes through
+// here: the browser never sees the API token of zerotier-one and never runs
+// a command of its own. Arguments are checked against what each call may
+// accept before they reach a command line or the local API.
+
+'use strict';
+
+import { readfile, writefile, popen, access, mkdir, unlink, chmod } from 'fs';
+import { cursor } from 'uci';
+
+const ZT_HOME = '/var/lib/zerotier-one';
+const RUN_DIR = '/var/run/luci-zerotier';
+const MOON_CONF = '/etc/zerotier-moon.conf';
+const HOSTS_STATE = '/tmp/zerotier-phone-dns';
+
+function shq(s) {
+	return `'${replace(`${s ?? ''}`, "'", "'\\''")}'`;
+}
+
+// Run a command line and read its stdout. Its stderr is dropped, unless
+// `stderr` is 'both' (read along with stdout) or 'keep' (the command line
+// redirects it itself).
+function run(cmd, stderr) {
+	const p = popen(cmd + ((stderr == 'keep') ? '' : (stderr == 'both') ? ' 2>&1' : ' 2>/dev/null'));
+	if (!p)
+		return { code: -1, out: '' };
+	const out = p.read('all') ?? '';
+	return { code: p.close(), out };
+}
+
+function private_dir() {
+	mkdir(RUN_DIR, 0o700);
+	chmod(RUN_DIR, 0o700);
+	return RUN_DIR;
+}
+
+// stdout and stderr kept apart
+function run_split(cmd) {
+	const err = `${private_dir()}/stderr`;
+	const r = run(`${cmd} 2>${err}`, 'keep');
+	r.err = readfile(err) ?? '';
+	unlink(err);
+	return r;
+}
+
+function parse_json(s) {
+	try {
+		return json(s);
+	}
+	catch (e) {
+		return null;
+	}
+}
+
+function cli(args) {
+	const r = run(`zerotier-cli -j ${args}`);
+	return r.code == 0 ? parse_json(r.out) : null;
+}
+
+// Local JSON API of zerotier-one. The shell writes the token into a header
+// file itself, so that it never appears on a command line.
+function api(method, path, body) {
+	const dir = private_dir();
+	let port = trim(readfile(`${ZT_HOME}/zerotier-one.port`) ?? '');
+	if (!match(port, /^[0-9]{1,5}$/))
+		port = '9993';
+
+	let data = '';
+	if (body != null) {
+		writefile(`${dir}/body`, sprintf('%J', body));
+		data = ` -H 'Content-Type: application/json' --data-binary @${dir}/body`;
+	}
+
+	const r = run(`umask 077; ` +
+		`printf 'X-ZT1-Auth: %s\\n' "$(cat ${ZT_HOME}/authtoken.secret)" > ${dir}/auth && ` +
+		`curl -sf -m 10 -X ${method} -H @${dir}/auth${data} ${shq(`http://127.0.0.1:${port}${path}`)}; ` +
+		`rc=$?; rm -f ${dir}/auth ${dir}/body; exit $rc`);
+
+	return r.code == 0 ? (parse_json(r.out) ?? {}) : null;
+}
+
+const is_nwid = (s) => type(s) == 'string' && !!match(s, /^[0-9a-f]{16}$/);
+const is_node = (s) => type(s) == 'string' && !!match(s, /^[0-9a-f]{10}$/);
+
+function is_ip4(s) {
+	const m = type(s) == 'string' ? match(s, /^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$/) : null;
+	if (!m)
+		return false;
+	for (let i = 1; i <= 4; i++)
+		if (+m[i] > 255 || (length(m[i]) > 1 && substr(m[i], 0, 1) == '0'))
+			return false;
+	return true;
+}
+
+function is_ip6(s) {
+	if (type(s) != 'string' || length(s) > 39 || !match(s, /^[0-9a-fA-F:]+$/) || index(s, ':') < 0)
+		return false;
+	if (match(s, /:::/) || match(s, /^:[^:]/) || match(s, /[^:]:$/))
+		return false;
+	const dbl = length(split(s, '::')) - 1;
+	if (dbl > 1)
+		return false;
+	let groups = 0;
+	for (let g in split(s, ':')) {
+		if (g == '')
+			continue;
+		if (length(g) > 4)
+			return false;
+		groups++;
+	}
+	return dbl ? groups < 8 : groups == 8;
+}
+
+const is_ip = (s) => is_ip4(s) || is_ip6(s);
+
+function is_cidr(s) {
+	const p = type(s) == 'string' ? split(s, '/') : [];
+	if (length(p) != 2 || !match(p[1], /^[0-9]{1,3}$/))
+		return false;
+	return (is_ip4(p[0]) && +p[1] <= 32) || (is_ip6(p[0]) && +p[1] <= 128);
+}
+
+const is_host = (s) => type(s) == 'string' && length(s) <= 253 &&
+	!!match(s, /^[A-Za-z0-9]([A-Za-z0-9.-]*[A-Za-z0-9])?$/);
+
+const is_port = (n) => type(n) == 'int' && n >= 1 && n <= 65535;
+
+function self_address() {
+	return cli('info')?.address;
+}
+
+// A network this node is the controller of
+function controlled(id) {
+	const self = self_address();
+	return is_nwid(id) && self != null && substr(id, 0, 10) == self;
+}
+
+function uci_networks(uci) {
+	const nets = {};
+	uci.foreach('zerotier', 'network', (s) => {
+		if (is_nwid(s.id))
+			nets[s.id] = {
+				section: s['.name'],
+				enabled: s.enabled != '0',
+				policy: s.fw_policy ?? 'open',
+				isolation: s.member_isolation == '1'
+			};
+	});
+	return nets;
+}
+
+// What the zt_acl guard chain says about each interface
+function fw_state() {
+	const r = run('nft list chain inet fw4 zt_acl_guard_input');
+	const st = { guard: r.code == 0, catchall: false, acl: [], open: [] };
+
+	for (let line in split(r.out, '\n')) {
+		let m;
+		if ((m = match(line, /iifname "([^"*]+)" jump zt_acl_in_/)))
+			push(st.acl, m[1]);
+		else if ((m = match(line, /iifname "([^"*]+)" accept/)))
+			push(st.open, m[1]);
+		else if (index(line, '"zt*"') >= 0 && index(line, 'handle_reject') >= 0)
+			st.catchall = true;
+	}
+	return st;
+}
+
+// Packets that matched each member's grants (by the label zerotier-fw4
+// gives them), and packets each interface refused
+function acl_counters(devs) {
+	const hits = {}, denied = {};
+	for (let dev in devs) {
+		denied[dev] = 0;
+		for (let chain in [ 'in', 'div', 'fwd' ]) {
+			const r = run(`nft list chain inet fw4 ${shq(`zt_acl_${chain}_${dev}`)}`);
+			for (let line in split(r.out, '\n')) {
+				let m = match(line, /counter packets ([0-9]+) bytes [0-9]+ accept comment "zt_acl:([^:"]+):/);
+				if (m)
+					hits[m[2]] = (hits[m[2]] ?? 0) + +m[1];
+				else if ((m = match(line, /counter packets ([0-9]+) bytes [0-9]+ jump handle_reject/)))
+					denied[dev] += +m[1];
+			}
+		}
+	}
+	return { hits, denied };
+}
+
+// A rule list in canonical form (as zerotier-fw4 compares them): the
+// controller adds defaults ("not"/"or" false) and reorders keys
+function norm_rules(rules) {
+	return join(',', map(rules ?? [], (r) => {
+		const o = {};
+		for (let k in sort(keys(r)))
+			if (!((k == 'not' || k == 'or') && !r[k]))
+				o[k] = r[k];
+		return sprintf('%J', o);
+	}));
+}
+
+// Is member isolation, as zerotier-fw4 -c last sent it, still in force?
+function isolation_state(id, net) {
+	const sent = parse_json(readfile(`${ZT_HOME}/rules-policy.${id}.src`) ?? '');
+	if (sent == null)
+		return 'off';
+	return (norm_rules(net?.rules) == norm_rules(sent)) ? 'on' : 'changed';
+}
+
+function member_list(id) {
+	const ids = api('GET', `/controller/network/${id}/member`);
+	const out = [];
+	for (let mid in sort(keys(ids ?? {}))) {
+		if (!is_node(mid))
+			continue;
+		const m = api('GET', `/controller/network/${id}/member/${mid}`);
+		if (m)
+			push(out, {
+				id: mid,
+				name: m.name ?? '',
+				authorized: !!m.authorized,
+				activeBridge: !!m.activeBridge,
+				noAutoAssignIps: !!m.noAutoAssignIps,
+				ipAssignments: m.ipAssignments ?? [],
+				creationTime: m.creationTime,
+				lastAuthorizedTime: m.lastAuthorizedTime,
+				lastDeauthorizedTime: m.lastDeauthorizedTime,
+				version: (m.vMajor >= 0) ? `${m.vMajor}.${m.vMinor}.${m.vRev}` : null
+			});
+	}
+	return out;
+}
+
+function peer_map() {
+	const peers = {};
+	for (let p in (cli('peers') ?? [])) {
+		const active = filter(p.paths ?? [], (x) => x.active && !x.expired);
+		const pref = filter(active, (x) => x.preferred)[0] ?? active[0];
+		peers[p.address] = {
+			role: p.role,
+			version: p.version,
+			latency: p.latency,
+			path: pref?.address,
+			direct: length(active) > 0,
+			lastReceive: pref?.lastReceive
+		};
+	}
+	return peers;
+}
+
+function parse_conf(file) {
+	const conf = {};
+	for (let line in split(readfile(file) ?? '', '\n')) {
+		const m = match(line, /^([A-Z_]+)=(.*)$/);
+		if (m)
+			conf[m[1]] = m[2];
+	}
+	return conf;
+}
+
+// Whitelisted network settings for the controller API
+function network_config(c) {
+	const out = {};
+	if (type(c) != 'object')
+		return out;
+
+	if (type(c.name) == 'string' && length(c.name) <= 127)
+		out.name = c.name;
+	for (let k in [ 'private', 'enableBroadcast' ])
+		if (type(c[k]) == 'bool')
+			out[k] = c[k];
+	if (type(c.multicastLimit) == 'int' && c.multicastLimit >= 0 && c.multicastLimit <= 65535)
+		out.multicastLimit = c.multicastLimit;
+	if (type(c.mtu) == 'int' && c.mtu >= 1280 && c.mtu <= 10000)
+		out.mtu = c.mtu;
+	if (type(c.v4AssignMode) == 'object' && type(c.v4AssignMode.zt) == 'bool')
+		out.v4AssignMode = { zt: c.v4AssignMode.zt };
+	if (type(c.v6AssignMode) == 'object') {
+		out.v6AssignMode = {};
+		for (let k in [ 'zt', '6plane', 'rfc4193' ])
+			out.v6AssignMode[k] = (c.v6AssignMode[k] == true);
+	}
+	if (type(c.ipAssignmentPools) == 'array') {
+		out.ipAssignmentPools = [];
+		for (let p in c.ipAssignmentPools) {
+			if (type(p) != 'object')
+				return null;
+			if (!((is_ip4(p.ipRangeStart) && is_ip4(p.ipRangeEnd)) || (is_ip6(p.ipRangeStart) && is_ip6(p.ipRangeEnd))))
+				return null;
+			push(out.ipAssignmentPools, { ipRangeStart: p.ipRangeStart, ipRangeEnd: p.ipRangeEnd });
+		}
+	}
+	if (type(c.routes) == 'array') {
+		out.routes = [];
+		for (let r in c.routes) {
+			if (type(r) != 'object' || !is_cidr(r.target) || (r.via != null && !is_ip(r.via)))
+				return null;
+			push(out.routes, { target: r.target, via: r.via ?? null });
+		}
+	}
+	if (type(c.dns) == 'object') {
+		const servers = filter(c.dns.servers ?? [], is_ip);
+		if (length(servers) != length(c.dns.servers ?? []) ||
+		    (c.dns.domain != null && c.dns.domain != '' && !is_host(c.dns.domain)))
+			return null;
+		out.dns = { domain: c.dns.domain ?? '', servers };
+	}
+	return out;
+}
+
+function member_config(c) {
+	const out = {};
+	if (type(c) != 'object')
+		return out;
+
+	for (let k in [ 'authorized', 'activeBridge', 'noAutoAssignIps' ])
+		if (type(c[k]) == 'bool')
+			out[k] = c[k];
+	if (type(c.name) == 'string' && length(c.name) <= 64)
+		out.name = c.name;
+	if (type(c.ipAssignments) == 'array') {
+		if (length(filter(c.ipAssignments, is_ip)) != length(c.ipAssignments))
+			return null;
+		out.ipAssignments = c.ipAssignments;
+	}
+	return out;
+}
+
+const methods = {
+	// Node, networks and firewall at a glance
+	status: {
+		call: function() {
+			const uci = cursor();
+			const info = cli('info');
+			const running = info != null;
+			const nets = uci_networks(uci);
+			const fw = fw_state();
+			const settings = info?.config?.settings ?? {};
+
+			const networks = [];
+			for (let n in (cli('listnetworks') ?? [])) {
+				const u = nets[n.nwid] ?? {};
+				push(networks, {
+					id: n.nwid,
+					name: n.name,
+					status: n.status,
+					type: n.type,
+					dev: n.portDeviceName,
+					mac: n.mac,
+					mtu: n.mtu,
+					addresses: n.assignedAddresses ?? [],
+					routes: n.routes ?? [],
+					bridge: !!n.bridge,
+					broadcast: !!n.broadcastEnabled,
+					allowManaged: !!n.allowManaged,
+					allowGlobal: !!n.allowGlobal,
+					allowDefault: !!n.allowDefault,
+					allowDNS: !!n.allowDNS,
+					dns: n.dns,
+					section: u.section,
+					policy: u.policy ?? 'open',
+					isolation: !!u.isolation,
+					controlled: running && substr(n.nwid, 0, 10) == info.address,
+					guarded: index(fw.acl, n.portDeviceName) >= 0
+				});
+			}
+
+			// Configured, but not (yet) joined
+			for (let id, u in nets)
+				if (!length(filter(networks, (n) => n.id == id)))
+					push(networks, { id, section: u.section, policy: u.policy, isolation: u.isolation,
+						status: u.enabled ? 'NOT_JOINED' : 'DISABLED', addresses: [], routes: [] });
+
+			return {
+				running,
+				address: info?.address,
+				version: info?.version,
+				online: !!info?.online,
+				tcpFallback: !!info?.tcpFallbackActive,
+				ports: [ settings.primaryPort, settings.secondaryPort, settings.tertiaryPort ],
+				portMapping: !!settings.portMappingEnabled,
+				controller: running && api('GET', '/controller') != null,
+				firewall: fw,
+				networks
+			};
+		}
+	},
+
+	peers: {
+		call: function() {
+			const out = [];
+			for (let p in (cli('peers') ?? [])) {
+				push(out, {
+					address: p.address,
+					role: p.role,
+					version: p.version,
+					latency: p.latency,
+					paths: map(filter(p.paths ?? [], (x) => !x.expired), (x) => ({
+						address: x.address,
+						active: !!x.active,
+						preferred: !!x.preferred,
+						lastReceive: x.lastReceive
+					}))
+				});
+			}
+			return { peers: out };
+		}
+	},
+
+	// Live side of the permission page: members the controller knows,
+	// hit counters, and what zerotier-fw4 has to say about the configuration
+	permissions: {
+		call: function() {
+			const uci = cursor();
+			const self = self_address();
+			const nets = uci_networks(uci);
+			const fw = fw_state();
+			const joined = cli('listnetworks') ?? [];
+			const peers = peer_map();
+
+			const networks = [];
+			for (let id, u in nets) {
+				const j = filter(joined, (n) => n.nwid == id)[0];
+				const n = {
+					id,
+					section: u.section,
+					enabled: u.enabled,
+					name: j?.name,
+					dev: j?.portDeviceName,
+					policy: u.policy,
+					isolation: u.isolation,
+					controlled: self != null && substr(id, 0, 10) == self,
+					guarded: j ? index(fw.acl, j.portDeviceName) >= 0 : false
+				};
+				if (n.controlled) {
+					const net = api('GET', `/controller/network/${id}`);
+					n.isolationState = isolation_state(id, net);
+					n.members = member_list(id);
+				}
+				push(networks, n);
+			}
+
+			const warnings = [];
+			for (let cmd in [ 'zerotier-fw4 -n -a', 'zerotier-fw4 -n -c' ]) {
+				const r = run_split(cmd);
+				for (let line in split(r.err, '\n')) {
+					const m = match(line, /^# warning: (.+)$/);
+					if (m && index(warnings, m[1]) < 0)
+						push(warnings, m[1]);
+				}
+			}
+
+			const counters = acl_counters(fw.acl);
+			return {
+				self,
+				networks,
+				peers,
+				catchall: fw.catchall,
+				hits: counters.hits,
+				denied: counters.denied,
+				warnings
+			};
+		}
+	},
+
+	// The rules zerotier-fw4 would generate, without applying them
+	preview: {
+		call: function() {
+			const a = run_split('zerotier-fw4 -n -a');
+			const c = run_split('zerotier-fw4 -n -c');
+			return { firewall: a.out, policy: c.out, messages: a.err + c.err };
+		}
+	},
+
+	log: {
+		args: { lines: 100 },
+		call: function(req) {
+			let n = req.args?.lines;
+			if (type(n) != 'int' || n < 1 || n > 1000)
+				n = 100;
+			const r = run(`logread -e zerotier | grep -v 'crond\[' | tail -n ${n}`);
+			return { log: r.out };
+		}
+	},
+
+	probe: {
+		args: { ip: 'ip' },
+		call: function(req) {
+			const ip = req.args?.ip;
+			if (!is_ip4(ip))
+				return { error: 'invalid address' };
+			return { alive: run(`ping -c 1 -W 1 ${shq(ip)}`).code == 0 };
+		}
+	},
+
+	// Local controller
+
+	ctlNetworks: {
+		call: function() {
+			const self = self_address();
+			const ids = api('GET', '/controller/network');
+			if (ids == null)
+				return { controller: false, networks: [] };
+
+			const uci = cursor();
+			const nets = uci_networks(uci);
+			const out = [];
+			for (let id in ids) {
+				if (!is_nwid(id))
+					continue;
+				const n = api('GET', `/controller/network/${id}`);
+				const members = api('GET', `/controller/network/${id}/member`);
+				push(out, {
+					id,
+					name: n?.name ?? '',
+					private: n?.private != false,
+					creationTime: n?.creationTime,
+					members: length(keys(members ?? {})),
+					pools: n?.ipAssignmentPools ?? [],
+					routes: n?.routes ?? [],
+					joined: nets[id] != null,
+					section: nets[id]?.section,
+					isolation: !!nets[id]?.isolation,
+					isolationState: isolation_state(id, n)
+				});
+			}
+			return { controller: true, self, networks: out };
+		}
+	},
+
+	ctlNetwork: {
+		args: { id: 'id' },
+		call: function(req) {
+			const id = req.args?.id;
+			if (!controlled(id))
+				return { error: 'not a network of this controller' };
+
+			const n = api('GET', `/controller/network/${id}`);
+			if (n == null)
+				return { error: 'no such network' };
+
+			const uci = cursor();
+			const known = {};
+			uci.foreach('zerotier', 'zt_member', (s) => {
+				if (is_node(lc(s.node ?? '')))
+					known[lc(s.node)] = s['.name'];
+			});
+
+			const peers = peer_map();
+			const members = member_list(id);
+			for (let m in members) {
+				m.peer = peers[m.id];
+				m.section = known[m.id];
+			}
+
+			return {
+				network: {
+					id,
+					name: n.name ?? '',
+					private: n.private != false,
+					enableBroadcast: n.enableBroadcast != false,
+					multicastLimit: n.multicastLimit,
+					mtu: n.mtu,
+					v4AssignMode: n.v4AssignMode ?? {},
+					v6AssignMode: n.v6AssignMode ?? {},
+					ipAssignmentPools: n.ipAssignmentPools ?? [],
+					routes: n.routes ?? [],
+					dns: n.dns ?? { domain: '', servers: [] },
+					creationTime: n.creationTime,
+					rules: length(filter(n.rules ?? [], (r) => match(r.type, /^ACTION_/))),
+					isolationState: isolation_state(id, n)
+				},
+				members
+			};
+		}
+	},
+
+	ctlNetworkCreate: {
+		args: { name: 'name' },
+		call: function(req) {
+			const self = self_address();
+			const name = req.args?.name;
+			if (!is_node(self))
+				return { error: 'zerotier-one is not running' };
+			if (type(name) != 'string' || length(name) > 127)
+				return { error: 'invalid name' };
+
+			const n = api('POST', `/controller/network/${self}______`, {
+				name, private: true,
+				v4AssignMode: { zt: true },
+				v6AssignMode: { zt: false, '6plane': false, rfc4193: false }
+			});
+			return n?.id ? { id: n.id } : { error: 'the controller did not create the network' };
+		}
+	},
+
+	ctlNetworkUpdate: {
+		args: { id: 'id', config: {} },
+		call: function(req) {
+			const id = req.args?.id;
+			if (!controlled(id))
+				return { error: 'not a network of this controller' };
+			const c = network_config(req.args?.config);
+			if (c == null)
+				return { error: 'invalid settings' };
+			return api('POST', `/controller/network/${id}`, c) ? { ok: true } : { error: 'the controller rejected the settings' };
+		}
+	},
+
+	ctlNetworkDelete: {
+		args: { id: 'id' },
+		call: function(req) {
+			const id = req.args?.id;
+			if (!controlled(id))
+				return { error: 'not a network of this controller' };
+			return api('DELETE', `/controller/network/${id}`) ? { ok: true } : { error: 'the controller did not delete the network' };
+		}
+	},
+
+	ctlMemberUpdate: {
+		args: { id: 'id', member: 'member', config: {} },
+		call: function(req) {
+			const id = req.args?.id, mid = req.args?.member;
+			if (!controlled(id) || !is_node(mid))
+				return { error: 'invalid network or member' };
+			const c = member_config(req.args?.config);
+			if (c == null)
+				return { error: 'invalid settings' };
+			return api('POST', `/controller/network/${id}/member/${mid}`, c) ? { ok: true } : { error: 'the controller rejected the settings' };
+		}
+	},
+
+	ctlMemberDelete: {
+		args: { id: 'id', member: 'member' },
+		call: function(req) {
+			const id = req.args?.id, mid = req.args?.member;
+			if (!controlled(id) || !is_node(mid))
+				return { error: 'invalid network or member' };
+			return api('DELETE', `/controller/network/${id}/member/${mid}`) ? { ok: true } : { error: 'the controller did not delete the member' };
+		}
+	},
+
+	// Moons
+
+	moonStatus: {
+		call: function() {
+			const self = self_address();
+			const orbits = [];
+			for (let m in (cli('listmoons') ?? [])) {
+				push(orbits, {
+					id: m.id,
+					seeds: map(m.roots ?? [], (r) => ({
+						address: split(r.identity ?? '', ':')[0],
+						endpoints: r.stableEndpoints ?? []
+					})),
+					waiting: !!m.waiting,
+					timestamp: m.timestamp
+				});
+			}
+
+			const dyn = parse_conf(MOON_CONF);
+			const uci = cursor();
+			const rule = uci.get_all('firewall', 'zerotier_moon');
+
+			return {
+				self,
+				created: self != null && access(`${ZT_HOME}/moons.d/000000${self}.moon`),
+				orbits,
+				dynamic: {
+					configured: access(MOON_CONF),
+					enabled: dyn.ENABLED == '1',
+					endpoint: dyn.ENDPOINT ?? '',
+					port: +(dyn.PORT ?? 9993),
+					lastIp: dyn.LAST_IP ?? '',
+					lastUpdate: +(dyn.LAST_UPDATE ?? 0)
+				},
+				firewall: rule ? { enabled: rule.enabled != '0', port: rule.dest_port ?? '' } : null
+			};
+		}
+	},
+
+	// What the own moon announces, and what it should announce now (slow:
+	// may ask outside services for the public address)
+	moonEndpoints: {
+		call: function() {
+			const lines = (out) => filter(split(trim(out), '\n'), (l) => length(l) > 0);
+			return {
+				current: lines(run('/usr/bin/zerotier-moon current').out),
+				desired: lines(run('/usr/bin/zerotier-moon endpoints').out)
+			};
+		}
+	},
+
+	moonAction: {
+		args: { action: 'action', endpoint: 'endpoint', port: 9993, moon: 'moon' },
+		call: function(req) {
+			const a = req.args ?? {};
+			const port = a.port ?? 9993;
+			let args;
+
+			if (!is_port(port))
+				return { error: 'invalid port' };
+
+			switch (a.action) {
+			case 'create':
+				if (!is_host(a.endpoint) && !is_ip(a.endpoint))
+					return { error: 'invalid endpoint' };
+				args = [ 'create', a.endpoint, port ];
+				break;
+			case 'join':
+			case 'leave': {
+				// A moon is named by its world id (000000 + seed) or its seed
+				const id = lc(a.moon ?? '');
+				if (!match(id, /^(000000)?[0-9a-f]{10}$/))
+					return { error: 'invalid moon id' };
+				args = [ a.action, substr(id, -10) ];
+				break;
+			}
+			case 'dynamic-enable':
+				if (a.endpoint != 'auto' && !is_host(a.endpoint) && !is_ip(a.endpoint))
+					return { error: 'invalid endpoint' };
+				args = [ 'dynamic', 'enable', a.endpoint, port ];
+				break;
+			case 'dynamic-disable':
+				args = [ 'dynamic', 'disable' ];
+				break;
+			case 'update':
+				args = [ 'update' ];
+				break;
+			case 'firewall-add':
+				args = [ 'firewall', 'add', port ];
+				break;
+			case 'firewall-remove':
+				args = [ 'firewall', 'remove' ];
+				break;
+			default:
+				return { error: 'unknown action' };
+			}
+
+			const r = run(`/usr/bin/zerotier-moon ${join(' ', map(args, shq))}`, 'both');
+			return { code: r.code, output: r.out };
+		}
+	},
+
+	// Stable host names (zerotier-phone-dns)
+
+	hostnames: {
+		call: function() {
+			const uci = cursor();
+			const out = [];
+			uci.foreach('zerotier-phone-dns', 'device', (s) => {
+				const name = s['.name'];
+				push(out, {
+					section: name,
+					hostname: s.hostname,
+					primary: s.primary_ip,
+					fallback: s.fallback_ip,
+					current: uci.get('dhcp', `zt_dns_${name}`, 'ip'),
+					candidate: trim(readfile(`${HOSTS_STATE}/${name}`) ?? '')
+				});
+			});
+			return { hosts: out };
+		}
+	}
+};
+
+return { 'luci.zerotier': methods };

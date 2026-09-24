@@ -1,59 +1,25 @@
 {
 	"luci-app-zerotier": {
-		"description": "Grant access to ZeroTier configuration",
+		"description": "Grant access to ZeroTier",
 		"read": {
-			"file": {
-				"/sbin/ifconfig": [ "exec" ],
-				"/usr/bin/zerotier-cli": [ "exec" ],
-				"/usr/bin/zerotier-moon": [ "exec" ],
-				"/bin/cat": [ "exec" ],
-				"/bin/ping": [ "exec" ],
-				"/var/lib/zerotier-one/identity.public": [ "read" ],
-				"/var/lib/zerotier-one/authtoken.secret": [ "read" ],
-				"/var/lib/zerotier-one/moons.d/*": [ "read" ],
-				"/var/lib/zerotier-one/moon.json": [ "read" ],
-				"/etc/zerotier-moon.conf": [ "read" ],
-				"/etc/zerotier-controller.conf": [ "read" ],
-				"/tmp/dhcp.leases": [ "read" ],
-				"/proc/net/arp": [ "read" ]
-			},
 			"ubus": {
-				"service": [ "list" ],
-				"zerotier-controller": [
-					"check_controller",
-					"status",
-					"list_networks",
-					"get_network",
-					"list_members",
-					"get_member"
-				]
+				"luci.zerotier": [
+					"status", "peers", "permissions", "preview", "log", "probe",
+					"ctlNetworks", "ctlNetwork", "moonStatus", "moonEndpoints", "hostnames"
+				],
+				"luci-rpc": [ "getHostHints", "getNetworkDevices" ]
 			},
-			"uci": [ "zerotier" ]
+			"uci": [ "zerotier", "zerotier-phone-dns", "firewall", "network" ]
 		},
 		"write": {
-			"file": {
-				"/usr/bin/zerotier-cli": [ "exec" ],
-				"/usr/bin/zerotier-moon": [ "exec" ],
-				"/usr/bin/zerotier-fw4": [ "exec" ],
-				"/var/lib/zerotier-one/moons.d/*": [ "write" ],
-				"/var/lib/zerotier-one/moon.json": [ "write" ],
-				"/etc/zerotier-moon.conf": [ "write" ],
-				"/etc/zerotier-controller.conf": [ "write" ]
-			},
 			"ubus": {
-				"zerotier-controller": [
-					"create_network",
-					"update_network",
-					"delete_network",
-					"authorize_member",
-					"update_member",
-					"delete_member",
-					"update_routes",
-					"update_ip_pools",
-					"easy_setup"
-				]
+				"luci.zerotier": [
+					"ctlNetworkCreate", "ctlNetworkUpdate", "ctlNetworkDelete",
+					"ctlMemberUpdate", "ctlMemberDelete", "moonAction"
+				],
+				"rc": [ "init" ]
 			},
-			"uci": [ "zerotier" ]
+			"uci": [ "zerotier", "zerotier-phone-dns" ]
 		}
 	}
 }

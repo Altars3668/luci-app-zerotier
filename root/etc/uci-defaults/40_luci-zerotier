@@ -1,21 +1,26 @@
 #!/bin/sh
 
-# Set executable permissions for scripts
-chmod +x /usr/bin/zerotier-moon
-chmod +x /usr/bin/ztncui-manager
+# Leftovers of earlier versions of this interface: the shell rpcd backend
+# (it let the browser read the API token), pages that were merged or
+# dropped, and the ztncui helpers
+rm -f /usr/libexec/rpcd/zerotier-controller \
+	/www/luci-static/resources/view/zerotier/config.js \
+	/www/luci-static/resources/view/zerotier/interface.js \
+	/www/luci-static/resources/view/zerotier/devices.js \
+	/www/luci-static/resources/view/zerotier/network-controller.js \
+	/usr/bin/ztncui-manager /usr/bin/ztncui-manager-enhanced /usr/bin/ztncui-helper \
+	/etc/zerotier-controller.conf
 
-# Initialize ZTNCUI if available
-if [ -f "/etc/init.d/ztncui" ]; then
-    /usr/bin/ztncui-manager setup 2>/dev/null || true
+# The moon's signing key lives in moon.json
+[ -f /var/lib/zerotier-one/moon.json ] && chmod 600 /var/lib/zerotier-one/moon.json
+
+# Stable host names: their configuration, and the check every minute
+[ -f /etc/config/zerotier-phone-dns ] || touch /etc/config/zerotier-phone-dns
+if ! grep -q 'zerotier-phone-dns' /etc/crontabs/root 2>/dev/null; then
+	echo '* * * * * /usr/bin/zerotier-phone-dns >/dev/null 2>&1' >> /etc/crontabs/root
+	/etc/init.d/cron restart >/dev/null 2>&1
 fi
 
-uci -q batch <<-EOF >/dev/null
-	delete ucitrack.@zerotier[-1]
-	commit ucitrack
-
-	delete firewall.zerotier
-	commit firewall
-EOF
-
-rm -f /tmp/luci-indexcache
+rm -f /tmp/luci-indexcache* /tmp/luci-modulecache/* 2>/dev/null
+/etc/init.d/rpcd reload >/dev/null 2>&1
 exit 0
