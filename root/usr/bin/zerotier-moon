@@ -2,9 +2,9 @@
 # ZeroTier Moon Management Script
 # This script helps manage ZeroTier Moon nodes
 
-ZT_HOME="/var/lib/zerotier-one"
-ZT_CLI="/usr/bin/zerotier-cli"
-ZT_IDTOOL="/usr/bin/zerotier-idtool"
+ZT_HOME="${ZT_HOME:-/var/lib/zerotier-one}"
+ZT_CLI="${ZT_CLI:-/usr/bin/zerotier-cli}"
+ZT_IDTOOL="${ZT_IDTOOL:-/usr/bin/zerotier-idtool}"
 MOON_CONFIG="/etc/zerotier-moon.conf"
 FW_RULE_NAME="zerotier_moon"
 
@@ -358,6 +358,191 @@ get_info() {
     "$ZT_CLI" info
 }
 
+# Moons this router orbits: following their address changes
+#
+# zerotier-one talks to a moon only at the stableEndpoints of the definition
+# it holds, and refuses every other address of the moon's node
+# (Topology::isProhibitedEndpoint). A newer definition it takes only from
+# the moon itself, in the reply to a HELLO sent to those same endpoints. So
+# once a moon re-signs itself for a new address (DDNS, PPPoE), a node that
+# holds the old definition can neither reach the moon directly nor learn
+# where it went: all traffic to the moon's node is relayed through the
+# public roots, for good. Leaving the moon and orbiting it again by its seed
+# makes zerotier-one ask the moon through the roots instead, and the moon
+# answers with its current definition, signed with the key the node already
+# trusts.
+
+STATE_DIR="${STATE_DIR:-/var/run/zerotier-moon}"
+# Seconds to wait for the moon's answer, then for a direct path to it
+REFRESH_WAIT="${REFRESH_WAIT:-60}"
+DIRECT_WAIT="${DIRECT_WAIT:-30}"
+# An attempt that brought no direct path is not repeated for this long;
+# the pause doubles after each such attempt, up to REFRESH_INTERVAL_MAX
+REFRESH_INTERVAL="${REFRESH_INTERVAL:-900}"
+REFRESH_INTERVAL_MAX="${REFRESH_INTERVAL_MAX:-21600}"
+
+# The moons we orbit, other than our own, whose definition is loaded: one
+# "world-id seed" per line
+foreign_moons() {
+    local self
+    self=$("$ZT_CLI" -j info 2>/dev/null | jsonfilter -qe '@.address')
+    [ -n "$self" ] || return 1
+    "$ZT_CLI" -j listmoons > "$STATE_DIR/listmoons.json" 2>/dev/null || return 1
+    ucode -e '
+        import { readfile } from "fs";
+        let moons = [];
+        try { moons = json(readfile(ARGV[0])) ?? []; } catch (e) {}
+        for (let m in moons) {
+            const seed = split(m.roots?.[0]?.identity ?? "", ":")[0];
+            if (!m.waiting && match(m.id, /^[0-9a-f]{16}$/) &&
+                match(seed, /^[0-9a-f]{10}$/) && seed != ARGV[1])
+                print(m.id, " ", seed, "\n");
+        }
+    ' "$STATE_DIR/listmoons.json" "$self"
+}
+
+# True if zerotier-one has a live direct path to node $1
+has_direct_path() {
+    "$ZT_CLI" -j peers 2>/dev/null | \
+        jsonfilter -qe "@[@.address=\"$1\"].paths[@.active=true].address" | grep -q .
+}
+
+# True if the definition of moon $1 (world id) is loaded
+moon_loaded() {
+    "$ZT_CLI" -j listmoons 2>/dev/null | \
+        jsonfilter -qe "@[@.id=\"$1\"].waiting" | grep -qx false
+}
+
+moon_endpoints() {
+    "$ZT_CLI" -j listmoons 2>/dev/null | \
+        jsonfilter -qe "@[@.id=\"$1\"].roots[0].stableEndpoints[*]" | tr '\n' ' ' | sed 's/ $//'
+}
+
+# Ask moon $1 (world id) through its seed $2 for its current definition.
+# If the moon does not answer, the old definition is put back: it is right
+# again once the moon is back at the addresses it names, while a seed alone
+# would be forgotten by the next restart of zerotier-one.
+fetch_moon() {
+    # The local API names a moon by its last 10 digits only (/moon/<10 hex>):
+    # the 16-digit world id of listmoons gets a 404 and changes nothing
+    local id="$1" short="${1#??????}" seed="$2" file="$ZT_HOME/moons.d/$1.moon" backup="$STATE_DIR/$1.moon" t=0
+
+    cp -p "$file" "$backup" 2>/dev/null || rm -f "$backup"
+    if ! "$ZT_CLI" deorbit "$short" 2>&1 | grep -q '^200'; then
+        echo "ERROR: zerotier-one did not leave moon $short"
+        return 1
+    fi
+    if ! "$ZT_CLI" orbit "$short" "$seed" 2>&1 | grep -q '^200'; then
+        echo "ERROR: zerotier-one did not orbit moon $short again"
+    else
+        while [ "$t" -lt "$REFRESH_WAIT" ]; do
+            sleep 3
+            t=$((t + 3))
+            moon_loaded "$id" && return 0
+        done
+    fi
+
+    if [ -s "$backup" ]; then
+        "$ZT_CLI" deorbit "$short" >/dev/null 2>&1
+        cp -p "$backup" "$file"
+        "$ZT_CLI" orbit "$short" "$seed" >/dev/null 2>&1
+    fi
+    return 1
+}
+
+wait_direct() {
+    local t=0
+    while ! has_direct_path "$1"; do
+        [ "$t" -ge "$DIRECT_WAIT" ] && return 1
+        sleep 3
+        t=$((t + 3))
+    done
+}
+
+# refresh: for every moon we orbit with no direct path, fetch its current
+# definition (run from cron). refresh <moon>: fetch that moon's definition
+# now, whatever its state.
+refresh_moons() {
+    local only="" id seed now last fails pause i rc=0
+
+    if [ -n "$1" ]; then
+        only=$(echo "$1" | tr 'A-F' 'a-f')
+        echo "$only" | grep -qE '^[0-9a-f]{10}$' && only="000000$only"
+        if ! echo "$only" | grep -qE '^000000[0-9a-f]{10}$'; then
+            echo "ERROR: Invalid moon ID: $1"
+            return 1
+        fi
+    fi
+
+    # One refresh at a time. A lock whose process is gone is taken over.
+    mkdir -p "$STATE_DIR"
+    if ! mkdir "$STATE_DIR/lock" 2>/dev/null; then
+        if kill -0 "$(cat "$STATE_DIR/lock/pid" 2>/dev/null)" 2>/dev/null; then
+            echo "Another refresh is running"
+            return 1
+        fi
+        rm -rf "$STATE_DIR/lock"
+        mkdir "$STATE_DIR/lock" 2>/dev/null || return 1
+    fi
+    echo $$ > "$STATE_DIR/lock/pid"
+    trap 'rm -rf "$STATE_DIR/lock"' EXIT
+    trap 'exit 1' INT TERM
+
+    if ! foreign_moons > "$STATE_DIR/moons"; then
+        echo "ERROR: ZeroTier is not running"
+        return 1
+    fi
+    if [ -n "$only" ] && ! grep -q "^$only " "$STATE_DIR/moons"; then
+        echo "ERROR: Not orbiting moon $only, or its definition is not loaded"
+        return 1
+    fi
+
+    now=$(date +%s)
+    while read -r id seed; do
+        [ -n "$only" ] && [ "$id" != "$only" ] && continue
+
+        if [ -z "$only" ] && has_direct_path "$seed"; then
+            rm -f "$STATE_DIR/$id.fails" "$STATE_DIR/$id.last"
+            echo "Moon $seed: direct path"
+            continue
+        fi
+
+        fails=$(cat "$STATE_DIR/$id.fails" 2>/dev/null)
+        last=$(cat "$STATE_DIR/$id.last" 2>/dev/null)
+        case "$fails" in ''|*[!0-9]*) fails=0 ;; esac
+        case "$last" in ''|*[!0-9]*) last=0 ;; esac
+        pause=$REFRESH_INTERVAL
+        i=0
+        while [ "$i" -lt "$fails" ] && [ "$pause" -lt "$REFRESH_INTERVAL_MAX" ]; do
+            pause=$((pause * 2))
+            i=$((i + 1))
+        done
+        [ "$pause" -gt "$REFRESH_INTERVAL_MAX" ] && pause=$REFRESH_INTERVAL_MAX
+        if [ -z "$only" ] && [ $((now - last)) -lt "$pause" ]; then
+            echo "Moon $seed: no direct path, next attempt in $((last + pause - now))s"
+            continue
+        fi
+
+        echo "$now" > "$STATE_DIR/$id.last"
+        if ! fetch_moon "$id" "$seed"; then
+            echo $((fails + 1)) > "$STATE_DIR/$id.fails"
+            logger -t zerotier-moon "Moon $seed: could not fetch its definition, kept the old one"
+            echo "Moon $seed: could not fetch its definition, kept the old one"
+            rc=1
+        elif wait_direct "$seed"; then
+            rm -f "$STATE_DIR/$id.fails" "$STATE_DIR/$id.last"
+            logger -t zerotier-moon "Moon $seed: fetched its current definition ($(moon_endpoints "$id")), direct path again"
+            echo "Moon $seed: fetched its current definition, direct path again"
+        else
+            echo $((fails + 1)) > "$STATE_DIR/$id.fails"
+            logger -t zerotier-moon "Moon $seed: fetched its current definition ($(moon_endpoints "$id")), still no direct path"
+            echo "Moon $seed: fetched its current definition ($(moon_endpoints "$id")), still no direct path"
+            rc=1
+        fi
+    done < "$STATE_DIR/moons"
+    return $rc
+}
+
 # Values are later read back with conf_get — never sourced — but reject
 # anything that is not a plain IP/hostname/port up front anyway.
 valid_endpoint() {
@@ -512,8 +697,10 @@ update_moon_ip() {
     sed -i "s/^LAST_IP=.*/LAST_IP=$(echo "$desired" | head -1 | cut -d/ -f1)/" "$MOON_CONFIG"
     sed -i "s/^LAST_UPDATE=.*/LAST_UPDATE=$(date +%s)/" "$MOON_CONFIG"
 
-    # Restart so the daemon loads the new moon definition, then pushes the
-    # new world revision out to connected peers
+    # Restart so the daemon loads the new moon definition. Nodes that orbit
+    # the moon do not get it pushed: they reach the moon only at the old
+    # endpoints, so they have to fetch it (zerotier-moon refresh, or orbit
+    # the moon again on nodes without this package)
     /etc/init.d/zerotier restart >/dev/null 2>&1
     logger -t zerotier-moon "Moon endpoints updated: $(echo $desired)"
     echo "SUCCESS: Moon updated: $(echo $desired)"
@@ -529,6 +716,9 @@ case "$1" in
         ;;
     "leave")
         leave_moon "$2"
+        ;;
+    "refresh")
+        refresh_moons "$2"
         ;;
     "endpoints")
         # What the moon should announce now (used by the web interface): with
@@ -560,12 +750,15 @@ case "$1" in
         configure_firewall "$2" "$3"
         ;;
     *)
-        echo "Usage: $0 {create|join|leave|list|info|dynamic|update|endpoints|current|firewall}"
+        echo "Usage: $0 {create|join|leave|refresh|list|info|dynamic|update|endpoints|current|firewall}"
         echo ""
         echo "Commands:"
         echo "  create <ip/domain|auto> [port]  - Create a moon node"
         echo "  join <moon_id>                  - Join a moon network"
         echo "  leave <moon_id>                 - Leave a moon network"
+        echo "  refresh [moon_id]               - Fetch the current definition of the moons"
+        echo "                                    we orbit that have no direct path (all,"
+        echo "                                    from cron), or of the one named, now"
         echo "  list                            - List connected moons"
         echo "  info                            - Show node information"
         echo "  dynamic {enable|disable|status|update} [endpoint] [port]"

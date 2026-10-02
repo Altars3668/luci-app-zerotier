@@ -130,7 +130,8 @@ return view.extend({
 				[ _('Follow address changes'), dynamic ],
 				[ _('Firewall'), firewall ]
 			])
-		], _('Every 10 minutes, and whenever the WAN comes up, the moon is re-signed if the router\'s public addresses changed. "auto" follows the WAN address; a domain follows what it resolves to.'));
+		], _('Every 10 minutes, and whenever the WAN comes up, the moon is re-signed if the router\'s public addresses changed. "auto" follows the WAN address; a domain follows what it resolves to.') + ' ' +
+			_('Routers with this package that orbit the moon fetch the new definition by themselves; other nodes, such as phones and PCs, have to orbit the moon again.'));
 	},
 
 	renderOrbits() {
@@ -145,9 +146,16 @@ return view.extend({
 				o.id,
 				seed.address || '-',
 				zt.lines(seed.endpoints),
-				o.waiting ? _('Waiting for the moon') : _('Loaded'),
-				own ? _('This router')
-					: this.button('remove', _('Leave'), () => this.run('leave', { moon: o.id }, _('Left the moon')))
+				o.waiting ? _('Waiting for the moon')
+					: own ? _('Loaded')
+					: o.direct ? _('Direct')
+					: zt.label(_('No direct path: relayed'), 'warning',
+						_('This router reaches the moon only through the public roots, e.g. because the moon\'s address changed')),
+				own ? _('This router') : E('span', {}, [
+					o.waiting ? '' : this.button('action', _('Fetch again'),
+						() => this.run('refresh', { moon: o.id }, _('Asking the moon for its current definition. This takes up to a minute and a half.'))), ' ',
+					this.button('remove', _('Leave'), () => this.run('leave', { moon: o.id }, _('Left the moon')))
+				])
 			];
 		}));
 
@@ -164,7 +172,7 @@ return view.extend({
 					return this.run('join', { moon: id }, _('Joined the moon'));
 				})
 			])
-		]);
+		], _('A node reaches a moon only at the addresses of the moon definition it holds. When a moon moves to a new address and re-signs itself for it, every 5 minutes this router fetches the current definition of each moon it has no direct path to.'));
 	},
 
 	renderAll() {

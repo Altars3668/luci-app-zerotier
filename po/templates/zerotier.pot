@@ -79,7 +79,7 @@ msgid ""
 "its address."
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/moon.js:161
+#: htdocs/luci-static/resources/view/zerotier/moon.js:169
 msgid "A moon ID has 10 hexadecimal digits"
 msgstr ""
 
@@ -96,6 +96,14 @@ msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:298
 msgid "A node address has 10 hexadecimal digits"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/moon.js:175
+msgid ""
+"A node reaches a moon only at the addresses of the moon definition it holds. "
+"When a moon moves to a new address and re-signs itself for it, every 5 "
+"minutes this router fetches the current definition of each moon it has no "
+"direct path to."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:323
@@ -201,6 +209,12 @@ msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:329
 msgid "Asked to join, not authorized yet"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/moon.js:156
+msgid ""
+"Asking the moon for its current definition. This takes up to a minute and a "
+"half."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:154
@@ -342,6 +356,10 @@ msgstr ""
 msgid "Deliver Ethernet broadcast (ff:ff:ff:ff:ff:ff) on the network."
 msgstr ""
 
+#: htdocs/luci-static/resources/view/zerotier/moon.js:151
+msgid "Direct"
+msgstr ""
+
 #: htdocs/luci-static/resources/view/zerotier/controller.js:332
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:110
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:224
@@ -371,7 +389,7 @@ msgstr ""
 msgid "Endpoint"
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/moon.js:138
+#: htdocs/luci-static/resources/view/zerotier/moon.js:139
 msgid "Endpoints"
 msgstr ""
 
@@ -414,6 +432,10 @@ msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/gateway.js:261
 msgid "Fallback address"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/moon.js:155
+msgid "Fetch again"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:131
@@ -563,7 +585,7 @@ msgstr ""
 msgid "Join a network…"
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/moon.js:164
+#: htdocs/luci-static/resources/view/zerotier/moon.js:172
 msgid "Joined the moon"
 msgstr ""
 
@@ -604,11 +626,11 @@ msgstr ""
 msgid "Latency"
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/moon.js:150
+#: htdocs/luci-static/resources/view/zerotier/moon.js:157
 msgid "Leave"
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/moon.js:150
+#: htdocs/luci-static/resources/view/zerotier/moon.js:157
 msgid "Left the moon"
 msgstr ""
 
@@ -638,7 +660,7 @@ msgstr ""
 msgid "Limit forwarding to these interfaces (default: any)."
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/moon.js:148
+#: htdocs/luci-static/resources/view/zerotier/moon.js:150
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:116
 msgid "Loaded"
 msgstr ""
@@ -803,7 +825,7 @@ msgstr ""
 msgid "Missing"
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/moon.js:138
+#: htdocs/luci-static/resources/view/zerotier/moon.js:139
 msgid "Moon"
 msgstr ""
 
@@ -811,7 +833,7 @@ msgstr ""
 msgid "Moon ID"
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/moon.js:157
+#: htdocs/luci-static/resources/view/zerotier/moon.js:165
 msgid "Moon ID (10 hexadecimal digits)"
 msgstr ""
 
@@ -824,19 +846,19 @@ msgstr ""
 msgid "Moon updated"
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/moon.js:182
+#: htdocs/luci-static/resources/view/zerotier/moon.js:190
 #: root/usr/share/luci/menu.d/luci-app-zerotier.json:60
 msgid "Moons"
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/moon.js:184
+#: htdocs/luci-static/resources/view/zerotier/moon.js:192
 msgid ""
 "Moons are root servers you run yourself. Nodes that orbit a moon learn about "
 "each other through it, which helps where the public roots are slow or "
 "unreachable."
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/moon.js:154
+#: htdocs/luci-static/resources/view/zerotier/moon.js:162
 msgid "Moons this router orbits"
 msgstr ""
 
@@ -926,6 +948,10 @@ msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:270
 msgid "No automatic addresses"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/moon.js:152
+msgid "No direct path: relayed"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:304
@@ -1111,7 +1137,7 @@ msgstr ""
 msgid "Optional; lets the page recognize the device."
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/moon.js:158
+#: htdocs/luci-static/resources/view/zerotier/moon.js:166
 msgid "Orbit"
 msgstr ""
 
@@ -1252,6 +1278,13 @@ msgstr ""
 msgid "Router firewall"
 msgstr ""
 
+#: htdocs/luci-static/resources/view/zerotier/moon.js:134
+msgid ""
+"Routers with this package that orbit the moon fetch the new definition by "
+"themselves; other nodes, such as phones and PCs, have to orbit the moon "
+"again."
+msgstr ""
+
 #: htdocs/luci-static/resources/view/zerotier/controller.js:168
 msgid ""
 "Routes pushed to members: a subnet, optionally \"via GATEWAY\" - e.g. "
@@ -1292,7 +1325,7 @@ msgstr ""
 msgid "Search domain"
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/moon.js:138
+#: htdocs/luci-static/resources/view/zerotier/moon.js:139
 msgid "Seed"
 msgstr ""
 
@@ -1335,7 +1368,7 @@ msgid "Start"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:84
-#: htdocs/luci-static/resources/view/zerotier/moon.js:138
+#: htdocs/luci-static/resources/view/zerotier/moon.js:139
 msgid "State"
 msgstr ""
 
@@ -1444,7 +1477,7 @@ msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:313
 #: htdocs/luci-static/resources/view/zerotier/controller.js:368
-#: htdocs/luci-static/resources/view/zerotier/moon.js:149
+#: htdocs/luci-static/resources/view/zerotier/moon.js:154
 msgid "This router"
 msgstr ""
 
@@ -1459,8 +1492,14 @@ msgid ""
 "be mapped."
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/moon.js:139
+#: htdocs/luci-static/resources/view/zerotier/moon.js:140
 msgid "This router orbits no moon"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/moon.js:153
+msgid ""
+"This router reaches the moon only through the public roots, e.g. because the "
+"moon's address changed"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:50
@@ -1562,7 +1601,7 @@ msgstr ""
 msgid "Waiting for the controller"
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/moon.js:148
+#: htdocs/luci-static/resources/view/zerotier/moon.js:149
 msgid "Waiting for the moon"
 msgstr ""
 
@@ -1624,7 +1663,7 @@ msgstr ""
 msgid "ZeroTier is not running, or this build of it has no network controller."
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/moon.js:172
+#: htdocs/luci-static/resources/view/zerotier/moon.js:180
 msgid "ZeroTier is not running."
 msgstr ""
 

@@ -21,6 +21,15 @@ if ! grep -q 'zerotier-phone-dns' /etc/crontabs/root 2>/dev/null; then
 	/etc/init.d/cron restart >/dev/null 2>&1
 fi
 
+# Moons this router orbits: fetch a moon's current definition when there is
+# no direct path to it, e.g. after the moon's address changed. Minutes 2,
+# 7, ...: not together with the moon's own check (every 10 minutes), which
+# restarts zerotier-one when it re-signs the moon
+if ! grep -q 'zerotier-moon refresh' /etc/crontabs/root 2>/dev/null; then
+	echo '2-59/5 * * * * /usr/bin/zerotier-moon refresh >/dev/null 2>&1' >> /etc/crontabs/root
+	/etc/init.d/cron restart >/dev/null 2>&1
+fi
+
 rm -f /tmp/luci-indexcache* /tmp/luci-modulecache/* 2>/dev/null
 /etc/init.d/rpcd reload >/dev/null 2>&1
 exit 0

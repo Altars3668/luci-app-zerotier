@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [99.3.1] - 2026-10-02
+
+### Fixed
+- A moon that follows its address (dynamic mode with DDNS, or PPPoE) was lost
+  to the routers orbiting it as soon as the address changed. zerotier-one
+  reaches a moon only at the stableEndpoints of the definition it holds,
+  refuses every other address of the moon's node, and takes a newer
+  definition only from the moon itself at those same endpoints - so the
+  orbiting router stayed relayed through the public roots for good, with
+  high latency and loss. `zerotier-moon refresh`, run every 5 minutes from
+  cron, now fetches the current definition of each orbited moon that has no
+  direct path, by orbiting it again through its seed. If the moon does not
+  answer, the old definition is put back; attempts that bring no direct
+  path back off from 15 minutes to 6 hours.
+
+### Added
+- Moons page: whether each orbited moon is reached directly or relayed, and
+  a button to fetch its current definition again.
+
 ## [99.3.0] - 2026-09-24
 
 ### Changed

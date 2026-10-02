@@ -85,7 +85,7 @@ msgid ""
 "its address."
 msgstr "成员按 ZeroTier 由节点地址推导出的 MAC 地址识别，从不按 IP 识别，因此无法通过冒用他人的 IP 借用别人的授权。"
 
-#: htdocs/luci-static/resources/view/zerotier/moon.js:161
+#: htdocs/luci-static/resources/view/zerotier/moon.js:169
 msgid "A moon ID has 10 hexadecimal digits"
 msgstr "Moon ID 是 10 位十六进制数"
 
@@ -103,6 +103,14 @@ msgstr "网络 ID 是 16 位十六进制数"
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:298
 msgid "A node address has 10 hexadecimal digits"
 msgstr "节点地址是 10 位十六进制数"
+
+#: htdocs/luci-static/resources/view/zerotier/moon.js:175
+msgid ""
+"A node reaches a moon only at the addresses of the moon definition it holds. "
+"When a moon moves to a new address and re-signs itself for it, every 5 "
+"minutes this router fetches the current definition of each moon it has no "
+"direct path to."
+msgstr "节点只按自己持有的 Moon 定义里的地址访问 Moon。Moon 换到新地址并为此重新签名后，本路由器每 5 分钟为每个没有直连路径的 Moon 重新获取一次当前定义。"
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:323
 msgid ""
@@ -208,6 +216,12 @@ msgstr "已有成员使用这个名称"
 #: htdocs/luci-static/resources/view/zerotier/controller.js:329
 msgid "Asked to join, not authorized yet"
 msgstr "已申请加入，尚未准入"
+
+#: htdocs/luci-static/resources/view/zerotier/moon.js:156
+msgid ""
+"Asking the moon for its current definition. This takes up to a minute and a "
+"half."
+msgstr "正在向 Moon 索取其当前定义，最长约需一分半钟。"
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:154
 msgid "Assign addresses"
@@ -348,6 +362,10 @@ msgstr "删除网络 %s（%s）？所有成员都将失去对它的访问，其�
 msgid "Deliver Ethernet broadcast (ff:ff:ff:ff:ff:ff) on the network."
 msgstr "在网络中转发以太网广播（ff:ff:ff:ff:ff:ff）。"
 
+#: htdocs/luci-static/resources/view/zerotier/moon.js:151
+msgid "Direct"
+msgstr "直连"
+
 #: htdocs/luci-static/resources/view/zerotier/controller.js:332
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:110
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:224
@@ -377,7 +395,7 @@ msgstr "启用"
 msgid "Endpoint"
 msgstr "端点"
 
-#: htdocs/luci-static/resources/view/zerotier/moon.js:138
+#: htdocs/luci-static/resources/view/zerotier/moon.js:139
 msgid "Endpoints"
 msgstr "端点"
 
@@ -421,6 +439,10 @@ msgstr "失败：%s"
 #: htdocs/luci-static/resources/view/zerotier/gateway.js:261
 msgid "Fallback address"
 msgstr "备用地址"
+
+#: htdocs/luci-static/resources/view/zerotier/moon.js:155
+msgid "Fetch again"
+msgstr "重新获取"
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:131
 #: htdocs/luci-static/resources/view/zerotier/overview.js:81
@@ -569,7 +591,7 @@ msgstr "加入 %s"
 msgid "Join a network…"
 msgstr "加入网络…"
 
-#: htdocs/luci-static/resources/view/zerotier/moon.js:164
+#: htdocs/luci-static/resources/view/zerotier/moon.js:172
 msgid "Joined the moon"
 msgstr "已加入该 Moon"
 
@@ -610,11 +632,11 @@ msgstr "最近变更：%s"
 msgid "Latency"
 msgstr "延迟"
 
-#: htdocs/luci-static/resources/view/zerotier/moon.js:150
+#: htdocs/luci-static/resources/view/zerotier/moon.js:157
 msgid "Leave"
 msgstr "退出"
 
-#: htdocs/luci-static/resources/view/zerotier/moon.js:150
+#: htdocs/luci-static/resources/view/zerotier/moon.js:157
 msgid "Left the moon"
 msgstr "已退出该 Moon"
 
@@ -644,7 +666,7 @@ msgstr "只能包含字母、数字、\".\"、\"-\" 和 \"_\""
 msgid "Limit forwarding to these interfaces (default: any)."
 msgstr "只转发到这些接口（默认：任意）。"
 
-#: htdocs/luci-static/resources/view/zerotier/moon.js:148
+#: htdocs/luci-static/resources/view/zerotier/moon.js:150
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:116
 msgid "Loaded"
 msgstr "已加载"
@@ -809,7 +831,7 @@ msgstr "%s 上没有权限的成员"
 msgid "Missing"
 msgstr "缺失"
 
-#: htdocs/luci-static/resources/view/zerotier/moon.js:138
+#: htdocs/luci-static/resources/view/zerotier/moon.js:139
 msgid "Moon"
 msgstr "Moon"
 
@@ -817,7 +839,7 @@ msgstr "Moon"
 msgid "Moon ID"
 msgstr "Moon ID"
 
-#: htdocs/luci-static/resources/view/zerotier/moon.js:157
+#: htdocs/luci-static/resources/view/zerotier/moon.js:165
 msgid "Moon ID (10 hexadecimal digits)"
 msgstr "Moon ID（10 位十六进制数）"
 
@@ -830,19 +852,19 @@ msgstr "Moon 已创建"
 msgid "Moon updated"
 msgstr "Moon 已更新"
 
-#: htdocs/luci-static/resources/view/zerotier/moon.js:182
+#: htdocs/luci-static/resources/view/zerotier/moon.js:190
 #: root/usr/share/luci/menu.d/luci-app-zerotier.json:60
 msgid "Moons"
 msgstr "Moon"
 
-#: htdocs/luci-static/resources/view/zerotier/moon.js:184
+#: htdocs/luci-static/resources/view/zerotier/moon.js:192
 msgid ""
 "Moons are root servers you run yourself. Nodes that orbit a moon learn about "
 "each other through it, which helps where the public roots are slow or "
 "unreachable."
 msgstr "Moon 是你自己运行的根服务器。加入 Moon 的节点通过它互相发现，在公共根服务器缓慢或不可达时很有用。"
 
-#: htdocs/luci-static/resources/view/zerotier/moon.js:154
+#: htdocs/luci-static/resources/view/zerotier/moon.js:162
 msgid "Moons this router orbits"
 msgstr "本路由器已加入的 Moon"
 
@@ -933,6 +955,10 @@ msgstr "没有已知的局域网主机"
 #: htdocs/luci-static/resources/view/zerotier/controller.js:270
 msgid "No automatic addresses"
 msgstr "不自动分配地址"
+
+#: htdocs/luci-static/resources/view/zerotier/moon.js:152
+msgid "No direct path: relayed"
+msgstr "无直连：经中继"
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:304
 msgid "No member has asked to join yet"
@@ -1117,7 +1143,7 @@ msgstr "可选的 local.conf，包含 zerotier-one 的高级设置。"
 msgid "Optional; lets the page recognize the device."
 msgstr "可选；用于在页面上识别设备。"
 
-#: htdocs/luci-static/resources/view/zerotier/moon.js:158
+#: htdocs/luci-static/resources/view/zerotier/moon.js:166
 msgid "Orbit"
 msgstr "加入"
 
@@ -1258,6 +1284,13 @@ msgstr "角色与分组"
 msgid "Router firewall"
 msgstr "路由器防火墙"
 
+#: htdocs/luci-static/resources/view/zerotier/moon.js:134
+msgid ""
+"Routers with this package that orbit the moon fetch the new definition by "
+"themselves; other nodes, such as phones and PCs, have to orbit the moon "
+"again."
+msgstr "装有本软件包并已加入该 Moon 的路由器会自行获取新定义；手机、电脑等其他节点需要重新加入该 Moon。"
+
 #: htdocs/luci-static/resources/view/zerotier/controller.js:168
 msgid ""
 "Routes pushed to members: a subnet, optionally \"via GATEWAY\" - e.g. "
@@ -1298,7 +1331,7 @@ msgstr "用手机扫码复制网络 ID，再在 ZeroTier 应用中加入。新�
 msgid "Search domain"
 msgstr "搜索域"
 
-#: htdocs/luci-static/resources/view/zerotier/moon.js:138
+#: htdocs/luci-static/resources/view/zerotier/moon.js:139
 msgid "Seed"
 msgstr "种子节点"
 
@@ -1341,7 +1374,7 @@ msgid "Start"
 msgstr "启动"
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:84
-#: htdocs/luci-static/resources/view/zerotier/moon.js:138
+#: htdocs/luci-static/resources/view/zerotier/moon.js:139
 msgid "State"
 msgstr "状态"
 
@@ -1450,7 +1483,7 @@ msgstr "网络 %s 的权限规则未加载：其成员目前只受默认防火�
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:313
 #: htdocs/luci-static/resources/view/zerotier/controller.js:368
-#: htdocs/luci-static/resources/view/zerotier/moon.js:149
+#: htdocs/luci-static/resources/view/zerotier/moon.js:154
 msgid "This router"
 msgstr "本路由器"
 
@@ -1465,9 +1498,15 @@ msgid ""
 "be mapped."
 msgstr "本路由器在 ZeroTier 网络中还没有 IPv4 地址，暂时无法映射设备。"
 
-#: htdocs/luci-static/resources/view/zerotier/moon.js:139
+#: htdocs/luci-static/resources/view/zerotier/moon.js:140
 msgid "This router orbits no moon"
 msgstr "本路由器未加入任何 Moon"
+
+#: htdocs/luci-static/resources/view/zerotier/moon.js:153
+msgid ""
+"This router reaches the moon only through the public roots, e.g. because the "
+"moon's address changed"
+msgstr "本路由器只能经公共根服务器中转访问该 Moon，例如因为 Moon 的地址变了"
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:50
 msgid "This router: SSH, web interface, ping"
@@ -1568,7 +1607,7 @@ msgstr "待准入"
 msgid "Waiting for the controller"
 msgstr "等待控制器"
 
-#: htdocs/luci-static/resources/view/zerotier/moon.js:148
+#: htdocs/luci-static/resources/view/zerotier/moon.js:149
 msgid "Waiting for the moon"
 msgstr "等待 Moon"
 
@@ -1630,7 +1669,7 @@ msgstr "尚未识别的 ZeroTier 接口（ZeroTier 启动过程中）一律拒�
 msgid "ZeroTier is not running, or this build of it has no network controller."
 msgstr "ZeroTier 未运行，或当前版本不带网络控制器。"
 
-#: htdocs/luci-static/resources/view/zerotier/moon.js:172
+#: htdocs/luci-static/resources/view/zerotier/moon.js:180
 msgid "ZeroTier is not running."
 msgstr "ZeroTier 未运行。"
 

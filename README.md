@@ -17,7 +17,7 @@ its configuration and show what it did.
 | **Permissions** | Members and roles with their grants (`router`, `lan`, `wan`, `device:NAME`, `net:PREFIX`, `member:NAME`, `group:ROLE`, optionally narrowed to ports). Roles double as groups: with *Members reach each other*, the members of a role reach one another directly under member isolation. Shows, per network, whether the rules are loaded, how many packets were refused, whether member isolation is in force, the problems `zerotier-fw4` reports, and every member the controller admitted that has no permissions yet - with a button that opens a prefilled entry for it. Members are shown with the MAC the firewall recognizes them by, whether they are online, and how many packets their grants let through. |
 | **LAN Gateway** | Map LAN devices to addresses on a ZeroTier network (1:1 NAT), picked from the DHCP/neighbour list, with address suggestions and conflict checks - including addresses a controller pool could hand out. Stable host names that follow a device between its own ZeroTier client and its mapped address. |
 | **Controller** | Networks this router controls: create, delete, QR code of the ID; name, private/public, broadcast, MTU, IPv4 pools and routes (with a subnet quick setup), IPv6 modes, DNS; members with admission, addresses, active bridge flag, online state and a link to their permissions. |
-| **Moons** | This router as a moon: create it, see whether the addresses it announces are still the router's, follow WAN address changes, open its firewall port; orbit and leave other moons. |
+| **Moons** | This router as a moon: create it, see whether the addresses it announces are still the router's, follow WAN address changes, open its firewall port; orbit and leave other moons, see whether each is reached directly, fetch a moon's current definition again. |
 
 ## Design
 
@@ -64,6 +64,12 @@ replaces this one on an upgrade.
 - `zerotier-moon` - create a moon, follow WAN address changes (`dynamic`,
   run from cron and WAN hotplug), `endpoints` / `current` to compare what
   it should and does announce, orbit and leave moons, moon firewall rule.
+  `refresh` (cron, every 5 minutes) fetches the current definition of each
+  orbited moon that has no direct path: zerotier-one reaches a moon only at
+  the addresses of the definition it holds and does not learn a moon's new
+  address by itself, so without it a moon that changed its address (DDNS,
+  PPPoE) stays reachable only through the public roots. Nodes without this
+  package (phones, PCs) have to orbit such a moon again.
 - `zerotier-phone-dns` - stable host names (cron, every minute), configured
   in `/etc/config/zerotier-phone-dns`.
 

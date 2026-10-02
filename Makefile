@@ -12,9 +12,9 @@ LUCI_PKGARCH:=all
 
 # Higher than the upstream luci-app-zerotier (26.x): a feed update must not
 # replace this one
-PKG_VERSION:=99.3.0
+PKG_VERSION:=99.3.1
 PKG_RELEASE:=1
-PKG_PO_VERSION:=99.3.0
+PKG_PO_VERSION:=99.3.1
 
 include $(TOPDIR)/feeds/luci/luci.mk
 

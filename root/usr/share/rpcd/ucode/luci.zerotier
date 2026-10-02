@@ -648,15 +648,24 @@ const methods = {
 	moonStatus: {
 		call: function() {
 			const self = self_address();
+
+			// Nodes this one has a live direct path to
+			const direct = {};
+			for (let p in (cli('peers') ?? []))
+				if (length(filter(p.paths ?? [], (x) => x.active)) > 0)
+					direct[p.address] = true;
+
 			const orbits = [];
 			for (let m in (cli('listmoons') ?? [])) {
+				const seeds = map(m.roots ?? [], (r) => ({
+					address: split(r.identity ?? '', ':')[0],
+					endpoints: r.stableEndpoints ?? []
+				}));
 				push(orbits, {
 					id: m.id,
-					seeds: map(m.roots ?? [], (r) => ({
-						address: split(r.identity ?? '', ':')[0],
-						endpoints: r.stableEndpoints ?? []
-					})),
+					seeds,
 					waiting: !!m.waiting,
+					direct: length(filter(seeds, (s) => direct[s.address])) > 0,
 					timestamp: m.timestamp
 				});
 			}
@@ -699,7 +708,7 @@ const methods = {
 		call: function(req) {
 			const a = req.args ?? {};
 			const port = a.port ?? 9993;
-			let args;
+			let args, background = false;
 
 			if (!is_port(port))
 				return { error: 'invalid port' };
@@ -710,6 +719,11 @@ const methods = {
 					return { error: 'invalid endpoint' };
 				args = [ 'create', a.endpoint, port ];
 				break;
+			case 'refresh':
+				// Waiting for the moon's answer and then for a direct path
+				// takes up to a minute and a half, longer than a call may
+				background = true;
+				// fall through
 			case 'join':
 			case 'leave': {
 				// A moon is named by its world id (000000 + seed) or its seed
@@ -740,7 +754,12 @@ const methods = {
 				return { error: 'unknown action' };
 			}
 
-			const r = run(`/usr/bin/zerotier-moon ${join(' ', map(args, shq))}`, 'both');
+			const cmd = `/usr/bin/zerotier-moon ${join(' ', map(args, shq))}`;
+			if (background) {
+				run(`(${cmd} >/dev/null 2>&1 &)`, 'keep');
+				return { code: 0, output: '' };
+			}
+			const r = run(cmd, 'both');
 			return { code: r.code, output: r.out };
 		}
 	},
