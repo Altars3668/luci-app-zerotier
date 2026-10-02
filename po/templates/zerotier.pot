@@ -90,7 +90,7 @@ msgid ""
 "have to be reachable from where those nodes are."
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/settings.js:74
+#: htdocs/luci-static/resources/view/zerotier/settings.js:90
 msgid "A network ID has 16 hexadecimal digits"
 msgstr ""
 
@@ -122,11 +122,11 @@ msgstr ""
 msgid "A unique /128 per member, derived from network and node."
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/settings.js:102
+#: htdocs/luci-static/resources/view/zerotier/settings.js:118
 msgid "Accept DNS settings the controller pushes."
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/settings.js:94
+#: htdocs/luci-static/resources/view/zerotier/settings.js:110
 msgid "Accept managed addresses and routes that overlap public IP space."
 msgstr ""
 
@@ -135,7 +135,7 @@ msgstr ""
 msgid "Access"
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/settings.js:105
+#: htdocs/luci-static/resources/view/zerotier/settings.js:121
 msgid "Access from the network"
 msgstr ""
 
@@ -179,11 +179,11 @@ msgstr ""
 msgid "Admitted"
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/settings.js:113
+#: htdocs/luci-static/resources/view/zerotier/settings.js:129
 msgid "Allow access to this router"
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/settings.js:118
+#: htdocs/luci-static/resources/view/zerotier/settings.js:134
 msgid "Allow forwarding"
 msgstr ""
 
@@ -298,7 +298,7 @@ msgstr ""
 msgid "Connection"
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/settings.js:65
+#: htdocs/luci-static/resources/view/zerotier/settings.js:81
 #: root/usr/share/luci/menu.d/luci-app-zerotier.json:51
 msgid "Controller"
 msgstr ""
@@ -326,7 +326,7 @@ msgid "Current addresses"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:132
-#: htdocs/luci-static/resources/view/zerotier/settings.js:101
+#: htdocs/luci-static/resources/view/zerotier/settings.js:117
 msgid "DNS"
 msgstr ""
 
@@ -338,7 +338,7 @@ msgstr ""
 msgid "Deauthorize"
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/settings.js:97
+#: htdocs/luci-static/resources/view/zerotier/settings.js:113
 msgid "Default route"
 msgstr ""
 
@@ -381,7 +381,7 @@ msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/gateway.js:179
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:278
-#: htdocs/luci-static/resources/view/zerotier/settings.js:67
+#: htdocs/luci-static/resources/view/zerotier/settings.js:83
 msgid "Enabled"
 msgstr ""
 
@@ -410,11 +410,11 @@ msgstr ""
 msgid "Every LAN gateway device"
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/settings.js:114
+#: htdocs/luci-static/resources/view/zerotier/settings.js:130
 msgid "Every member may reach every service of this router."
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/settings.js:119
+#: htdocs/luci-static/resources/view/zerotier/settings.js:135
 msgid "Every member may reach other networks through this router."
 msgstr ""
 
@@ -440,7 +440,7 @@ msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:131
 #: htdocs/luci-static/resources/view/zerotier/overview.js:81
-#: htdocs/luci-static/resources/view/zerotier/settings.js:64
+#: htdocs/luci-static/resources/view/zerotier/settings.js:80
 msgid "Firewall"
 msgstr ""
 
@@ -464,7 +464,7 @@ msgstr ""
 msgid "Following address changes"
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/settings.js:123
+#: htdocs/luci-static/resources/view/zerotier/settings.js:139
 msgid "Forward to"
 msgstr ""
 
@@ -474,7 +474,7 @@ msgid "Gateway"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:129
-#: htdocs/luci-static/resources/view/zerotier/settings.js:63
+#: htdocs/luci-static/resources/view/zerotier/settings.js:79
 msgid "General"
 msgstr ""
 
@@ -569,7 +569,7 @@ msgstr ""
 msgid "Invalid port \"%s\": use tcp/22, udp/53, tcp/8000-8100 or icmp"
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/settings.js:161
+#: htdocs/luci-static/resources/view/zerotier/settings.js:177
 msgid "Isolate members"
 msgstr ""
 
@@ -581,12 +581,16 @@ msgstr ""
 msgid "Join %s"
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/settings.js:60
+#: htdocs/luci-static/resources/view/zerotier/settings.js:76
 msgid "Join a network…"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:172
 msgid "Joined the moon"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:68
+msgid "Keep each thread on a CPU core of its own."
 msgstr ""
 
 #: root/usr/share/luci/menu.d/luci-app-zerotier.json:42
@@ -606,11 +610,11 @@ msgstr ""
 msgid "LAN gateway device %s"
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/settings.js:144
+#: htdocs/luci-static/resources/view/zerotier/settings.js:160
 msgid "LAN hosts may open connections"
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/settings.js:130
+#: htdocs/luci-static/resources/view/zerotier/settings.js:146
 msgid "LAN interfaces"
 msgstr ""
 
@@ -634,11 +638,11 @@ msgstr ""
 msgid "Left the moon"
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/settings.js:145
+#: htdocs/luci-static/resources/view/zerotier/settings.js:161
 msgid "Let hosts on the LAN interfaces connect to members of the network."
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/settings.js:98
+#: htdocs/luci-static/resources/view/zerotier/settings.js:114
 msgid ""
 "Let the network replace the default route: all traffic of this router goes "
 "through it."
@@ -656,7 +660,7 @@ msgstr ""
 msgid "Letters, digits, \".\", \"-\" and \"_\" only"
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/settings.js:124
+#: htdocs/luci-static/resources/view/zerotier/settings.js:140
 msgid "Limit forwarding to these interfaces (default: any)."
 msgstr ""
 
@@ -690,7 +694,7 @@ msgstr ""
 msgid "Manage networks and members"
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/settings.js:87
+#: htdocs/luci-static/resources/view/zerotier/settings.js:103
 msgid "Managed addresses and routes"
 msgstr ""
 
@@ -728,11 +732,11 @@ msgstr ""
 msgid "Mapped devices"
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/settings.js:150
+#: htdocs/luci-static/resources/view/zerotier/settings.js:166
 msgid "Masquerade"
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/settings.js:154
+#: htdocs/luci-static/resources/view/zerotier/settings.js:170
 msgid "Masquerade traffic from"
 msgstr ""
 
@@ -773,11 +777,11 @@ msgstr ""
 #: htdocs/luci-static/resources/view/zerotier/overview.js:91
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:113
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:355
-#: htdocs/luci-static/resources/view/zerotier/settings.js:111
+#: htdocs/luci-static/resources/view/zerotier/settings.js:127
 msgid "Member permissions"
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/settings.js:108
+#: htdocs/luci-static/resources/view/zerotier/settings.js:124
 msgid "Member permissions: default deny"
 msgstr ""
 
@@ -793,7 +797,7 @@ msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:38
 #: htdocs/luci-static/resources/view/zerotier/overview.js:99
-#: htdocs/luci-static/resources/view/zerotier/settings.js:168
+#: htdocs/luci-static/resources/view/zerotier/settings.js:184
 msgid "Members isolated"
 msgstr ""
 
@@ -813,7 +817,7 @@ msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:39
 #: htdocs/luci-static/resources/view/zerotier/overview.js:99
-#: htdocs/luci-static/resources/view/zerotier/settings.js:168
+#: htdocs/luci-static/resources/view/zerotier/settings.js:184
 msgid "Members see each other"
 msgstr ""
 
@@ -862,8 +866,24 @@ msgstr ""
 msgid "Moons this router orbits"
 msgstr ""
 
+#: htdocs/luci-static/resources/view/zerotier/settings.js:61
+msgid ""
+"More than 1 and fewer than the CPU cores of this router (%d). Empty: 2 with "
+"4 cores or more."
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:62
+msgid ""
+"More than 1 and fewer than the CPU cores of this router. Empty: 2 with 4 "
+"cores or more."
+msgstr ""
+
 #: htdocs/luci-static/resources/view/zerotier/controller.js:142
 msgid "Multicast recipient limit"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:55
+msgid "Multithreading"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:134
@@ -881,7 +901,7 @@ msgstr ""
 #: htdocs/luci-static/resources/view/zerotier/overview.js:104
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:106
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:302
-#: htdocs/luci-static/resources/view/zerotier/settings.js:61
+#: htdocs/luci-static/resources/view/zerotier/settings.js:77
 msgid "Network"
 msgstr ""
 
@@ -896,7 +916,7 @@ msgstr ""
 #: htdocs/luci-static/resources/view/zerotier/controller.js:44
 #: htdocs/luci-static/resources/view/zerotier/controller.js:365
 #: htdocs/luci-static/resources/view/zerotier/overview.js:104
-#: htdocs/luci-static/resources/view/zerotier/settings.js:72
+#: htdocs/luci-static/resources/view/zerotier/settings.js:88
 msgid "Network ID"
 msgstr ""
 
@@ -921,7 +941,7 @@ msgstr ""
 #: htdocs/luci-static/resources/view/zerotier/controller.js:404
 #: htdocs/luci-static/resources/view/zerotier/overview.js:170
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:127
-#: htdocs/luci-static/resources/view/zerotier/settings.js:55
+#: htdocs/luci-static/resources/view/zerotier/settings.js:71
 msgid "Networks"
 msgstr ""
 
@@ -932,7 +952,7 @@ msgid ""
 "router is set on the Permissions page."
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/settings.js:56
+#: htdocs/luci-static/resources/view/zerotier/settings.js:72
 msgid ""
 "Networks this router joins. A network that is not authorized yet stays \"Not "
 "authorized\" until its controller admits this router."
@@ -1098,7 +1118,7 @@ msgstr ""
 msgid "Only the network's controller can isolate members"
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/settings.js:155
+#: htdocs/luci-static/resources/view/zerotier/settings.js:171
 msgid "Only traffic entering from these interfaces (default: any)."
 msgstr ""
 
@@ -1106,7 +1126,7 @@ msgstr ""
 msgid "Only use the addresses listed above."
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/settings.js:162
+#: htdocs/luci-static/resources/view/zerotier/settings.js:178
 msgid ""
 "Only when this router is the network's controller. Members then reach only "
 "the gateways - this router, and members marked as gateway on the Permissions "
@@ -1121,11 +1141,11 @@ msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/overview.js:93
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:113
-#: htdocs/luci-static/resources/view/zerotier/settings.js:111
+#: htdocs/luci-static/resources/view/zerotier/settings.js:127
 msgid "Open to all members"
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/settings.js:107
+#: htdocs/luci-static/resources/view/zerotier/settings.js:123
 msgid "Open: every member gets the same access"
 msgstr ""
 
@@ -1170,6 +1190,10 @@ msgstr ""
 msgid "Persistent directory"
 msgstr ""
 
+#: htdocs/luci-static/resources/view/zerotier/settings.js:67
+msgid "Pin threads to CPU cores"
+msgstr ""
+
 #: htdocs/luci-static/resources/view/zerotier/overview.js:172
 msgid ""
 "Planets and moons are the root servers that introduce peers to each other; "
@@ -1205,7 +1229,7 @@ msgstr ""
 msgid "Problems in the saved configuration:"
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/settings.js:93
+#: htdocs/luci-static/resources/view/zerotier/settings.js:109
 msgid "Public address ranges"
 msgstr ""
 
@@ -1355,6 +1379,14 @@ msgstr ""
 msgid "Show generated rules"
 msgstr ""
 
+#: htdocs/luci-static/resources/view/zerotier/settings.js:56
+msgid ""
+"Spread packet processing over several threads. Encrypting what this router "
+"sends runs in parallel, and so does handing received frames to the network "
+"interface; decrypting what arrives stays on one thread. Written into "
+"local.conf."
+msgstr ""
+
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:150
 msgid "Stable host name: %s"
 msgstr ""
@@ -1375,7 +1407,7 @@ msgstr ""
 #: htdocs/luci-static/resources/view/zerotier/overview.js:104
 #: htdocs/luci-static/resources/view/zerotier/overview.js:169
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:318
-#: htdocs/luci-static/resources/view/zerotier/settings.js:78
+#: htdocs/luci-static/resources/view/zerotier/settings.js:94
 msgid "Status"
 msgstr ""
 
@@ -1405,7 +1437,7 @@ msgstr ""
 msgid "Switched off, but not applied yet"
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/settings.js:88
+#: htdocs/luci-static/resources/view/zerotier/settings.js:104
 msgid "Take the addresses and routes the controller assigns."
 msgstr ""
 
@@ -1486,6 +1518,10 @@ msgstr ""
 msgid "This router as a moon"
 msgstr ""
 
+#: htdocs/luci-static/resources/view/zerotier/settings.js:58
+msgid "This router has %d CPU core(s): too few, ZeroTier keeps to one thread."
+msgstr ""
+
 #: htdocs/luci-static/resources/view/zerotier/gateway.js:293
 msgid ""
 "This router has no IPv4 address on a ZeroTier network yet, so no device can "
@@ -1510,11 +1546,15 @@ msgstr ""
 msgid "This router: every service"
 msgstr ""
 
+#: htdocs/luci-static/resources/view/zerotier/settings.js:60
+msgid "Threads"
+msgstr ""
+
 #: htdocs/luci-static/resources/view/zerotier/overview.js:104
 msgid "Traffic"
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/settings.js:151
+#: htdocs/luci-static/resources/view/zerotier/settings.js:167
 msgid ""
 "Traffic from the LAN into the network leaves with this router's ZeroTier "
 "address."
@@ -1546,7 +1586,7 @@ msgid ""
 "directly, with all traffic."
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/settings.js:106
+#: htdocs/luci-static/resources/view/zerotier/settings.js:122
 msgid ""
 "Under member permissions a member reaches this router, the LAN or the "
 "internet only as far as the Permissions page grants it, and members without "
@@ -1589,7 +1629,7 @@ msgstr ""
 msgid "Version"
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/settings.js:137
+#: htdocs/luci-static/resources/view/zerotier/settings.js:153
 msgid "WAN interfaces"
 msgstr ""
 
@@ -1605,13 +1645,13 @@ msgstr ""
 msgid "Waiting for the moon"
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/settings.js:131
+#: htdocs/luci-static/resources/view/zerotier/settings.js:147
 msgid ""
 "What a \"lan\" grant reaches, and where LAN hosts may open connections into "
 "the network from. Default: the devices of the firewall zone \"lan\"."
 msgstr ""
 
-#: htdocs/luci-static/resources/view/zerotier/settings.js:138
+#: htdocs/luci-static/resources/view/zerotier/settings.js:154
 msgid ""
 "What a \"wan\" grant reaches. Default: the devices of the firewall zone "
 "\"wan\"."

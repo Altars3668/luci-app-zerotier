@@ -382,6 +382,8 @@ const methods = {
 				tcpFallback: !!info?.tcpFallbackActive,
 				ports: [ settings.primaryPort, settings.secondaryPort, settings.tertiaryPort ],
 				portMapping: !!settings.portMappingEnabled,
+				// How many threads multithreading may use: fewer than this
+				cpus: length(filter(split(readfile('/proc/cpuinfo') ?? '', '\n'), (l) => match(l, /^processor\s*:/))),
 				controller: running && api('GET', '/controller') != null,
 				firewall: fw,
 				networks

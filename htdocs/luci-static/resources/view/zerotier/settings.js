@@ -52,6 +52,22 @@ return view.extend({
 			_('Optional local.conf with advanced zerotier-one settings.'));
 		o.placeholder = '/etc/zerotier.conf';
 
+		o = s.option(form.Flag, 'multicore', _('Multithreading'),
+			_('Spread packet processing over several threads. Encrypting what this router sends runs in parallel, and so does handing received frames to the network interface; decrypting what arrives stays on one thread. Written into local.conf.'));
+		if (st.cpus && st.cpus < 3)
+			o.description += ' ' + _('This router has %d CPU core(s): too few, ZeroTier keeps to one thread.').format(st.cpus);
+
+		o = s.option(form.Value, 'concurrency', _('Threads'),
+			st.cpus ? _('More than 1 and fewer than the CPU cores of this router (%d). Empty: 2 with 4 cores or more.').format(st.cpus)
+				: _('More than 1 and fewer than the CPU cores of this router. Empty: 2 with 4 cores or more.'));
+		o.depends('multicore', '1');
+		o.datatype = (st.cpus > 2) ? 'range(2,%d)'.format(st.cpus - 1) : 'uinteger';
+		o.placeholder = '2';
+
+		o = s.option(form.Flag, 'cpu_pinning', _('Pin threads to CPU cores'),
+			_('Keep each thread on a CPU core of its own.'));
+		o.depends('multicore', '1');
+
 		s = m.section(form.GridSection, 'network', _('Networks'),
 			_('Networks this router joins. A network that is not authorized yet stays "Not authorized" until its controller admits this router.'));
 		s.addremove = true;

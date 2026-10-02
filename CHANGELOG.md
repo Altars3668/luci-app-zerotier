@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [99.4.0] - 2026-10-02
+
+### Added
+- Settings: multithreading of zerotier-one - on or off, the number of
+  threads (the page shows how many CPU cores the router has: more than 1
+  and fewer than that) and pinning threads to cores. It is kept in uci
+  (`multicore`, `concurrency`, `cpu_pinning` in the `global` section) and
+  takes effect with a zerotier package that merges these into local.conf
+  (zerotier-openwrt 99.1.16.2-r2 and later). Encrypting what the router
+  sends then runs on several threads, and so does handing received frames
+  to the interface; decrypting what arrives stays on one.
+
 ## [99.3.1] - 2026-10-02
 
 ### Fixed
