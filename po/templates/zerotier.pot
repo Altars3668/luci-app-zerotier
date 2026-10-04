@@ -1447,9 +1447,9 @@ msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/settings.js:23
 msgid ""
-"The ZeroTier service, and the networks this router joins. Changes to member "
-"permissions and firewall options are applied without restarting ZeroTier; "
-"everything else restarts it."
+"The ZeroTier service, the networks this router joins, and peer bond "
+"configuration. Saving this page writes UCI only; it does not reload firewall "
+"rules, restart WAN, or restart zerotier-one."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/gateway.js:205
@@ -1802,4 +1802,265 @@ msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:58
 msgid "unknown"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:173
+msgid "%d/%d path(s) alive"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:183
+msgid "%d flow(s)"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:185
+msgid "%d ms"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:298
+msgid "19445 (canary)"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:299
+msgid "445 (SMB)"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:224
+msgid "Active backup"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:196
+msgid "Add peer bond…"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:277
+msgid "Allowed client"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:281
+msgid "A single IPv4 address is required"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:223
+msgid "Balance XOR"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:307
+msgid "BBR"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:155
+msgid "BBR available"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:305
+msgid "BBR can help long-distance Linux socket forwarding. This page shows acceleration only when BBR is available, the VIP is ready and the relay is listening."
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:155
+msgid "BBR not loaded"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:181
+msgid "bonded"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:168
+msgid "Bonded"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:192
+msgid "Bonding is only for the specific leaf peers listed here. Saving this page only writes UCI; zerotier-one may create a new bond when it scans the configuration. Once a bond is enabled, changing or disabling it needs a controlled rebuild by the backend package, not an automatic service restart from LuCI."
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:225
+msgid "Bond status is read from zerotier-one. A saved configuration may still be waiting for the daemon to create or rebuild the bond."
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:153
+msgid "Client %s to %s:%d"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:304
+msgid "Congestion control"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:308
+msgid "CUBIC"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:156
+msgid "CUBIC selected"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:179
+msgid "eligible"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:272
+msgid "Enable a pure TCP byte relay for this device only. Windows SMB authentication, signing and sealing stay end-to-end; the Windows audit source address becomes this router on the LAN, not the remote client."
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:285
+msgid "High port bound on the device ZeroTier address. Do not use 1445 or privileged ports."
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:284
+msgid "Internal relay port"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:236
+msgid "IP preference"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:237
+#: htdocs/luci-static/resources/view/zerotier/settings.js:242
+msgid "IPv4 and IPv6"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:238
+#: htdocs/luci-static/resources/view/zerotier/settings.js:242
+msgid "IPv4 only"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:239
+#: htdocs/luci-static/resources/view/zerotier/settings.js:242
+msgid "IPv6 only"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:147
+msgid "Listening, not accelerated"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:166
+msgid "No active bond policy"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:157
+msgid "No peer bonds configured."
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:140
+msgid "No relay status yet"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:181
+msgid "not bonded"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:169
+msgid "Not bonded"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:179
+msgid "not eligible"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:150
+msgid "Not listening"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:156
+msgid "Paths"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:197
+msgid "Peer bond"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:191
+#: htdocs/luci-static/resources/view/zerotier/overview.js:224
+msgid "Peer bonds"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:213
+msgid "Planet and moon peers cannot be bonded"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:222
+#: htdocs/luci-static/resources/view/zerotier/overview.js:156
+msgid "Policy"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:244
+msgid "Policy alias"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:158
+msgid "procd not running"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:158
+msgid "procd reports running"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:187
+msgid "quality %s"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:314
+msgid "Read-only status from the relay service and listener. The ready marker alone is only a clue, not proof that the relay is running."
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:145
+msgid "Ready"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:149
+msgid "Ready marker present, check listener"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:230
+msgid "Real network interface name that may carry one path of this bond."
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:313
+msgid "Relay status"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:278
+msgid "Single IPv4 address of the ZeroTier client allowed to use the relay. Revoking this device grant also revokes the forwarding path."
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:296
+msgid "SMB port"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:271
+msgid "SMB relay"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:292
+msgid "Use a high TCP port above 1024, but not 1445"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:234
+msgid "Use a real interface name, without spaces or shell characters"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:157
+msgid "VIP not ready"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:157
+msgid "VIP ready"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:164
+msgid "Waiting for zerotier-one"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:205
+msgid "ZeroTier node address of the leaf peer to bond with. Planet and moon peers are not eligible."
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js
+msgid "IPv4 preferred, IPv6 standby"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js
+msgid "IPv6 preferred, IPv4 standby"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js
+msgid "Paths of the two address families can differ a lot in latency. Preferring one family uses the other only when no path of the preferred family works."
 msgstr ""

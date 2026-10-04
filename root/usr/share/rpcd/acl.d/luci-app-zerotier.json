@@ -5,7 +5,8 @@
 			"ubus": {
 				"luci.zerotier": [
 					"status", "peers", "permissions", "preview", "log", "probe",
-					"ctlNetworks", "ctlNetwork", "moonStatus", "moonEndpoints", "hostnames"
+					"ctlNetworks", "ctlNetwork", "moonStatus", "moonEndpoints",
+					"hostnames", "bondStatus", "smbRelayStatus"
 				],
 				"luci-rpc": [ "getHostHints", "getNetworkDevices" ]
 			},

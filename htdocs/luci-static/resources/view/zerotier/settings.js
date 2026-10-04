@@ -9,18 +9,22 @@ return view.extend({
 	load() {
 		return Promise.all([
 			zt.getStatus(),
+			zt.getPeers(),
 			uci.load('zerotier')
 		]);
 	},
 
 	render(data) {
 		const st = data[0];
+		const peers = data[1] || [];
 		const joined = {};
+		const peerRoles = {};
 		st.networks.forEach((n) => { if (n.id) joined[n.id] = n; });
+		peers.forEach((p) => { if (p.address) peerRoles[p.address] = p.role; });
 		zt.css();
 
 		const m = new form.Map('zerotier', _('ZeroTier settings'),
-			_('The ZeroTier service, and the networks this router joins. Changes to member permissions and firewall options are applied without restarting ZeroTier; everything else restarts it.'));
+			_('The ZeroTier service, the networks this router joins, and peer bond configuration. Saving this page writes UCI only; it does not reload firewall rules, restart WAN, or restart zerotier-one.'));
 
 		let s, o;
 
@@ -184,6 +188,73 @@ return view.extend({
 				? _('Members isolated') : _('Members see each other');
 		};
 
+		s = m.section(form.GridSection, 'zt_bond', _('Peer bonds'),
+			_('Bonding is only for the specific leaf peers listed here. Saving this page only writes UCI; zerotier-one may create a new bond when it scans the configuration. Once a bond is enabled, changing or disabling it needs a controlled rebuild by the backend package, not an automatic service restart from LuCI.'));
+		s.addremove = true;
+		s.anonymous = true;
+		s.nodescriptions = true;
+		s.addbtntitle = _('Add peer bond…');
+		s.modaltitle = (sid) => _('Peer bond') + ' » ' + (uci.get('zerotier', sid, 'peer') || _('new'));
+
+		o = s.option(form.Flag, 'enabled', _('Enabled'));
+		o.default = '0';
+		o.rmempty = false;
+		o.editable = true;
+
+		o = s.option(form.Value, 'peer', _('Peer'),
+			_('ZeroTier node address of the leaf peer to bond with. Planet and moon peers are not eligible.'));
+		o.rmempty = false;
+		peers.filter((p) => p.role == 'LEAF' && p.address).forEach((p) => o.value(p.address));
+		o.validate = (sid, v) => {
+			const peer = (v || '').toLowerCase();
+			if (!/^[0-9a-f]{10}$/.test(peer))
+				return _('A node address has 10 hexadecimal digits');
+			if (peerRoles[peer] && peerRoles[peer] != 'LEAF')
+				return _('Planet and moon peers cannot be bonded');
+			return true;
+		};
+		o.write = (sid, v) => uci.set('zerotier', sid, 'peer', (v || '').toLowerCase());
+		o.textvalue = (sid) => {
+			const peer = uci.get('zerotier', sid, 'peer');
+			return peer ? zt.text(peer, peerRoles[peer] || null) : '-';
+		};
+
+		o = s.option(form.ListValue, 'policy', _('Policy'));
+		o.value('balance-xor', _('Balance XOR'));
+		o.value('active-backup', _('Active backup'));
+		o.default = 'balance-xor';
+		o.rmempty = false;
+		o.textvalue = (sid) => uci.get('zerotier', sid, 'policy') || 'balance-xor';
+
+		o = s.option(widgets.DeviceSelect, 'interface', _('Interface'),
+			_('Real network interface name that may carry one path of this bond.'));
+		o.noaliases = true;
+		o.rmempty = false;
+		o.validate = (sid, v) => /^[A-Za-z0-9_.@-]{1,15}$/.test(v || '')
+			? true : _('Use a real interface name, without spaces or shell characters');
+
+		o = s.option(form.ListValue, 'ipv_pref', _('IP preference'),
+			_('Paths of the two address families can differ a lot in latency. Preferring one family uses the other only when no path of the preferred family works.'));
+		o.value('46', _('IPv4 preferred, IPv6 standby'));
+		o.value('64', _('IPv6 preferred, IPv4 standby'));
+		o.value('0', _('IPv4 and IPv6'));
+		o.value('4', _('IPv4 only'));
+		o.value('6', _('IPv6 only'));
+		o.default = '46';
+		o.rmempty = false;
+		o.textvalue = (sid) => ({
+			'0': _('IPv4 and IPv6'), '4': _('IPv4 only'), '6': _('IPv6 only'),
+			'64': _('IPv6 preferred, IPv4 standby')
+		})[uci.get('zerotier', sid, 'ipv_pref')] || _('IPv4 preferred, IPv6 standby');
+
+		o = s.option(form.DummyValue, '_policyalias', _('Policy alias'));
+		o.textvalue = (sid) => {
+			const peer = uci.get('zerotier', sid, 'peer');
+			return peer ? 'uci-bond-' + peer : '-';
+		};
+
 		return m.render();
-	}
+	},
+
+	handleSaveApply: null
 });

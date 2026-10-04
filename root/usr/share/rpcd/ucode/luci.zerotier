@@ -61,6 +61,12 @@ function cli(args) {
 	return r.code == 0 ? parse_json(r.out) : null;
 }
 
+function cli_raw(args) {
+	const r = run(`zerotier-cli -j ${args}`, 'both');
+	r.json = parse_json(r.out);
+	return r;
+}
+
 // Local JSON API of zerotier-one. The shell writes the token into a header
 // file itself, so that it never appears on a command line.
 function api(method, path, body) {
@@ -128,6 +134,7 @@ const is_host = (s) => type(s) == 'string' && length(s) <= 253 &&
 	!!match(s, /^[A-Za-z0-9]([A-Za-z0-9.-]*[A-Za-z0-9])?$/);
 
 const is_port = (n) => type(n) == 'int' && n >= 1 && n <= 65535;
+const is_high_relay_port = (n) => type(n) == 'int' && n > 1024 && n <= 65535 && n != 1445;
 
 function self_address() {
 	return cli('info')?.address;
@@ -259,6 +266,89 @@ function parse_conf(file) {
 			conf[m[1]] = m[2];
 	}
 	return conf;
+}
+
+function bond_paths(o) {
+	const raw = (type(o?.paths) == 'array') ? o.paths
+		: (type(o?.bondPaths) == 'array') ? o.bondPaths
+		: (type(o?.activePaths) == 'array') ? o.activePaths : [];
+	return map(raw, (p) => ({
+		addr: p.addr ?? p.address ?? p.endpoint ?? '',
+		ifname: p.ifname ?? p.interface ?? p.device ?? '',
+		eligible: (p.eligible == null) ? null : !!p.eligible,
+		bonded: (p.bonded == null) ? null : !!p.bonded,
+		assignedFlowCount: p.assignedFlowCount ?? p.flowCount,
+		latency: p.latencyMean ?? p.latency ?? p.latencyMs,
+		quality: p.relativeQuality ?? p.quality
+	}));
+}
+
+function bond_state(peer, section, enabled, listed) {
+	const alias = `uci-bond-${peer}`;
+	const base = { section, enabled, peer, alias, policy: listed?.policy, isBonded: false, alive: 0, total: 0, paths: [] };
+	if (!enabled)
+		return base;
+
+	const r = cli_raw(`bond ${peer} show`);
+	// CLI 的 HTTP 400 通常映射为进程退出码 1，不能比较 exit code 400。
+	if (r.code != 0 && match(trim(r.out), /^400[ \t]+bond/))
+		return { ...base, waiting: true };
+	if (r.code != 0)
+		return { ...base, error: 'zerotier-cli failed' };
+	if (type(r.json) != 'object')
+		return { ...base, error: 'invalid JSON from zerotier-cli' };
+
+	const paths = bond_paths(r.json);
+	let alive = r.json.numAliveLinks ?? r.json.alive ?? null;
+	if (alive == null)
+		alive = length(filter(paths, (p) => p.eligible || p.bonded));
+
+	return {
+		...base,
+		policy: r.json.bondingPolicyStr ?? r.json.policy ?? r.json.bondPolicy ?? listed?.policy ?? 'None',
+		isBonded: !!(r.json.isBonded ?? r.json.bonded),
+		alive,
+		total: r.json.numTotalLinks ?? r.json.total ?? r.json.pathCount ?? length(paths),
+		paths
+	};
+}
+
+function smb_relay_status(s) {
+	const section = s['.name'];
+	const enabled = s.smb_relay == '1';
+	const zt_ip = s.zt_ip ?? '';
+	const target = s.ip ?? '';
+	const client = s.relay_client_ip ?? '';
+	const relay_port = +(s.relay_port ?? 14445);
+	const external_port = +(s.relay_external_port ?? 445);
+	const congestion = (s.relay_congestion == 'cubic') ? 'cubic' : 'bbr';
+	const out = { section, enabled, ztIp: zt_ip, target, client, relayPort: relay_port, externalPort: external_port, congestion };
+
+	if (!enabled)
+		return out;
+	if (!is_ip4(zt_ip) || !is_ip4(target) || !is_ip4(client) || !is_high_relay_port(relay_port) || !is_port(external_port))
+		return { ...out, error: 'invalid relay configuration' };
+
+	const ready = `/var/run/zerotier-smb-relay/${zt_ip}-${relay_port}.pid`;
+	const available = split(trim(run('sysctl -n net.ipv4.tcp_available_congestion_control').out), /[ \t]+/);
+	const current = trim(run('sysctl -n net.ipv4.tcp_congestion_control').out);
+	const bbr_ready = congestion != 'bbr' || index(available, 'bbr') >= 0 || current == 'bbr';
+	const service_present = access('/etc/init.d/zerotier-smb-relay');
+
+	out.readyFile = access(ready);
+	out.procdRunning = service_present && run('/etc/init.d/zerotier-smb-relay status', 'both').code == 0;
+	const pid = trim(readfile(ready) ?? '');
+	const owned = !!match(pid, /^[0-9]+$/) && trim(readfile(`/proc/${pid}/comm`) ?? '') == 'socat';
+	const lines = split(run('netstat -ltnp', 'both').out, '\n');
+	out.listening = owned && !access('/var/run/zerotier-smb-relay/stopping') &&
+		!!length(filter(lines, (line) => {
+			const t = split(trim(line), /[ \t]+/);
+			return t[3] == `${zt_ip}:${relay_port}` && t[5] == 'LISTEN' && index(t[6] ?? '', `${pid}/`) == 0;
+		}));
+	out.vipReady = run(`ip -4 addr show | grep -Fq ${shq(`${zt_ip}/`)}`, 'keep').code == 0;
+	out.bbrReady = bbr_ready;
+	out.accelerated = out.procdRunning && out.listening && out.vipReady && bbr_ready;
+	return out;
 }
 
 // Whitelisted network settings for the controller API
@@ -474,6 +564,45 @@ const methods = {
 			const a = run_split('zerotier-fw4 -n -a');
 			const c = run_split('zerotier-fw4 -n -c');
 			return { firewall: a.out, policy: c.out, messages: a.err + c.err };
+		}
+	},
+
+	bondStatus: {
+		call: function() {
+			const listed = {};
+			const lr = cli_raw('bond list');
+			if (lr.code == 0) {
+				if (type(lr.json) == 'array') {
+					for (let b in lr.json)
+						if (is_node(b.peer ?? b.address ?? ''))
+							listed[b.peer ?? b.address] = b;
+				}
+				else if (type(lr.json) == 'object') {
+					for (let k, b in lr.json)
+						if (is_node(k))
+							listed[k] = (type(b) == 'object') ? b : {};
+				}
+			}
+
+			const uci = cursor();
+			const out = [];
+			uci.foreach('zerotier', 'zt_bond', (s) => {
+				const peer = lc(s.peer ?? '');
+				if (is_node(peer))
+					push(out, bond_state(peer, s['.name'], s.enabled == '1', listed[peer]));
+			});
+			return { bonds: out };
+		}
+	},
+
+	smbRelayStatus: {
+		call: function() {
+			const uci = cursor();
+			const out = [];
+			uci.foreach('zerotier', 'zt_device', (s) => {
+				push(out, smb_relay_status(s));
+			});
+			return { relays: out };
 		}
 	},
 

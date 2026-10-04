@@ -1453,10 +1453,10 @@ msgstr "成员的 ZeroTier 客户端显示的 10 位节点地址。"
 
 #: htdocs/luci-static/resources/view/zerotier/settings.js:23
 msgid ""
-"The ZeroTier service, and the networks this router joins. Changes to member "
-"permissions and firewall options are applied without restarting ZeroTier; "
-"everything else restarts it."
-msgstr "ZeroTier 服务以及本路由器加入的网络。修改成员权限和防火墙选项时不会重启 ZeroTier；修改其他设置会重启它。"
+"The ZeroTier service, the networks this router joins, and peer bond "
+"configuration. Saving this page writes UCI only; it does not reload firewall "
+"rules, restart WAN, or restart zerotier-one."
+msgstr "ZeroTier 服务、本路由器加入的网络，以及对等节点 bond 配置。保存本页只写入 UCI；不会 reload 防火墙规则、重启 WAN 或重启 zerotier-one。"
 
 #: htdocs/luci-static/resources/view/zerotier/gateway.js:205
 msgid ""
@@ -1809,3 +1809,264 @@ msgstr "本路由器"
 #: htdocs/luci-static/resources/view/zerotier/moon.js:58
 msgid "unknown"
 msgstr "未知"
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:173
+msgid "%d/%d path(s) alive"
+msgstr "%d/%d 条路径存活"
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:183
+msgid "%d flow(s)"
+msgstr "%d 条流"
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:185
+msgid "%d ms"
+msgstr "%d 毫秒"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:298
+msgid "19445 (canary)"
+msgstr "19445（金丝雀）"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:299
+msgid "445 (SMB)"
+msgstr "445（SMB）"
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:224
+msgid "Active backup"
+msgstr "主备"
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:196
+msgid "Add peer bond…"
+msgstr "添加对等节点 bond…"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:277
+msgid "Allowed client"
+msgstr "允许的客户端"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:281
+msgid "A single IPv4 address is required"
+msgstr "需要一个单独的 IPv4 地址"
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:223
+msgid "Balance XOR"
+msgstr "Balance XOR"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:307
+msgid "BBR"
+msgstr "BBR"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:155
+msgid "BBR available"
+msgstr "BBR 可用"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:305
+msgid "BBR can help long-distance Linux socket forwarding. This page shows acceleration only when BBR is available, the VIP is ready and the relay is listening."
+msgstr "BBR 可能改善长距离 Linux socket 转发。只有在 BBR 可用、VIP 就绪且 relay 正在监听时，本页才显示加速生效。"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:155
+msgid "BBR not loaded"
+msgstr "BBR 未加载"
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:181
+msgid "bonded"
+msgstr "已 bond"
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:168
+msgid "Bonded"
+msgstr "已 bond"
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:192
+msgid "Bonding is only for the specific leaf peers listed here. Saving this page only writes UCI; zerotier-one may create a new bond when it scans the configuration. Once a bond is enabled, changing or disabling it needs a controlled rebuild by the backend package, not an automatic service restart from LuCI."
+msgstr "Bond 只面向这里列出的指定 leaf 对等节点。保存本页只写入 UCI；zerotier-one 扫描配置时可能会创建新的 bond。bond 启用后，修改或关闭需要由后端软件包受控重建，LuCI 不会自动重启服务。"
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:225
+msgid "Bond status is read from zerotier-one. A saved configuration may still be waiting for the daemon to create or rebuild the bond."
+msgstr "Bond 状态读取自 zerotier-one。已保存的配置仍可能在等待 daemon 创建或重建 bond。"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:153
+msgid "Client %s to %s:%d"
+msgstr "客户端 %s 到 %s:%d"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:304
+msgid "Congestion control"
+msgstr "拥塞控制"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:308
+msgid "CUBIC"
+msgstr "CUBIC"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:156
+msgid "CUBIC selected"
+msgstr "已选择 CUBIC"
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:179
+msgid "eligible"
+msgstr "可用"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:272
+msgid "Enable a pure TCP byte relay for this device only. Windows SMB authentication, signing and sealing stay end-to-end; the Windows audit source address becomes this router on the LAN, not the remote client."
+msgstr "仅为此设备启用纯 TCP 字节转接。Windows SMB 认证、签名和加密封装仍保持端到端；Windows 审计中的源地址会变成本路由器在 LAN 上的地址，而不是远端客户端。"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:285
+msgid "High port bound on the device ZeroTier address. Do not use 1445 or privileged ports."
+msgstr "绑定在设备 ZeroTier 地址上的高位端口。不要使用 1445 或特权端口。"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:284
+msgid "Internal relay port"
+msgstr "内部 relay 端口"
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:236
+msgid "IP preference"
+msgstr "IP 偏好"
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:237
+#: htdocs/luci-static/resources/view/zerotier/settings.js:242
+msgid "IPv4 and IPv6"
+msgstr "IPv4 和 IPv6"
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:238
+#: htdocs/luci-static/resources/view/zerotier/settings.js:242
+msgid "IPv4 only"
+msgstr "仅 IPv4"
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:239
+#: htdocs/luci-static/resources/view/zerotier/settings.js:242
+msgid "IPv6 only"
+msgstr "仅 IPv6"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:147
+msgid "Listening, not accelerated"
+msgstr "正在监听，未显示加速"
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:166
+msgid "No active bond policy"
+msgstr "没有活动 bond 策略"
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:157
+msgid "No peer bonds configured."
+msgstr "尚未配置对等节点 bond。"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:140
+msgid "No relay status yet"
+msgstr "暂无 relay 状态"
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:181
+msgid "not bonded"
+msgstr "未 bond"
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:169
+msgid "Not bonded"
+msgstr "未 bond"
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:179
+msgid "not eligible"
+msgstr "不可用"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:150
+msgid "Not listening"
+msgstr "未监听"
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:156
+msgid "Paths"
+msgstr "路径"
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:197
+msgid "Peer bond"
+msgstr "对等节点 bond"
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:191
+#: htdocs/luci-static/resources/view/zerotier/overview.js:224
+msgid "Peer bonds"
+msgstr "对等节点 bond"
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:213
+msgid "Planet and moon peers cannot be bonded"
+msgstr "Planet 和 moon 对等节点不能 bond"
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:222
+#: htdocs/luci-static/resources/view/zerotier/overview.js:156
+msgid "Policy"
+msgstr "策略"
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:244
+msgid "Policy alias"
+msgstr "策略别名"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:158
+msgid "procd not running"
+msgstr "procd 未运行"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:158
+msgid "procd reports running"
+msgstr "procd 报告运行中"
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:187
+msgid "quality %s"
+msgstr "质量 %s"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:314
+msgid "Read-only status from the relay service and listener. The ready marker alone is only a clue, not proof that the relay is running."
+msgstr "来自 relay 服务和监听器的只读状态。ready 标记本身只是线索，不能证明 relay 正在运行。"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:145
+msgid "Ready"
+msgstr "就绪"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:149
+msgid "Ready marker present, check listener"
+msgstr "存在 ready 标记，请检查监听器"
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:230
+msgid "Real network interface name that may carry one path of this bond."
+msgstr "可以承载此 bond 一条路径的真实网络接口名。"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:313
+msgid "Relay status"
+msgstr "Relay 状态"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:278
+msgid "Single IPv4 address of the ZeroTier client allowed to use the relay. Revoking this device grant also revokes the forwarding path."
+msgstr "允许使用 relay 的 ZeroTier 客户端单个 IPv4 地址。撤销此设备授权也会撤销转发路径。"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:296
+msgid "SMB port"
+msgstr "SMB 端口"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:271
+msgid "SMB relay"
+msgstr "SMB relay"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:292
+msgid "Use a high TCP port above 1024, but not 1445"
+msgstr "使用大于 1024 的 TCP 高位端口，但不能是 1445"
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:234
+msgid "Use a real interface name, without spaces or shell characters"
+msgstr "使用真实接口名，不含空格或 shell 字符"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:157
+msgid "VIP not ready"
+msgstr "VIP 未就绪"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:157
+msgid "VIP ready"
+msgstr "VIP 就绪"
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:164
+msgid "Waiting for zerotier-one"
+msgstr "等待 zerotier-one"
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:205
+msgid "ZeroTier node address of the leaf peer to bond with. Planet and moon peers are not eligible."
+msgstr "要建立 bond 的 leaf 对等节点 ZeroTier 地址。Planet 和 moon 对等节点不适用。"
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js
+msgid "IPv4 preferred, IPv6 standby"
+msgstr "IPv4 优先，IPv6 热备"
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js
+msgid "IPv6 preferred, IPv4 standby"
+msgstr "IPv6 优先，IPv4 热备"
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js
+msgid "Paths of the two address families can differ a lot in latency. Preferring one family uses the other only when no path of the preferred family works."
+msgstr "两种地址族的路径延迟可能相差很大。选择优先一种时，只有该地址族没有可用路径才会启用另一种。"

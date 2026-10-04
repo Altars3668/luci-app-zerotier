@@ -13,6 +13,12 @@ const callHostHints = rpc.declare({
 	expect: { '': {} }
 });
 
+const callSmbRelayStatus = rpc.declare({
+	object: 'luci.zerotier',
+	method: 'smbRelayStatus',
+	expect: { relays: [] }
+});
+
 function ip2int(ip) {
 	return ip.split('.').reduce((a, o) => a * 256 + (+o), 0);
 }
@@ -44,7 +50,8 @@ return view.extend({
 			zt.getHostnames(),
 			Promise.all(st.networks.filter((n) => n.controlled).map((n) => zt.ctlNetwork(n.id))),
 			uci.load('zerotier'),
-			L.resolveDefault(uci.load('zerotier-phone-dns'), null)
+			L.resolveDefault(uci.load('zerotier-phone-dns'), null),
+			L.resolveDefault(callSmbRelayStatus(), [])
 		]));
 	},
 
@@ -125,6 +132,34 @@ return view.extend({
 			});
 		});
 		return out.filter((x, i, a) => a.indexOf(x) == i);
+	},
+
+	relayStatus(sid) {
+		const st = this.relays[sid];
+		if (!st)
+			return _('No relay status yet');
+		if (!st.enabled)
+			return '-';
+		if (st.error)
+			return zt.label(st.error, 'warning');
+
+		const state = st.accelerated
+			? zt.label(_('Ready'), 'success')
+			: st.listening
+				? zt.label(_('Listening, not accelerated'), 'warning')
+				: st.readyFile
+					? zt.label(_('Ready marker present, check listener'), 'warning')
+					: zt.label(_('Not listening'), 'important');
+
+		const details = [
+			_('Client %s to %s:%d').format(st.client || '-', st.target || '-', st.externalPort || 445),
+			st.congestion == 'bbr'
+				? (st.bbrReady ? _('BBR available') : _('BBR not loaded'))
+				: _('CUBIC selected'),
+			st.vipReady ? _('VIP ready') : _('VIP not ready'),
+			st.procdRunning ? _('procd reports running') : _('procd not running')
+		];
+		return zt.text(state, details.join('; '));
 	},
 
 	handleMapHost(host) {
@@ -235,6 +270,53 @@ return view.extend({
 			return users.length ? users.join(', ') : E('em', {}, _('nobody (on networks with member permissions)'));
 		};
 
+		o = s.option(form.Flag, 'smb_relay', _('SMB relay'),
+			_('Enable a pure TCP byte relay for this device only. Windows SMB authentication, signing and sealing stay end-to-end; the Windows audit source address becomes this router on the LAN, not the remote client.'));
+		o.default = '0';
+		o.rmempty = false;
+		o.modalonly = true;
+
+		o = s.option(form.Value, 'relay_client_ip', _('Allowed client'),
+			_('Single IPv4 address of the ZeroTier client allowed to use the relay. Revoking this device grant also revokes the forwarding path.'));
+		o.depends('smb_relay', '1');
+		o.datatype = 'ip4addr("nomask")';
+		o.validate = (sid, v) => zt.isIPv4(v) ? true : _('A single IPv4 address is required');
+		o.modalonly = true;
+
+		o = s.option(form.Value, 'relay_port', _('Internal relay port'),
+			_('High port bound on the device ZeroTier address. Do not use 1445 or privileged ports.'));
+		o.depends('smb_relay', '1');
+		o.default = '14445';
+		o.placeholder = '14445';
+		o.validate = (sid, v) => {
+			const n = +v;
+			return (/^\d+$/.test(v || '') && n > 1024 && n <= 65535 && n != 1445)
+				? true : _('Use a high TCP port above 1024, but not 1445');
+		};
+		o.modalonly = true;
+
+		o = s.option(form.ListValue, 'relay_external_port', _('SMB port'));
+		o.depends('smb_relay', '1');
+		o.value('445', _('445 (SMB)'));
+		o.value('19445', _('19445 (canary)'));
+		o.default = '445';
+		o.rmempty = false;
+		o.modalonly = true;
+
+		o = s.option(form.ListValue, 'relay_congestion', _('Congestion control'),
+			_('BBR can help long-distance Linux socket forwarding. This page shows acceleration only when BBR is available, the VIP is ready and the relay is listening.'));
+		o.depends('smb_relay', '1');
+		o.value('bbr', _('BBR'));
+		o.value('cubic', _('CUBIC'));
+		o.default = 'bbr';
+		o.rmempty = false;
+		o.modalonly = true;
+
+		o = s.option(form.DummyValue, '_relay_status', _('Relay status'),
+			_('Read-only status from the relay service and listener. The ready marker alone is only a clue, not proof that the relay is running.'));
+		o.modalonly = false;
+		o.textvalue = L.bind(this.relayStatus, this);
+
 		return m;
 	},
 
@@ -279,6 +361,8 @@ return view.extend({
 		this.hosts = hosts || [];
 		this.controlled = (controlled || []).filter((c) => c && c.network);
 		const hasHostConf = data[5] != null;
+		this.relays = {};
+		(data[6] || []).forEach((r) => { this.relays[r.section] = r; });
 		zt.css();
 
 		const sns = this.subnets();
@@ -300,5 +384,7 @@ return view.extend({
 			nodes[0],
 			nodes[1] || ''
 		]));
-	}
+	},
+
+	handleSaveApply: null
 });

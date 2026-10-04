@@ -3,8 +3,15 @@
 'require dom';
 'require poll';
 'require ui';
+'require rpc';
 'require uci';
 'require zerotier.common as zt';
+
+const callBondStatus = rpc.declare({
+	object: 'luci.zerotier',
+	method: 'bondStatus',
+	expect: { bonds: [] }
+});
 
 return view.extend({
 	load() {
@@ -13,7 +20,8 @@ return view.extend({
 			zt.getPeers(),
 			zt.getDevices(),
 			zt.getLog(100),
-			uci.load('zerotier')
+			uci.load('zerotier'),
+			L.resolveDefault(callBondStatus(), [])
 		]);
 	},
 
@@ -143,20 +151,63 @@ return view.extend({
 		return table.render();
 	},
 
+	renderBonds(bonds) {
+		const table = new ui.Table([
+			_('Peer'), _('Policy'), _('State'), _('Paths')
+		], { sortable: true }, E('em', {}, _('No peer bonds configured.')));
+
+		table.update((bonds || []).map((b) => {
+			const paths = b.paths || [];
+			const state = b.error
+				? zt.label(b.error, 'warning')
+				: b.waiting
+					? zt.label(_('Waiting for zerotier-one'), 'notice')
+					: b.policy == 'None'
+						? zt.label(_('No active bond policy'), 'warning')
+						: b.isBonded
+							? zt.label(_('Bonded'), 'success')
+							: zt.label(_('Not bonded'), 'warning');
+			return [
+				zt.text(b.peer, b.alias),
+				b.policy || '-',
+				zt.text(state, _('%d/%d path(s) alive').format(b.alive || 0, b.total || paths.length || 0)),
+				paths.length ? zt.lines(paths.map((p) => {
+					const bits = [];
+					if (p.ifname)
+						bits.push(p.ifname);
+					if (p.eligible != null)
+						bits.push(p.eligible ? _('eligible') : _('not eligible'));
+					if (p.bonded != null)
+						bits.push(p.bonded ? _('bonded') : _('not bonded'));
+					if (p.assignedFlowCount != null)
+						bits.push(_('%d flow(s)').format(p.assignedFlowCount));
+					if (p.latency != null)
+						bits.push(_('%d ms').format(p.latency));
+					if (p.quality != null)
+						bits.push(_('quality %s').format(p.quality));
+					return zt.text(p.addr || '-', bits.join('; '));
+				})) : '-'
+			];
+		}));
+
+		return table.render();
+	},
+
 	refresh() {
-		return Promise.all([ zt.getStatus(), zt.getPeers(), zt.getDevices(), zt.getLog(100) ]).then((data) => {
-			const [ st, peers, devices, log ] = data;
+		return Promise.all([ zt.getStatus(), zt.getPeers(), zt.getDevices(), zt.getLog(100), L.resolveDefault(callBondStatus(), []) ]).then((data) => {
+			const [ st, peers, devices, log, bonds ] = data;
 			dom.content(document.getElementById('zt-problems'), this.problems(st));
 			dom.content(document.getElementById('zt-status'), this.renderStatus(st));
 			dom.content(document.getElementById('zt-networks'), this.renderNetworks(st, devices));
 			dom.content(document.getElementById('zt-peers'), this.renderPeers(peers));
+			dom.content(document.getElementById('zt-bonds'), this.renderBonds(bonds || []));
 			const log_el = document.getElementById('zt-log');
 			log_el.value = log || _('Nothing logged yet');
 		});
 	},
 
 	render(data) {
-		const [ st, peers, devices, log ] = data;
+		const [ st, peers, devices, log,, bonds ] = data;
 		zt.css();
 
 		poll.add(L.bind(this.refresh, this), 5);
@@ -170,6 +221,8 @@ return view.extend({
 			zt.section(_('Networks'), [ E('div', { 'id': 'zt-networks' }, this.renderNetworks(st, devices)) ]),
 			zt.section(_('Peers'), [ E('div', { 'id': 'zt-peers' }, this.renderPeers(peers)) ],
 				_('Planets and moons are the root servers that introduce peers to each other; leaves are other ZeroTier nodes.')),
+			zt.section(_('Peer bonds'), [ E('div', { 'id': 'zt-bonds' }, this.renderBonds(bonds || [])) ],
+				_('Bond status is read from zerotier-one. A saved configuration may still be waiting for the daemon to create or rebuild the bond.')),
 			zt.section(_('Log'), [
 				E('textarea', {
 					'id': 'zt-log',
