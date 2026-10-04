@@ -19,6 +19,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   still on the direct path (opened before the relay came up) are reset, so
   the client reconnects through the relay instead of staying on the slow path.
 
+Both take effect with zerotier-openwrt 99.1.16.2-r4 and later: it merges the
+bonds into local.conf, runs the relay and puts the relay's redirect back
+after every start of zerotier-one (with r3 it was lost until the relay
+itself restarted).
+
 ## [99.4.0] - 2026-10-02
 
 ### Added
