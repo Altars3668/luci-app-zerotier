@@ -6,6 +6,12 @@
 
 搭配 [zerotier-openwrt](https://github.com/Altars3668/zerotier-openwrt) 使用：**LuCI 负责配置与展示，`zerotier-fw4` 负责生成和执行规则**。当前界面包版本为 **99.5.1**。
 
+## 当前版本与上游
+
+界面包 **99.5.1**；LuCI 原始源码来自 **ImmortalWrt**。建议与配套 **zerotier-openwrt 99.1.16.2-r5** 一起使用。
+
+本轮同步应用子目录历史和可复用翻译，保留六个自有页面及 rpcd ucode 后端；没有退回上游的基础两页界面。
+
 ## 我的改造与特色
 
 | 相对基础 ZeroTier 页面增加 / 重做的部分 | 作用 |
@@ -84,8 +90,10 @@ make package/luci-app-zerotier/compile V=s -j2
 
 配套项目：[ZeroTier OpenWrt 核心包](https://github.com/Altars3668/zerotier-openwrt) · [RE-CS-02 固件 CI](https://github.com/Altars3668/OpenWRT-CI)。
 
-## 上游基线与回归检查
+## 上游基线与验证边界
 
 源码来源已核实为 [immortalwrt/luci 的 `applications/luci-app-zerotier`](https://github.com/immortalwrt/luci/tree/5fc1fac5684cac6eee2c7fbff78c65b867980dd8/applications/luci-app-zerotier)，本轮基线为 `5fc1fac5684c`。来源、导入历史和保留的定制差异见 [UPSTREAM.md](UPSTREAM.md)。
 
 检查视图 JavaScript、JSON、翻译编译和 ucode 编译；本轮不连接路由器进行网页或防火墙验收。
+
+这些检查覆盖语法、翻译及所列本机回归；不等于所有架构 SDK / 固件构建或真实设备验收。本次发布更新源码和说明，不安装软件、不触发刷机，也不伪造预编译产物。
