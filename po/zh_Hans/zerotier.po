@@ -11,9 +11,17 @@ msgstr ""
 msgid "\"%s\" is not an IPv4 or IPv6 prefix"
 msgstr "\"%s\" 不是 IPv4 或 IPv6 前缀"
 
+#: htdocs/luci-static/resources/view/zerotier/overview.js:183
+msgid "%d flow(s)"
+msgstr "%d 条流"
+
 #: htdocs/luci-static/resources/view/zerotier/controller.js:362
 msgid "%d member(s) wait for authorization."
 msgstr "%d 个成员在等待准入。"
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:185
+msgid "%d ms"
+msgstr "%d 毫秒"
 
 #: htdocs/luci-static/resources/view/zerotier/overview.js:65
 msgid "%d network(s) open to every member"
@@ -39,6 +47,10 @@ msgstr "%d 条路径"
 msgid "%d rule(s)"
 msgstr "%d 条规则"
 
+#: htdocs/luci-static/resources/view/zerotier/overview.js:173
+msgid "%d/%d path(s) alive"
+msgstr "%d/%d 条路径存活"
+
 #: htdocs/luci-static/resources/zerotier/common.js:134
 msgid "%s ago"
 msgstr "%s前"
@@ -63,6 +75,14 @@ msgstr "（ZeroTier 未运行）"
 msgid "(unnamed)"
 msgstr "（未命名）"
 
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:298
+msgid "19445 (canary)"
+msgstr "19445（金丝雀）"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:299
+msgid "445 (SMB)"
+msgstr "445（SMB）"
+
 #: htdocs/luci-static/resources/view/zerotier/controller.js:182
 msgid "6PLANE"
 msgstr "6PLANE"
@@ -72,17 +92,11 @@ msgid "A /80 per member, for containers or VMs behind it."
 msgstr "每个成员一个 /80，供其后面的容器或虚拟机使用。"
 
 #: htdocs/luci-static/resources/view/zerotier/gateway.js:246
-msgid ""
-"A local host name that follows a device between its own ZeroTier client and "
-"its mapped LAN address: the router checks every minute which of the two "
-"answers and points the name there (dnsmasq)."
+msgid "A local host name that follows a device between its own ZeroTier client and its mapped LAN address: the router checks every minute which of the two answers and points the name there (dnsmasq)."
 msgstr "让一个本地主机名跟随设备在\"自身 ZeroTier 客户端地址\"和\"局域网映射地址\"之间切换：路由器每分钟检查哪一个能连通，就把名字指向哪一个（dnsmasq）。"
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:270
-msgid ""
-"A member is recognized by the MAC address ZeroTier derives from its node "
-"address, never by IP, so it cannot borrow another member's grants by taking "
-"its address."
+msgid "A member is recognized by the MAC address ZeroTier derives from its node address, never by IP, so it cannot borrow another member's grants by taking its address."
 msgstr "成员按 ZeroTier 由节点地址推导出的 MAC 地址识别，从不按 IP 识别，因此无法通过冒用他人的 IP 借用别人的授权。"
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:169
@@ -90,10 +104,7 @@ msgid "A moon ID has 10 hexadecimal digits"
 msgstr "Moon ID 是 10 位十六进制数"
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:92
-msgid ""
-"A moon is a root server of your own: nodes that orbit it find each other "
-"through it, faster and without depending on the public roots. Its endpoints "
-"have to be reachable from where those nodes are."
+msgid "A moon is a root server of your own: nodes that orbit it find each other through it, faster and without depending on the public roots. Its endpoints have to be reachable from where those nodes are."
 msgstr "Moon 是自建的根服务器：加入它的节点通过它互相发现，更快，也不依赖公共根服务器。它发布的地址必须能被这些节点访问到。"
 
 #: htdocs/luci-static/resources/view/zerotier/settings.js:90
@@ -105,24 +116,20 @@ msgid "A node address has 10 hexadecimal digits"
 msgstr "节点地址是 10 位十六进制数"
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:175
-msgid ""
-"A node reaches a moon only at the addresses of the moon definition it holds. "
-"When a moon moves to a new address and re-signs itself for it, every 5 "
-"minutes this router fetches the current definition of each moon it has no "
-"direct path to."
+msgid "A node reaches a moon only at the addresses of the moon definition it holds. When a moon moves to a new address and re-signs itself for it, every 5 minutes this router fetches the current definition of each moon it has no direct path to."
 msgstr "节点只按自己持有的 Moon 定义里的地址访问 Moon。Moon 换到新地址并为此重新签名后，本路由器每 5 分钟为每个没有直连路径的 Moon 重新获取一次当前定义。"
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:323
-msgid ""
-"A role is a set of grants several members share: listing a role on a member "
-"gives it every grant of the role. A role is also a group: under member "
-"isolation, \"group:ROLE\" grants reach its members, and with \"Members reach "
-"each other\" they reach one another directly."
+msgid "A role is a set of grants several members share: listing a role on a member gives it every grant of the role. A role is also a group: under member isolation, \"group:ROLE\" grants reach its members, and with \"Members reach each other\" they reach one another directly."
 msgstr "角色是多个成员共用的一组授权：给成员列上某个角色，它就获得该角色的全部授权。角色同时也是分组：启用成员隔离后，\"group:角色名\" 授权可以访问该组的成员；勾选\"组内互通\"后，组内成员可以直接互相访问。"
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:174
 msgid "A route needs a subnet such as 10.147.20.0/24"
 msgstr "路由需要一个子网，例如 10.147.20.0/24"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:281
+msgid "A single IPv4 address is required"
+msgstr "需要一个单独的 IPv4 地址"
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:181
 msgid "A unique /128 per member, derived from network and node."
@@ -145,6 +152,10 @@ msgstr "访问"
 msgid "Access from the network"
 msgstr "来自该网络的访问"
 
+#: htdocs/luci-static/resources/view/zerotier/settings.js:224
+msgid "Active backup"
+msgstr "主备"
+
 #: htdocs/luci-static/resources/view/zerotier/controller.js:272
 #: htdocs/luci-static/resources/view/zerotier/controller.js:315
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:152
@@ -163,6 +174,10 @@ msgstr "添加映射…"
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:274
 msgid "Add member…"
 msgstr "添加成员…"
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:196
+msgid "Add peer bond…"
+msgstr "添加对等节点 bond…"
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:327
 msgid "Add role…"
@@ -185,13 +200,73 @@ msgstr "地址"
 msgid "Admitted"
 msgstr "已准入"
 
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:125
+msgid "Allow DNS"
+msgstr "允许 DNS"
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:126
+msgid "Allow ZeroTier to set DNS servers."
+msgstr "允许 ZeroTier 设置 DNS 服务器。"
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:113
+msgid "Allow ZeroTier to set IP addresses and routes (local/private ranges only)."
+msgstr "允许 ZeroTier 设置 IP 地址和路由（仅限本地/私有范围）。"
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:118
+msgid "Allow ZeroTier to set global/public/not-private range IPs and routes."
+msgstr "允许 ZeroTier 设置全局/公共/非私有范围的 IP 和路由。"
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:122
+msgid "Allow ZeroTier to set the default route on the system."
+msgstr "允许 ZeroTier 设置系统的默认路由。"
+
 #: htdocs/luci-static/resources/view/zerotier/settings.js:129
 msgid "Allow access to this router"
 msgstr "允许访问本路由器"
 
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:121
+msgid "Allow default route"
+msgstr "允许默认路由"
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:133
+msgid "Allow forward"
+msgstr "允许转发"
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:134
+msgid "Allow forward traffic from/to the ZeroTier network."
+msgstr "允许来自/到 ZeroTier 网络的转发流量。"
+
 #: htdocs/luci-static/resources/view/zerotier/settings.js:134
 msgid "Allow forwarding"
 msgstr "允许转发"
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:117
+msgid "Allow global IP/route"
+msgstr "允许全局 IP/路由"
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:129
+msgid "Allow input"
+msgstr "允许入站"
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:87
+msgid "Allow input traffic"
+msgstr "允许入站流量"
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:130
+msgid "Allow input traffic from the ZeroTier network."
+msgstr "允许来自 ZeroTier 网络的入站流量。"
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:88
+msgid "Allow input traffic to the ZeroTier daemon."
+msgstr "允许外部流量进入 ZeroTier 守护进程。"
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:112
+msgid "Allow managed IP/route"
+msgstr "允许管理 IP/路由"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:277
+msgid "Allowed client"
+msgstr "允许的客户端"
 
 #: htdocs/luci-static/resources/view/zerotier/gateway.js:215
 msgid "Already taken by %s"
@@ -218,9 +293,7 @@ msgid "Asked to join, not authorized yet"
 msgstr "已申请加入，尚未准入"
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:156
-msgid ""
-"Asking the moon for its current definition. This takes up to a minute and a "
-"half."
+msgid "Asking the moon for its current definition. This takes up to a minute and a half."
 msgstr "正在向 Moon 索取其当前定义，最长约需一分半钟。"
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:154
@@ -247,18 +320,56 @@ msgstr "已准入"
 msgid "Available, controls %d of the joined networks"
 msgstr "可用，管理着已加入网络中的 %d 个"
 
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:307
+msgid "BBR"
+msgstr "BBR"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:155
+msgid "BBR available"
+msgstr "BBR 可用"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:305
+msgid "BBR can help long-distance Linux socket forwarding. This page shows acceleration only when BBR is available, the VIP is ready and the relay is listening."
+msgstr "BBR 可能改善长距离 Linux socket 转发。只有在 BBR 可用、VIP 就绪且 relay 正在监听时，本页才显示加速生效。"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:155
+msgid "BBR not loaded"
+msgstr "BBR 未加载"
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:223
+msgid "Balance XOR"
+msgstr "Balance XOR"
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:225
+msgid "Bond status is read from zerotier-one. A saved configuration may still be waiting for the daemon to create or rebuild the bond."
+msgstr "Bond 状态读取自 zerotier-one。已保存的配置仍可能在等待 daemon 创建或重建 bond。"
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:168
+msgid "Bonded"
+msgstr "已 bond"
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:192
+msgid "Bonding is only for the specific leaf peers listed here. Saving this page only writes UCI; zerotier-one may create a new bond when it scans the configuration. Once a bond is enabled, changing or disabling it needs a controlled rebuild by the backend package, not an automatic service restart from LuCI."
+msgstr "Bond 只面向这里列出的指定 leaf 对等节点。保存本页只写入 UCI；zerotier-one 扫描配置时可能会创建新的 bond。bond 启用后，修改或关闭需要由后端软件包受控重建，LuCI 不会自动重启服务。"
+
 #: htdocs/luci-static/resources/view/zerotier/controller.js:139
 msgid "Broadcast"
 msgstr "广播"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:308
+msgid "CUBIC"
+msgstr "CUBIC"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:156
+msgid "CUBIC selected"
+msgstr "已选择 CUBIC"
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:315
 msgid "Can send for any MAC address"
 msgstr "可以用任意 MAC 地址收发"
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:235
-msgid ""
-"Can send with any MAC address, other members' included: as trusted as the "
-"most privileged member"
+msgid "Can send with any MAC address, other members' included: as trusted as the most privileged member"
 msgstr "可以用任意 MAC 地址发包（包括其他成员的）：信任级别等同于权限最高的成员"
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:279
@@ -283,6 +394,14 @@ msgstr "已检查"
 msgid "Checking the current addresses…"
 msgstr "正在检查当前地址…"
 
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:153
+msgid "Client %s to %s:%d"
+msgstr "客户端 %s 到 %s:%d"
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:71
+msgid "Client secret"
+msgstr "客户端密钥"
+
 #: htdocs/luci-static/resources/zerotier/common.js:25
 msgid "Client too old"
 msgstr "客户端版本过旧"
@@ -292,9 +411,25 @@ msgstr "客户端版本过旧"
 msgid "Close"
 msgstr "关闭"
 
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:60
+msgid "Collecting data…"
+msgstr "正在收集数据中…"
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:79
+msgid "Config path"
+msgstr "配置路径"
+
+#: applications/luci-app-zerotier/root/usr/share/luci/menu.d/luci-app-zerotier.json:14
+msgid "Configuration"
+msgstr "配置"
+
 #: htdocs/luci-static/resources/view/zerotier/controller.js:332
 msgid "Configured"
 msgstr "已配置"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:304
+msgid "Congestion control"
+msgstr "拥塞控制"
 
 #: htdocs/luci-static/resources/zerotier/common.js:20
 msgid "Connected"
@@ -309,14 +444,20 @@ msgstr "连接"
 msgid "Controller"
 msgstr "控制器"
 
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:83
+msgid "Copy config path"
+msgstr "复制配置目录"
+
 #: htdocs/luci-static/resources/view/zerotier/settings.js:47
 msgid "Copy into RAM"
 msgstr "复制到内存"
 
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:84
+msgid "Copy the contents of the persistent configuration directory to memory instead of linking it, this avoids writing to flash."
+msgstr "复制持久配置目录的内容到内存中，而不是链接它，以避免写入闪存。"
+
 #: htdocs/luci-static/resources/view/zerotier/settings.js:48
-msgid ""
-"Copy the persistent directory into RAM at start instead of using it in "
-"place: fewer flash writes, but changes made while running are lost."
+msgid "Copy the persistent directory into RAM at start instead of using it in place: fewer flash writes, but changes made while running are lost."
 msgstr "启动时把持久化目录复制到内存中使用，而不是直接使用：减少闪存写入，但运行期间的改动会丢失。"
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:89
@@ -326,6 +467,10 @@ msgstr "创建 Moon"
 #: htdocs/luci-static/resources/view/zerotier/controller.js:409
 msgid "Create network"
 msgstr "创建网络"
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:91
+msgid "Create or manage your ZeroTier network, and auth clients who could access."
+msgstr "创建或管理您的 ZeroTier 网络，并允许客户端接入。"
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:129
 msgid "Current addresses"
@@ -353,9 +498,7 @@ msgid "Delete"
 msgstr "删除"
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:95
-msgid ""
-"Delete network %s (%s)? Every member loses access to it, and its "
-"configuration is gone for good."
+msgid "Delete network %s (%s)? Every member loses access to it, and its configuration is gone for good."
 msgstr "删除网络 %s（%s）？所有成员都将失去对它的访问，其配置也将永久删除。"
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:140
@@ -381,9 +524,22 @@ msgstr "编辑"
 msgid "Empty grant"
 msgstr "授权为空"
 
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:66
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:104
+msgid "Enable"
+msgstr "启用"
+
 #: htdocs/luci-static/resources/view/zerotier/settings.js:31
 msgid "Enable ZeroTier"
 msgstr "启用 ZeroTier"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:272
+msgid "Enable a pure TCP byte relay for this device only. Windows SMB authentication, signing and sealing stay end-to-end; the Windows audit source address becomes this router on the LAN, not the remote client."
+msgstr "仅为此设备启用纯 TCP 字节转接。Windows SMB 认证、签名和加密封装仍保持端到端；Windows 审计中的源地址会变成本路由器在 LAN 上的地址，而不是远端客户端。"
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:145
+msgid "Enable network address and port translation (NAT) for outbound traffic for this network."
+msgstr "为此网络的出站流量开启网络地址和端口转换（NAT 或 NAPT）。"
 
 #: htdocs/luci-static/resources/view/zerotier/gateway.js:179
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:278
@@ -400,16 +556,11 @@ msgid "Endpoints"
 msgstr "端点"
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:149
-msgid ""
-"Enter a subnet such as 10.147.20.0/24 to replace the pools and routes below "
-"with it."
+msgid "Enter a subnet such as 10.147.20.0/24 to replace the pools and routes below with it."
 msgstr "输入一个子网（如 10.147.20.0/24），用它替换下面的地址池和路由。"
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:133
-msgid ""
-"Every 10 minutes, and whenever the WAN comes up, the moon is re-signed if "
-"the router's public addresses changed. \"auto\" follows the WAN address; a "
-"domain follows what it resolves to."
+msgid "Every 10 minutes, and whenever the WAN comes up, the moon is re-signed if the router's public addresses changed. \"auto\" follows the WAN address; a domain follows what it resolves to."
 msgstr "每 10 分钟以及每次 WAN 连接建立时检查，路由器的公网地址一旦变化就重新签发 Moon。\"auto\" 跟随 WAN 地址；域名则跟随其解析结果。"
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:53
@@ -470,6 +621,10 @@ msgstr "跟随地址变化"
 msgid "Following address changes"
 msgstr "已开始跟随地址变化"
 
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:137
+msgid "Forward interfaces"
+msgstr "转发接口"
+
 #: htdocs/luci-static/resources/view/zerotier/settings.js:139
 msgid "Forward to"
 msgstr "转发到"
@@ -489,10 +644,7 @@ msgid "Generated rules"
 msgstr "生成的规则"
 
 #: htdocs/luci-static/resources/view/zerotier/gateway.js:292
-msgid ""
-"Give devices on the LAN an address on the ZeroTier network, so that members "
-"reach them without ZeroTier installed on the device (1:1 NAT through this "
-"router). Who may reach them is decided on the Permissions page."
+msgid "Give devices on the LAN an address on the ZeroTier network, so that members reach them without ZeroTier installed on the device (1:1 NAT through this router). Who may reach them is decided on the Permissions page."
 msgstr "给局域网设备在 ZeroTier 网络中分配一个地址，设备本身无需安装 ZeroTier，成员即可访问它（由本路由器做 1:1 NAT）。谁可以访问由\"权限\"页决定。"
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:155
@@ -503,9 +655,17 @@ msgstr "从地址池中给每个成员分配地址。"
 msgid "Give members IPv6 addresses from IPv6 pools above."
 msgstr "从上面的 IPv6 地址池中给成员分配 IPv6 地址。"
 
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:64
+msgid "Global configuration"
+msgstr "全局配置"
+
 #: root/usr/share/rpcd/acl.d/luci-app-zerotier.json:3
 msgid "Grant access to ZeroTier"
 msgstr "授予 ZeroTier 的访问权限"
+
+#: applications/luci-app-zerotier/root/usr/share/rpcd/acl.d/luci-app-zerotier.json:3
+msgid "Grant access to ZeroTier configuration"
+msgstr "授予访问 ZeroTier 配置的权限"
 
 #: htdocs/luci-static/resources/view/zerotier/gateway.js:231
 msgid "Granted to"
@@ -518,6 +678,10 @@ msgstr "授权"
 #: htdocs/luci-static/resources/view/zerotier/gateway.js:185
 msgid "Grants refer to the device by this name (device:NAME)."
 msgstr "授权中用这个名称指代该设备（device:名称）。"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:285
+msgid "High port bound on the device ZeroTier address. Do not use 1445 or privileged ports."
+msgstr "绑定在设备 ZeroTier 地址上的高位端口。不要使用 1445 或特权端口。"
 
 #: htdocs/luci-static/resources/view/zerotier/gateway.js:151
 msgid "Host"
@@ -532,23 +696,54 @@ msgid "Hosts the router knows from DHCP and its neighbour table."
 msgstr "路由器从 DHCP 和邻居表中得知的主机。"
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:284
-msgid ""
-"How grants of other members refer to this one (member:NAME); also labels its "
-"firewall rules."
+msgid "How grants of other members refer to this one (member:NAME); also labels its firewall rules."
 msgstr "其他成员的授权用这个名称指代它（member:名称），也用于标注它的防火墙规则。"
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:236
+msgid "IP preference"
+msgstr "IP 偏好"
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:130
 msgid "IPv4"
 msgstr "IPv4"
 
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/interface.js:91
+msgid "IPv4 Address"
+msgstr "IPv4 地址"
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:237
+#: htdocs/luci-static/resources/view/zerotier/settings.js:242
+msgid "IPv4 and IPv6"
+msgstr "IPv4 和 IPv6"
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:238
+#: htdocs/luci-static/resources/view/zerotier/settings.js:242
+msgid "IPv4 only"
+msgstr "仅 IPv4"
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js
+msgid "IPv4 preferred, IPv6 standby"
+msgstr "IPv4 优先，IPv6 热备"
+
 #: htdocs/luci-static/resources/view/zerotier/controller.js:131
 msgid "IPv6"
 msgstr "IPv6"
 
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/interface.js:95
+msgid "IPv6 Address"
+msgstr "IPv6 地址"
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:239
+#: htdocs/luci-static/resources/view/zerotier/settings.js:242
+msgid "IPv6 only"
+msgstr "仅 IPv6"
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js
+msgid "IPv6 preferred, IPv4 standby"
+msgstr "IPv6 优先，IPv4 热备"
+
 #: htdocs/luci-static/resources/view/zerotier/settings.js:35
-msgid ""
-"Identity of this router on every network. It is kept with the configuration, "
-"readable by root only."
+msgid "Identity of this router on every network. It is kept with the configuration, readable by root only."
 msgstr "本路由器在所有网络中的身份。随配置一起保存，仅 root 可读。"
 
 #: htdocs/luci-static/resources/view/zerotier/gateway.js:221
@@ -563,9 +758,21 @@ msgstr "已生效"
 msgid "Interface"
 msgstr "接口"
 
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/interface.js:83
+msgid "Interface Name"
+msgstr "接口名称"
+
 #: htdocs/luci-static/resources/zerotier/common.js:24
 msgid "Interface error"
 msgstr "接口错误"
+
+#: applications/luci-app-zerotier/root/usr/share/luci/menu.d/luci-app-zerotier.json:22
+msgid "Interface info"
+msgstr "接口信息"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:284
+msgid "Internal relay port"
+msgstr "内部 relay 端口"
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:175
 msgid "Invalid gateway"
@@ -640,6 +847,11 @@ msgstr "延迟"
 msgid "Leave"
 msgstr "退出"
 
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:138
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:149
+msgid "Leave empty for all."
+msgstr "留空表示全部。"
+
 #: htdocs/luci-static/resources/view/zerotier/moon.js:157
 msgid "Left the moon"
 msgstr "已退出该 Moon"
@@ -649,17 +861,11 @@ msgid "Let hosts on the LAN interfaces connect to members of the network."
 msgstr "允许局域网接口上的主机连接该网络的成员。"
 
 #: htdocs/luci-static/resources/view/zerotier/settings.js:114
-msgid ""
-"Let the network replace the default route: all traffic of this router goes "
-"through it."
+msgid "Let the network replace the default route: all traffic of this router goes through it."
 msgstr "允许该网络替换默认路由：本路由器的全部流量都经由它。"
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:273
-msgid ""
-"Lets the member send and receive for any MAC address - needed to bridge a "
-"LAN into the network. It can then also impersonate every other member, so "
-"the router trusts it like the most privileged member. Only for gateways you "
-"control."
+msgid "Lets the member send and receive for any MAC address - needed to bridge a LAN into the network. It can then also impersonate every other member, so the router trusts it like the most privileged member. Only for gateways you control."
 msgstr "允许该成员以任意 MAC 地址收发——把局域网桥接进网络时需要。这样它也能冒充任何其他成员，因此路由器对它的信任等同于权限最高的成员。仅用于你自己控制的网关。"
 
 #: htdocs/luci-static/resources/view/zerotier/gateway.js:189
@@ -670,6 +876,14 @@ msgstr "只能包含字母、数字、\".\"、\"-\" 和 \"_\""
 msgid "Limit forwarding to these interfaces (default: any)."
 msgstr "只转发到这些接口（默认：任意）。"
 
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:68
+msgid "Listen port"
+msgstr "监听端口"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:147
+msgid "Listening, not accelerated"
+msgstr "正在监听，未显示加速"
+
 #: htdocs/luci-static/resources/view/zerotier/moon.js:150
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:116
 msgid "Loaded"
@@ -679,9 +893,17 @@ msgstr "已加载"
 msgid "Local"
 msgstr "本机"
 
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:74
+msgid "Local config path"
+msgstr "本地配置路径"
+
 #: htdocs/luci-static/resources/view/zerotier/overview.js:173
 msgid "Log"
 msgstr "日志"
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/interface.js:87
+msgid "MAC Address"
+msgstr "MAC 地址"
 
 #: htdocs/luci-static/resources/view/zerotier/gateway.js:151
 #: htdocs/luci-static/resources/view/zerotier/gateway.js:226
@@ -705,9 +927,7 @@ msgid "Managed addresses and routes"
 msgstr "受管地址和路由"
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:268
-msgid ""
-"Managed addresses of the member; leave empty to have one assigned from the "
-"pools."
+msgid "Managed addresses of the member; leave empty to have one assigned from the pools."
 msgstr "该成员的受管地址；留空则从地址池自动分配。"
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:167
@@ -742,9 +962,17 @@ msgstr "映射设备"
 msgid "Masquerade"
 msgstr "IP 伪装"
 
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:148
+msgid "Masquerade interfaces"
+msgstr "伪装接口"
+
 #: htdocs/luci-static/resources/view/zerotier/settings.js:170
 msgid "Masquerade traffic from"
 msgstr "伪装来自以下接口的流量"
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:144
+msgid "Masquerading"
+msgstr "IP 动态伪装"
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:303
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:141
@@ -775,8 +1003,7 @@ msgid "Member isolation (flow rules of the controller)"
 msgstr "成员隔离（控制器流规则）"
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:36
-msgid ""
-"Member isolation is configured on the network section of a joined network"
+msgid "Member isolation is configured on the network section of a joined network"
 msgstr "成员隔离在已加入网络的网络配置中设置"
 
 #: htdocs/luci-static/resources/view/zerotier/overview.js:83
@@ -808,9 +1035,7 @@ msgid "Members isolated"
 msgstr "成员已隔离"
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:137
-msgid ""
-"Members need to be authorized here. A public network admits anyone who knows "
-"its ID."
+msgid "Members need to be authorized here. A public network admits anyone who knows its ID."
 msgstr "成员需要在这里准入。公开网络则允许任何知道网络 ID 的人加入。"
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:371
@@ -862,10 +1087,7 @@ msgid "Moons"
 msgstr "Moon"
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:192
-msgid ""
-"Moons are root servers you run yourself. Nodes that orbit a moon learn about "
-"each other through it, which helps where the public roots are slow or "
-"unreachable."
+msgid "Moons are root servers you run yourself. Nodes that orbit a moon learn about each other through it, which helps where the public roots are slow or unreachable."
 msgstr "Moon 是你自己运行的根服务器。加入 Moon 的节点通过它互相发现，在公共根服务器缓慢或不可达时很有用。"
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:162
@@ -873,15 +1095,11 @@ msgid "Moons this router orbits"
 msgstr "本路由器已加入的 Moon"
 
 #: htdocs/luci-static/resources/view/zerotier/settings.js:61
-msgid ""
-"More than 1 and fewer than the CPU cores of this router (%d). Empty: 2 with "
-"4 cores or more."
+msgid "More than 1 and fewer than the CPU cores of this router (%d). Empty: 2 with 4 cores or more."
 msgstr "大于 1 且小于本路由器的 CPU 核数（%d）。留空：4 核及以上时为 2。"
 
 #: htdocs/luci-static/resources/view/zerotier/settings.js:62
-msgid ""
-"More than 1 and fewer than the CPU cores of this router. Empty: 2 with 4 "
-"cores or more."
+msgid "More than 1 and fewer than the CPU cores of this router. Empty: 2 with 4 cores or more."
 msgstr "大于 1 且小于本路由器的 CPU 核数。留空：4 核及以上时为 2。"
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:142
@@ -891,6 +1109,10 @@ msgstr "组播接收者上限"
 #: htdocs/luci-static/resources/view/zerotier/settings.js:55
 msgid "Multithreading"
 msgstr "多线程"
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:37
+msgid "NOT RUNNING"
+msgstr "未运行"
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:134
 #: htdocs/luci-static/resources/view/zerotier/controller.js:263
@@ -926,6 +1148,14 @@ msgstr "网络 %s 已创建"
 msgid "Network ID"
 msgstr "网络 ID"
 
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/interface.js:81
+msgid "Network Interface Information"
+msgstr "网络接口信息"
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:98
+msgid "Network configuration"
+msgstr "网络配置"
+
 #: htdocs/luci-static/resources/view/zerotier/controller.js:387
 #: htdocs/luci-static/resources/view/zerotier/controller.js:401
 #: htdocs/luci-static/resources/view/zerotier/overview.js:77
@@ -952,16 +1182,11 @@ msgid "Networks"
 msgstr "网络"
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:403
-msgid ""
-"Networks this router is the controller of: who is admitted, which addresses "
-"members get, and the routes they learn. What members may reach through a "
-"router is set on the Permissions page."
+msgid "Networks this router is the controller of: who is admitted, which addresses members get, and the routes they learn. What members may reach through a router is set on the Permissions page."
 msgstr "本路由器作为控制器的网络：谁可以准入、成员获得哪些地址、学到哪些路由。成员经路由器能访问什么，在\"权限\"页设置。"
 
 #: htdocs/luci-static/resources/view/zerotier/settings.js:72
-msgid ""
-"Networks this router joins. A network that is not authorized yet stays \"Not "
-"authorized\" until its controller admits this router."
+msgid "Networks this router joins. A network that is not authorized yet stays \"Not authorized\" until its controller admits this router."
 msgstr "本路由器加入的网络。尚未被准入的网络会一直显示\"未准入\"，直到其控制器准入本路由器。"
 
 #: htdocs/luci-static/resources/zerotier/common.js:221
@@ -972,6 +1197,10 @@ msgstr "没有名为 \"%s\" 的局域网网关设备"
 msgid "No LAN hosts known"
 msgstr "没有已知的局域网主机"
 
+#: htdocs/luci-static/resources/view/zerotier/overview.js:166
+msgid "No active bond policy"
+msgstr "没有活动 bond 策略"
+
 #: htdocs/luci-static/resources/view/zerotier/controller.js:270
 msgid "No automatic addresses"
 msgstr "不自动分配地址"
@@ -979,6 +1208,10 @@ msgstr "不自动分配地址"
 #: htdocs/luci-static/resources/view/zerotier/moon.js:152
 msgid "No direct path: relayed"
 msgstr "无直连：经中继"
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/interface.js:77
+msgid "No interface online."
+msgstr "没有在线的接口。"
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:304
 msgid "No member has asked to join yet"
@@ -997,10 +1230,7 @@ msgid "No network joined yet. Add one on the Settings page."
 msgstr "尚未加入任何网络，请在\"设置\"页添加。"
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:123
-msgid ""
-"No network uses member permissions yet, so every member gets the same "
-"access. Switch \"Access from the network\" to member permissions on the "
-"Settings page."
+msgid "No network uses member permissions yet, so every member gets the same access. Switch \"Access from the network\" to member permissions on the Settings page."
 msgstr "还没有网络启用成员权限，因此所有成员获得相同的访问。请在\"设置\"页把\"来自该网络的访问\"切换为成员权限。"
 
 #: htdocs/luci-static/resources/view/zerotier/overview.js:82
@@ -1011,9 +1241,17 @@ msgstr "没有网络"
 msgid "No networks yet: create one below."
 msgstr "还没有网络：在下面创建一个。"
 
+#: htdocs/luci-static/resources/view/zerotier/overview.js:157
+msgid "No peer bonds configured."
+msgstr "尚未配置对等节点 bond。"
+
 #: htdocs/luci-static/resources/view/zerotier/overview.js:128
 msgid "No peers"
 msgstr "没有对等节点"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:140
+msgid "No relay status yet"
+msgstr "暂无 relay 状态"
 
 #: htdocs/luci-static/resources/zerotier/common.js:233
 msgid "No role named \"%s\""
@@ -1033,9 +1271,7 @@ msgid "Node address"
 msgstr "节点地址"
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:368
-msgid ""
-"Not a member of this network. Join it on the Settings page to use it here, "
-"or to isolate its members."
+msgid "Not a member of this network. Join it on the Settings page to use it here, or to isolate its members."
 msgstr "不是该网络的成员。要在本路由器上使用它或隔离其成员，请先在\"设置\"页加入。"
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:88
@@ -1050,6 +1286,10 @@ msgstr "未准入"
 #: htdocs/luci-static/resources/view/zerotier/overview.js:80
 msgid "Not available"
 msgstr "不可用"
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:169
+msgid "Not bonded"
+msgstr "未 bond"
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:84
 msgid "Not created"
@@ -1067,6 +1307,10 @@ msgstr "未加入"
 #: htdocs/luci-static/resources/view/zerotier/controller.js:36
 msgid "Not joined here"
 msgstr "本机未加入"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:150
+msgid "Not listening"
+msgstr "未监听"
 
 #: htdocs/luci-static/resources/view/zerotier/overview.js:154
 #: htdocs/luci-static/resources/view/zerotier/overview.js:180
@@ -1098,11 +1342,7 @@ msgid "On: %s, port %d"
 msgstr "已开启：%s，端口 %d"
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:63
-msgid ""
-"One grant per entry: TARGET [PORT...]. Targets: router, lan, wan, "
-"device:NAME, device:*, net:PREFIX, and - between members, under member "
-"isolation - member:NAME, group:ROLE. Ports: tcp/22, udp/53, tcp/8000-8100, "
-"icmp - none means all traffic. Example: \"device:nas tcp/445\"."
+msgid "One grant per entry: TARGET [PORT...]. Targets: router, lan, wan, device:NAME, device:*, net:PREFIX, and - between members, under member isolation - member:NAME, group:ROLE. Ports: tcp/22, udp/53, tcp/8000-8100, icmp - none means all traffic. Example: \"device:nas tcp/445\"."
 msgstr "每条一个授权：目标 [端口...]。目标：router、lan、wan、device:名称、device:*、net:前缀，以及成员之间（需启用成员隔离）的 member:名称、group:角色。端口：tcp/22、udp/53、tcp/8000-8100、icmp，不写表示全部流量。例如：\"device:nas tcp/445\"。"
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:321
@@ -1133,12 +1373,7 @@ msgid "Only use the addresses listed above."
 msgstr "只使用上面列出的地址。"
 
 #: htdocs/luci-static/resources/view/zerotier/settings.js:178
-msgid ""
-"Only when this router is the network's controller. Members then reach only "
-"the gateways - this router, and members marked as gateway on the Permissions "
-"page - the other members of their groups, and what their \"member:\" and "
-"\"group:\" grants allow. ZeroTier itself drops everything else between "
-"members, on both ends."
+msgid "Only when this router is the network's controller. Members then reach only the gateways - this router, and members marked as gateway on the Permissions page - the other members of their groups, and what their \"member:\" and \"group:\" grants allow. ZeroTier itself drops everything else between members, on both ends."
 msgstr "仅当本路由器是该网络的控制器时可用。启用后，成员只能访问网关（本路由器，以及在\"权限\"页标为网关的成员）、同组的其他成员，以及其 \"member:\"、\"group:\" 授权允许的对象；成员之间的其他流量由 ZeroTier 在收发两端直接丢弃。"
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:121
@@ -1150,6 +1385,10 @@ msgstr "开放端口"
 #: htdocs/luci-static/resources/view/zerotier/settings.js:127
 msgid "Open to all members"
 msgstr "对所有成员开放"
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:92
+msgid "Open website"
+msgstr "打开网站"
 
 #: htdocs/luci-static/resources/view/zerotier/settings.js:123
 msgid "Open: every member gets the same access"
@@ -1179,9 +1418,30 @@ msgstr "概览"
 msgid "Path"
 msgstr "路径"
 
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:75
+msgid "Path of the optional file local.conf (see <a target=\"_blank\" href=\"%s\">documentation</a>)."
+msgstr "可选配置文件 local.conf 的路径（请参阅 <a target=\"_blank\" href=\"%s\">文档</a>）。"
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:156
+msgid "Paths"
+msgstr "路径"
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js
+msgid "Paths of the two address families can differ a lot in latency. Preferring one family uses the other only when no path of the preferred family works."
+msgstr "两种地址族的路径延迟可能相差很大。选择优先一种时，只有该地址族没有可用路径才会启用另一种。"
+
 #: htdocs/luci-static/resources/view/zerotier/overview.js:127
 msgid "Peer"
 msgstr "节点"
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:197
+msgid "Peer bond"
+msgstr "对等节点 bond"
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:191
+#: htdocs/luci-static/resources/view/zerotier/overview.js:224
+msgid "Peer bonds"
+msgstr "对等节点 bond"
 
 #: htdocs/luci-static/resources/view/zerotier/overview.js:171
 msgid "Peers"
@@ -1192,6 +1452,10 @@ msgstr "对等节点"
 msgid "Permissions"
 msgstr "权限"
 
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:80
+msgid "Persistent configuration directory (to keep other configurations such as controller or moons, etc.)."
+msgstr "持久配置目录（用于保留其他配置，例如 controller 或 moon 等）。"
+
 #: htdocs/luci-static/resources/view/zerotier/settings.js:43
 msgid "Persistent directory"
 msgstr "持久化目录"
@@ -1200,15 +1464,26 @@ msgstr "持久化目录"
 msgid "Pin threads to CPU cores"
 msgstr "线程绑定 CPU 核"
 
+#: htdocs/luci-static/resources/view/zerotier/settings.js:213
+msgid "Planet and moon peers cannot be bonded"
+msgstr "Planet 和 moon 对等节点不能 bond"
+
 #: htdocs/luci-static/resources/view/zerotier/overview.js:172
-msgid ""
-"Planets and moons are the root servers that introduce peers to each other; "
-"leaves are other ZeroTier nodes."
+msgid "Planets and moons are the root servers that introduce peers to each other; leaves are other ZeroTier nodes."
 msgstr "PLANET 和 MOON 是帮助节点互相发现的根服务器；LEAF 是其他 ZeroTier 节点。"
 
 #: htdocs/luci-static/resources/view/zerotier/gateway.js:265
 msgid "Points to"
 msgstr "当前指向"
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:222
+#: htdocs/luci-static/resources/view/zerotier/overview.js:156
+msgid "Policy"
+msgstr "策略"
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:244
+msgid "Policy alias"
+msgstr "策略别名"
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:86
 #: htdocs/luci-static/resources/view/zerotier/settings.js:38
@@ -1251,11 +1526,29 @@ msgstr "快速设置"
 msgid "RFC 4193 addresses"
 msgstr "RFC 4193 地址"
 
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:35
+msgid "RUNNING"
+msgstr "运行中"
+
 #: htdocs/luci-static/resources/view/zerotier/controller.js:158
-msgid ""
-"Ranges as FIRST-LAST, e.g. 10.147.20.10-10.147.20.200. Keep addresses you "
-"map to LAN devices outside of them."
+msgid "Ranges as FIRST-LAST, e.g. 10.147.20.10-10.147.20.200. Keep addresses you map to LAN devices outside of them."
 msgstr "格式为 起始-结束，例如 10.147.20.10-10.147.20.200。映射给局域网设备的地址请放在地址池之外。"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:314
+msgid "Read-only status from the relay service and listener. The ready marker alone is only a clue, not proof that the relay is running."
+msgstr "来自 relay 服务和监听器的只读状态。ready 标记本身只是线索，不能证明 relay 正在运行。"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:145
+msgid "Ready"
+msgstr "就绪"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:149
+msgid "Ready marker present, check listener"
+msgstr "存在 ready 标记，请检查监听器"
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:230
+msgid "Real network interface name that may carry one path of this bond."
+msgstr "可以承载此 bond 一条路径的真实网络接口名。"
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:132
 msgid "Refresh status"
@@ -1264,6 +1557,10 @@ msgstr "刷新状态"
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:106
 msgid "Refused"
 msgstr "已拒绝"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:313
+msgid "Relay status"
+msgstr "Relay 状态"
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:321
 #: htdocs/luci-static/resources/view/zerotier/overview.js:138
@@ -1277,9 +1574,7 @@ msgid "Remove"
 msgstr "移除"
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:240
-msgid ""
-"Remove member %s from the network? It can ask to join again; on a private "
-"network it then waits for authorization."
+msgid "Remove member %s from the network? It can ask to join again; on a private network it then waits for authorization."
 msgstr "从网络中移除成员 %s？它可以再次申请加入；在私有网络中需要重新准入。"
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:117
@@ -1309,16 +1604,11 @@ msgid "Router firewall"
 msgstr "路由器防火墙"
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:134
-msgid ""
-"Routers with this package that orbit the moon fetch the new definition by "
-"themselves; other nodes, such as phones and PCs, have to orbit the moon "
-"again."
+msgid "Routers with this package that orbit the moon fetch the new definition by themselves; other nodes, such as phones and PCs, have to orbit the moon again."
 msgstr "装有本软件包并已加入该 Moon 的路由器会自行获取新定义；手机、电脑等其他节点需要重新加入该 Moon。"
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:168
-msgid ""
-"Routes pushed to members: a subnet, optionally \"via GATEWAY\" - e.g. "
-"10.147.20.0/24, or 192.168.1.0/24 via 10.147.20.1 for a LAN behind a member."
+msgid "Routes pushed to members: a subnet, optionally \"via GATEWAY\" - e.g. 10.147.20.0/24, or 192.168.1.0/24 via 10.147.20.1 for a LAN behind a member."
 msgstr "下发给成员的路由：一个子网，可附加 \"via 网关\"——例如 10.147.20.0/24，或 192.168.1.0/24 via 10.147.20.1（某个成员后面的局域网）。"
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:116
@@ -1337,6 +1627,14 @@ msgstr "规则缺失"
 msgid "Running"
 msgstr "运行中"
 
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:296
+msgid "SMB port"
+msgstr "SMB 端口"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:271
+msgid "SMB relay"
+msgstr "SMB relay"
+
 #: htdocs/luci-static/resources/view/zerotier/controller.js:294
 msgid "Save"
 msgstr "保存"
@@ -1346,9 +1644,7 @@ msgid "Save settings"
 msgstr "保存设置"
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:73
-msgid ""
-"Scan with a phone to copy the network ID, then join it in the ZeroTier app. "
-"A new member stays unauthorized until it is admitted here."
+msgid "Scan with a phone to copy the network ID, then join it in the ZeroTier app. A new member stays unauthorized until it is admitted here."
 msgstr "用手机扫码复制网络 ID，再在 ZeroTier 应用中加入。新成员在这里准入之前一直处于未准入状态。"
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:185
@@ -1385,12 +1681,12 @@ msgstr "%s 的设置"
 msgid "Show generated rules"
 msgstr "查看生成的规则"
 
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:278
+msgid "Single IPv4 address of the ZeroTier client allowed to use the relay. Revoking this device grant also revokes the forwarding path."
+msgstr "允许使用 relay 的 ZeroTier 客户端单个 IPv4 地址。撤销此设备授权也会撤销转发路径。"
+
 #: htdocs/luci-static/resources/view/zerotier/settings.js:56
-msgid ""
-"Spread packet processing over several threads. Encrypting what this router "
-"sends runs in parallel, and so does handing received frames to the network "
-"interface; decrypting what arrives stays on one thread. Written into "
-"local.conf."
+msgid "Spread packet processing over several threads. Encrypting what this router sends runs in parallel, and so does handing received frames to the network interface; decrypting what arrives stays on one thread. Written into local.conf."
 msgstr "把数据包处理分摊到多个线程：本路由器发出数据的加密、把收到的帧交给网络接口，都会并行进行；收到数据的解密仍在一个线程里。写入 local.conf。"
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:150
@@ -1418,9 +1714,7 @@ msgid "Status"
 msgstr "状态"
 
 #: htdocs/luci-static/resources/view/zerotier/overview.js:167
-msgid ""
-"Status of the ZeroTier service, the networks this router has joined and the "
-"peers it talks to."
+msgid "Status of the ZeroTier service, the networks this router has joined and the peers it talks to."
 msgstr "ZeroTier 服务、本路由器加入的网络以及与之通信的对等节点的状态。"
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:91
@@ -1452,17 +1746,11 @@ msgid "The 10 digit node address the member's ZeroTier client shows."
 msgstr "成员的 ZeroTier 客户端显示的 10 位节点地址。"
 
 #: htdocs/luci-static/resources/view/zerotier/settings.js:23
-msgid ""
-"The ZeroTier service, the networks this router joins, and peer bond "
-"configuration. Saving this page writes UCI only; it does not reload firewall "
-"rules, restart WAN, or restart zerotier-one."
+msgid "The ZeroTier service, the networks this router joins, and peer bond configuration. Saving this page writes UCI only; it does not reload firewall rules, restart WAN, or restart zerotier-one."
 msgstr "ZeroTier 服务、本路由器加入的网络，以及对等节点 bond 配置。保存本页只写入 UCI；不会 reload 防火墙规则、重启 WAN 或重启 zerotier-one。"
 
 #: htdocs/luci-static/resources/view/zerotier/gateway.js:205
-msgid ""
-"The address members reach the device at. It has to lie in a ZeroTier subnet "
-"of this router, must not be taken, and should stay outside the address pools "
-"of the controller."
+msgid "The address members reach the device at. It has to lie in a ZeroTier subnet of this router, must not be taken, and should stay outside the address pools of the controller."
 msgstr "成员访问该设备所用的地址。必须位于本路由器的 ZeroTier 子网内、不能被占用，并应避开控制器的自动分配地址池。"
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:18
@@ -1470,21 +1758,15 @@ msgid "The command failed:"
 msgstr "命令执行失败："
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:165
-msgid ""
-"The controller admitted them, but no member entry covers them: through this "
-"router they reach nothing."
+msgid "The controller admitted them, but no member entry covers them: through this router they reach nothing."
 msgstr "控制器已准入它们，但没有对应的成员条目：经本路由器它们什么也访问不了。"
 
 #: htdocs/luci-static/resources/view/zerotier/gateway.js:222
-msgid ""
-"The controller may hand this address to a new member: %s. Narrow the pool on "
-"the Controller page."
+msgid "The controller may hand this address to a new member: %s. Narrow the pool on the Controller page."
 msgstr "控制器可能把这个地址分配给新成员：%s。请在\"控制器\"页缩小地址池。"
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:87
-msgid ""
-"The flow rules were edited elsewhere since they were generated; applying the "
-"configuration puts them back"
+msgid "The flow rules were edited elsewhere since they were generated; applying the configuration puts them back"
 msgstr "流规则在生成后被其他地方改动过；应用配置会恢复为生成的规则"
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:52
@@ -1496,21 +1778,15 @@ msgid "The members of group %s (needs member isolation)"
 msgstr "分组 %s 的成员（需启用成员隔离）"
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:63
-msgid ""
-"The moon announces addresses this router no longer has: nodes cannot use it."
+msgid "The moon announces addresses this router no longer has: nodes cannot use it."
 msgstr "Moon 发布的地址已不属于本路由器：其他节点无法使用它。"
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:68
-msgid ""
-"The moon announces other addresses than this router has on the WAN. That is "
-"right if they were set on purpose, e.g. for a port forwarding in front of "
-"the router."
+msgid "The moon announces other addresses than this router has on the WAN. That is right if they were set on purpose, e.g. for a port forwarding in front of the router."
 msgstr "Moon 发布的地址与本路由器的 WAN 地址不同。如果是有意设置的（例如路由器前面还有一层端口转发），这是正常的。"
 
 #: htdocs/luci-static/resources/view/zerotier/overview.js:40
-msgid ""
-"The permission rules of network %s are not loaded: its members are only held "
-"back by the default firewall rules."
+msgid "The permission rules of network %s are not loaded: its members are only held back by the default firewall rules."
 msgstr "网络 %s 的权限规则未加载：其成员目前只受默认防火墙规则约束。"
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:313
@@ -1529,9 +1805,7 @@ msgid "This router has %d CPU core(s): too few, ZeroTier keeps to one thread."
 msgstr "本路由器只有 %d 个 CPU 核，核数太少，ZeroTier 仍只用一个线程。"
 
 #: htdocs/luci-static/resources/view/zerotier/gateway.js:293
-msgid ""
-"This router has no IPv4 address on a ZeroTier network yet, so no device can "
-"be mapped."
+msgid "This router has no IPv4 address on a ZeroTier network yet, so no device can be mapped."
 msgstr "本路由器在 ZeroTier 网络中还没有 IPv4 地址，暂时无法映射设备。"
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:140
@@ -1539,9 +1813,7 @@ msgid "This router orbits no moon"
 msgstr "本路由器未加入任何 Moon"
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:153
-msgid ""
-"This router reaches the moon only through the public roots, e.g. because the "
-"moon's address changed"
+msgid "This router reaches the moon only through the public roots, e.g. because the moon's address changed"
 msgstr "本路由器只能经公共根服务器中转访问该 Moon，例如因为 Moon 的地址变了"
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:50
@@ -1556,14 +1828,20 @@ msgstr "本路由器：全部服务"
 msgid "Threads"
 msgstr "线程数"
 
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/interface.js:103
+msgid "Total Download"
+msgstr "总下载"
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/interface.js:107
+msgid "Total Upload"
+msgstr "总上传"
+
 #: htdocs/luci-static/resources/view/zerotier/overview.js:104
 msgid "Traffic"
 msgstr "流量"
 
 #: htdocs/luci-static/resources/view/zerotier/settings.js:167
-msgid ""
-"Traffic from the LAN into the network leaves with this router's ZeroTier "
-"address."
+msgid "Traffic from the LAN into the network leaves with this router's ZeroTier address."
 msgstr "从局域网进入该网络的流量使用本路由器的 ZeroTier 地址发出。"
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:103
@@ -1575,28 +1853,27 @@ msgid "Turn on"
 msgstr "开启"
 
 #: htdocs/luci-static/resources/view/zerotier/settings.js:39
-msgid ""
-"UDP port ZeroTier listens on; it picks a secondary and a tertiary port by "
-"itself."
+msgid "UDP port ZeroTier listens on; it picks a secondary and a tertiary port by itself."
 msgstr "ZeroTier 监听的 UDP 端口；第二、第三端口由它自行选择。"
 
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/interface.js:30
+msgid "Unable to get interface %s info: %s."
+msgstr "无法获取接口 %s 的信息：%s。"
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/interface.js:15
+msgid "Unable to get interface info: %s."
+msgstr "无法获取接口信息：%s。"
+
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:315
-msgid ""
-"Under member isolation every member may reach this one, and it reaches every "
-"member: for routers and other gateways."
+msgid "Under member isolation every member may reach this one, and it reaches every member: for routers and other gateways."
 msgstr "成员隔离下，所有成员都可以访问它，它也可以访问所有成员：用于路由器等网关。"
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:331
-msgid ""
-"Under member isolation, the members of this group reach one another "
-"directly, with all traffic."
+msgid "Under member isolation, the members of this group reach one another directly, with all traffic."
 msgstr "启用成员隔离后，本组成员之间可以直接互访（全部流量）。"
 
 #: htdocs/luci-static/resources/view/zerotier/settings.js:122
-msgid ""
-"Under member permissions a member reaches this router, the LAN or the "
-"internet only as far as the Permissions page grants it, and members without "
-"an entry there reach nothing."
+msgid "Under member permissions a member reaches this router, the LAN or the internet only as far as the Permissions page grants it, and members without an entry there reach nothing."
 msgstr "启用成员权限后，成员只能在\"权限\"页授予的范围内访问本路由器、局域网或互联网，未配置的成员什么都访问不到。"
 
 #: htdocs/luci-static/resources/zerotier/common.js:84
@@ -1615,20 +1892,33 @@ msgstr "立即更新 Moon"
 msgid "Use FIRST-LAST"
 msgstr "请使用 起始-结束 格式"
 
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:292
+msgid "Use a high TCP port above 1024, but not 1445"
+msgstr "使用大于 1024 的 TCP 高位端口，但不能是 1445"
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:234
+msgid "Use a real interface name, without spaces or shell characters"
+msgstr "使用真实接口名，不含空格或 shell 字符"
+
 #: htdocs/luci-static/resources/view/zerotier/controller.js:152
 msgid "Use a subnet of at least four addresses (/30 or larger)"
 msgstr "请使用至少包含 4 个地址的子网（/30 或更大）"
 
 #: htdocs/luci-static/resources/view/zerotier/gateway.js:262
-msgid ""
-"Used otherwise, e.g. the ZeroTier address mapped to the device on the LAN."
+msgid "Used otherwise, e.g. the ZeroTier address mapped to the device on the LAN."
 msgstr "首选地址不通时使用，例如映射给局域网内该设备的 ZeroTier 地址。"
 
 #: htdocs/luci-static/resources/view/zerotier/gateway.js:257
-msgid ""
-"Used whenever it answers, e.g. the address of the device's own ZeroTier "
-"client."
+msgid "Used whenever it answers, e.g. the address of the device's own ZeroTier client."
 msgstr "只要能连通就优先使用，例如设备自身 ZeroTier 客户端的地址。"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:157
+msgid "VIP not ready"
+msgstr "VIP 未就绪"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:157
+msgid "VIP ready"
+msgstr "VIP 就绪"
 
 #: htdocs/luci-static/resources/view/zerotier/overview.js:72
 #: htdocs/luci-static/resources/view/zerotier/overview.js:127
@@ -1651,44 +1941,38 @@ msgstr "等待控制器"
 msgid "Waiting for the moon"
 msgstr "等待 Moon"
 
+#: htdocs/luci-static/resources/view/zerotier/overview.js:164
+msgid "Waiting for zerotier-one"
+msgstr "等待 zerotier-one"
+
 #: htdocs/luci-static/resources/view/zerotier/settings.js:147
-msgid ""
-"What a \"lan\" grant reaches, and where LAN hosts may open connections into "
-"the network from. Default: the devices of the firewall zone \"lan\"."
+msgid "What a \"lan\" grant reaches, and where LAN hosts may open connections into the network from. Default: the devices of the firewall zone \"lan\"."
 msgstr "\"lan\" 授权能访问的范围，以及局域网主机可以从哪里向该网络发起连接。默认：防火墙区域 \"lan\" 的设备。"
 
 #: htdocs/luci-static/resources/view/zerotier/settings.js:154
-msgid ""
-"What a \"wan\" grant reaches. Default: the devices of the firewall zone "
-"\"wan\"."
+msgid "What a \"wan\" grant reaches. Default: the devices of the firewall zone \"wan\"."
 msgstr "\"wan\" 授权能访问的范围。默认：防火墙区域 \"wan\" 的设备。"
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:188
-msgid ""
-"What zerotier-fw4 builds from the applied configuration - pending changes "
-"are not in it yet."
+msgid "What zerotier-fw4 builds from the applied configuration - pending changes are not in it yet."
 msgstr "zerotier-fw4 根据已应用的配置生成的规则——尚未应用的改动不包含在内。"
 
 #: htdocs/luci-static/resources/view/zerotier/settings.js:44
-msgid ""
-"Where identity, moons, peers and - on a controller - its networks are kept "
-"across reboots. Empty: everything lives in RAM, only the identity survives."
+msgid "Where identity, moons, peers and - on a controller - its networks are kept across reboots. Empty: everything lives in RAM, only the identity survives."
 msgstr "重启后保留身份、Moon、对等节点以及（控制器上的）网络数据的目录。留空：全部放在内存中，只有身份会保留。"
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:357
-msgid ""
-"Who may reach what through this router. On networks with member permissions, "
-"a member reaches this router, the LAN or the internet only as far as its "
-"grants and roles allow; members without an entry reach nothing. Traffic "
-"between members never passes the router: on networks this router controls, "
-"member isolation has the controller enforce groups and \"member:\" / \"group:"
-"\" grants instead."
+msgid "Who may reach what through this router. On networks with member permissions, a member reaches this router, the LAN or the internet only as far as its grants and roles allow; members without an entry reach nothing. Traffic between members never passes the router: on networks this router controls, member isolation has the controller enforce groups and \"member:\" / \"group:\" grants instead."
 msgstr "谁可以经本路由器访问什么。在启用成员权限的网络中，成员只能按其授权和角色访问本路由器、局域网或互联网；没有条目的成员什么也访问不了。成员之间的流量不经过路由器：在本路由器控制的网络中，改由成员隔离让控制器执行分组以及 \"member:\"/\"group:\" 授权。"
 
 #: htdocs/luci-static/resources/view/zerotier/overview.js:165
 #: root/usr/share/luci/menu.d/luci-app-zerotier.json:3
 msgid "ZeroTier"
 msgstr "ZeroTier"
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:90
+msgid "ZeroTier Central"
+msgstr "ZeroTier 管理中心"
 
 #: htdocs/luci-static/resources/view/zerotier/gateway.js:204
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:295
@@ -1700,10 +1984,13 @@ msgid "ZeroTier interfaces not identified yet are denied"
 msgstr "尚未识别的 ZeroTier 接口一律拒绝"
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:125
-msgid ""
-"ZeroTier interfaces that are not identified yet - while ZeroTier starts - "
-"are denied."
+msgid "ZeroTier interfaces that are not identified yet - while ZeroTier starts - are denied."
 msgstr "尚未识别的 ZeroTier 接口（ZeroTier 启动过程中）一律拒绝。"
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:47
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/interface.js:74
+msgid "ZeroTier is an open source, cross-platform and easy to use virtual LAN."
+msgstr "ZeroTier 是一个开源、跨平台且易于使用的虚拟局域网 VPN。"
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:388
 msgid "ZeroTier is not running, or this build of it has no network controller."
@@ -1712,6 +1999,10 @@ msgstr "ZeroTier 未运行，或当前版本不带网络控制器。"
 #: htdocs/luci-static/resources/view/zerotier/moon.js:180
 msgid "ZeroTier is not running."
 msgstr "ZeroTier 未运行。"
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:205
+msgid "ZeroTier node address of the leaf peer to bond with. Planet and moon peers are not eligible."
+msgstr "要建立 bond 的 leaf 对等节点 ZeroTier 地址。Planet 和 moon 对等节点不适用。"
 
 #: htdocs/luci-static/resources/view/zerotier/settings.js:22
 msgid "ZeroTier settings"
@@ -1737,10 +2028,18 @@ msgstr "auto 或域名"
 msgid "auto, a public IP or a domain"
 msgstr "auto、公网 IP 或域名"
 
+#: htdocs/luci-static/resources/view/zerotier/overview.js:181
+msgid "bonded"
+msgstr "已 bond"
+
 #: htdocs/luci-static/resources/view/zerotier/gateway.js:72
 #: htdocs/luci-static/resources/zerotier/common.js:261
 msgid "device %s"
 msgstr "设备 %s"
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:179
+msgid "eligible"
+msgstr "可用"
 
 #: htdocs/luci-static/resources/zerotier/common.js:259
 msgid "every LAN gateway device"
@@ -1784,9 +2083,29 @@ msgstr "无（在启用成员权限的网络中）"
 msgid "none"
 msgstr "无"
 
+#: htdocs/luci-static/resources/view/zerotier/overview.js:181
+msgid "not bonded"
+msgstr "未 bond"
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:179
+msgid "not eligible"
+msgstr "不可用"
+
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:82
 msgid "not the controller"
 msgstr "非控制器"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:158
+msgid "procd not running"
+msgstr "procd 未运行"
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:158
+msgid "procd reports running"
+msgstr "procd 报告运行中"
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:187
+msgid "quality %s"
+msgstr "质量 %s"
 
 #: htdocs/luci-static/resources/view/zerotier/gateway.js:124
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:73
@@ -1809,264 +2128,3 @@ msgstr "本路由器"
 #: htdocs/luci-static/resources/view/zerotier/moon.js:58
 msgid "unknown"
 msgstr "未知"
-
-#: htdocs/luci-static/resources/view/zerotier/overview.js:173
-msgid "%d/%d path(s) alive"
-msgstr "%d/%d 条路径存活"
-
-#: htdocs/luci-static/resources/view/zerotier/overview.js:183
-msgid "%d flow(s)"
-msgstr "%d 条流"
-
-#: htdocs/luci-static/resources/view/zerotier/overview.js:185
-msgid "%d ms"
-msgstr "%d 毫秒"
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:298
-msgid "19445 (canary)"
-msgstr "19445（金丝雀）"
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:299
-msgid "445 (SMB)"
-msgstr "445（SMB）"
-
-#: htdocs/luci-static/resources/view/zerotier/settings.js:224
-msgid "Active backup"
-msgstr "主备"
-
-#: htdocs/luci-static/resources/view/zerotier/settings.js:196
-msgid "Add peer bond…"
-msgstr "添加对等节点 bond…"
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:277
-msgid "Allowed client"
-msgstr "允许的客户端"
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:281
-msgid "A single IPv4 address is required"
-msgstr "需要一个单独的 IPv4 地址"
-
-#: htdocs/luci-static/resources/view/zerotier/settings.js:223
-msgid "Balance XOR"
-msgstr "Balance XOR"
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:307
-msgid "BBR"
-msgstr "BBR"
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:155
-msgid "BBR available"
-msgstr "BBR 可用"
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:305
-msgid "BBR can help long-distance Linux socket forwarding. This page shows acceleration only when BBR is available, the VIP is ready and the relay is listening."
-msgstr "BBR 可能改善长距离 Linux socket 转发。只有在 BBR 可用、VIP 就绪且 relay 正在监听时，本页才显示加速生效。"
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:155
-msgid "BBR not loaded"
-msgstr "BBR 未加载"
-
-#: htdocs/luci-static/resources/view/zerotier/overview.js:181
-msgid "bonded"
-msgstr "已 bond"
-
-#: htdocs/luci-static/resources/view/zerotier/overview.js:168
-msgid "Bonded"
-msgstr "已 bond"
-
-#: htdocs/luci-static/resources/view/zerotier/settings.js:192
-msgid "Bonding is only for the specific leaf peers listed here. Saving this page only writes UCI; zerotier-one may create a new bond when it scans the configuration. Once a bond is enabled, changing or disabling it needs a controlled rebuild by the backend package, not an automatic service restart from LuCI."
-msgstr "Bond 只面向这里列出的指定 leaf 对等节点。保存本页只写入 UCI；zerotier-one 扫描配置时可能会创建新的 bond。bond 启用后，修改或关闭需要由后端软件包受控重建，LuCI 不会自动重启服务。"
-
-#: htdocs/luci-static/resources/view/zerotier/overview.js:225
-msgid "Bond status is read from zerotier-one. A saved configuration may still be waiting for the daemon to create or rebuild the bond."
-msgstr "Bond 状态读取自 zerotier-one。已保存的配置仍可能在等待 daemon 创建或重建 bond。"
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:153
-msgid "Client %s to %s:%d"
-msgstr "客户端 %s 到 %s:%d"
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:304
-msgid "Congestion control"
-msgstr "拥塞控制"
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:308
-msgid "CUBIC"
-msgstr "CUBIC"
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:156
-msgid "CUBIC selected"
-msgstr "已选择 CUBIC"
-
-#: htdocs/luci-static/resources/view/zerotier/overview.js:179
-msgid "eligible"
-msgstr "可用"
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:272
-msgid "Enable a pure TCP byte relay for this device only. Windows SMB authentication, signing and sealing stay end-to-end; the Windows audit source address becomes this router on the LAN, not the remote client."
-msgstr "仅为此设备启用纯 TCP 字节转接。Windows SMB 认证、签名和加密封装仍保持端到端；Windows 审计中的源地址会变成本路由器在 LAN 上的地址，而不是远端客户端。"
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:285
-msgid "High port bound on the device ZeroTier address. Do not use 1445 or privileged ports."
-msgstr "绑定在设备 ZeroTier 地址上的高位端口。不要使用 1445 或特权端口。"
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:284
-msgid "Internal relay port"
-msgstr "内部 relay 端口"
-
-#: htdocs/luci-static/resources/view/zerotier/settings.js:236
-msgid "IP preference"
-msgstr "IP 偏好"
-
-#: htdocs/luci-static/resources/view/zerotier/settings.js:237
-#: htdocs/luci-static/resources/view/zerotier/settings.js:242
-msgid "IPv4 and IPv6"
-msgstr "IPv4 和 IPv6"
-
-#: htdocs/luci-static/resources/view/zerotier/settings.js:238
-#: htdocs/luci-static/resources/view/zerotier/settings.js:242
-msgid "IPv4 only"
-msgstr "仅 IPv4"
-
-#: htdocs/luci-static/resources/view/zerotier/settings.js:239
-#: htdocs/luci-static/resources/view/zerotier/settings.js:242
-msgid "IPv6 only"
-msgstr "仅 IPv6"
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:147
-msgid "Listening, not accelerated"
-msgstr "正在监听，未显示加速"
-
-#: htdocs/luci-static/resources/view/zerotier/overview.js:166
-msgid "No active bond policy"
-msgstr "没有活动 bond 策略"
-
-#: htdocs/luci-static/resources/view/zerotier/overview.js:157
-msgid "No peer bonds configured."
-msgstr "尚未配置对等节点 bond。"
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:140
-msgid "No relay status yet"
-msgstr "暂无 relay 状态"
-
-#: htdocs/luci-static/resources/view/zerotier/overview.js:181
-msgid "not bonded"
-msgstr "未 bond"
-
-#: htdocs/luci-static/resources/view/zerotier/overview.js:169
-msgid "Not bonded"
-msgstr "未 bond"
-
-#: htdocs/luci-static/resources/view/zerotier/overview.js:179
-msgid "not eligible"
-msgstr "不可用"
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:150
-msgid "Not listening"
-msgstr "未监听"
-
-#: htdocs/luci-static/resources/view/zerotier/overview.js:156
-msgid "Paths"
-msgstr "路径"
-
-#: htdocs/luci-static/resources/view/zerotier/settings.js:197
-msgid "Peer bond"
-msgstr "对等节点 bond"
-
-#: htdocs/luci-static/resources/view/zerotier/settings.js:191
-#: htdocs/luci-static/resources/view/zerotier/overview.js:224
-msgid "Peer bonds"
-msgstr "对等节点 bond"
-
-#: htdocs/luci-static/resources/view/zerotier/settings.js:213
-msgid "Planet and moon peers cannot be bonded"
-msgstr "Planet 和 moon 对等节点不能 bond"
-
-#: htdocs/luci-static/resources/view/zerotier/settings.js:222
-#: htdocs/luci-static/resources/view/zerotier/overview.js:156
-msgid "Policy"
-msgstr "策略"
-
-#: htdocs/luci-static/resources/view/zerotier/settings.js:244
-msgid "Policy alias"
-msgstr "策略别名"
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:158
-msgid "procd not running"
-msgstr "procd 未运行"
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:158
-msgid "procd reports running"
-msgstr "procd 报告运行中"
-
-#: htdocs/luci-static/resources/view/zerotier/overview.js:187
-msgid "quality %s"
-msgstr "质量 %s"
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:314
-msgid "Read-only status from the relay service and listener. The ready marker alone is only a clue, not proof that the relay is running."
-msgstr "来自 relay 服务和监听器的只读状态。ready 标记本身只是线索，不能证明 relay 正在运行。"
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:145
-msgid "Ready"
-msgstr "就绪"
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:149
-msgid "Ready marker present, check listener"
-msgstr "存在 ready 标记，请检查监听器"
-
-#: htdocs/luci-static/resources/view/zerotier/settings.js:230
-msgid "Real network interface name that may carry one path of this bond."
-msgstr "可以承载此 bond 一条路径的真实网络接口名。"
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:313
-msgid "Relay status"
-msgstr "Relay 状态"
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:278
-msgid "Single IPv4 address of the ZeroTier client allowed to use the relay. Revoking this device grant also revokes the forwarding path."
-msgstr "允许使用 relay 的 ZeroTier 客户端单个 IPv4 地址。撤销此设备授权也会撤销转发路径。"
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:296
-msgid "SMB port"
-msgstr "SMB 端口"
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:271
-msgid "SMB relay"
-msgstr "SMB relay"
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:292
-msgid "Use a high TCP port above 1024, but not 1445"
-msgstr "使用大于 1024 的 TCP 高位端口，但不能是 1445"
-
-#: htdocs/luci-static/resources/view/zerotier/settings.js:234
-msgid "Use a real interface name, without spaces or shell characters"
-msgstr "使用真实接口名，不含空格或 shell 字符"
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:157
-msgid "VIP not ready"
-msgstr "VIP 未就绪"
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:157
-msgid "VIP ready"
-msgstr "VIP 就绪"
-
-#: htdocs/luci-static/resources/view/zerotier/overview.js:164
-msgid "Waiting for zerotier-one"
-msgstr "等待 zerotier-one"
-
-#: htdocs/luci-static/resources/view/zerotier/settings.js:205
-msgid "ZeroTier node address of the leaf peer to bond with. Planet and moon peers are not eligible."
-msgstr "要建立 bond 的 leaf 对等节点 ZeroTier 地址。Planet 和 moon 对等节点不适用。"
-
-#: htdocs/luci-static/resources/view/zerotier/settings.js
-msgid "IPv4 preferred, IPv6 standby"
-msgstr "IPv4 优先，IPv6 热备"
-
-#: htdocs/luci-static/resources/view/zerotier/settings.js
-msgid "IPv6 preferred, IPv4 standby"
-msgstr "IPv6 优先，IPv4 热备"
-
-#: htdocs/luci-static/resources/view/zerotier/settings.js
-msgid "Paths of the two address families can differ a lot in latency. Preferring one family uses the other only when no path of the preferred family works."
-msgstr "两种地址族的路径延迟可能相差很大。选择优先一种时，只有该地址族没有可用路径才会启用另一种。"

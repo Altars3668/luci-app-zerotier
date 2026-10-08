@@ -4,7 +4,7 @@
 
 A unified OpenWrt interface for a **ZeroTier node, embedded network controller, permission gateway and Moon**. Evolved from the ImmortalWrt LuCI integration, this edition goes beyond joining a network: it manages what members may access, how LAN devices are mapped, how Moons follow address changes, and whether runtime state matches saved configuration.
 
-Pair it with [zerotier-openwrt](https://github.com/Altars3668/zerotier-openwrt): **LuCI configures and reports; `zerotier-fw4` generates and enforces rules.** The current UI package version is **99.5.0**.
+Pair it with [zerotier-openwrt](https://github.com/Altars3668/zerotier-openwrt): **LuCI configures and reports; `zerotier-fw4` generates and enforces rules.** The current UI package version is **99.5.1**.
 
 ## What I changed
 
@@ -83,3 +83,9 @@ See [CHANGELOG](CHANGELOG.md). Older files such as `ARCHITECTURE.md` describe hi
 The original LuCI integration and copyright notices come from [ImmortalWrt](https://github.com/immortalwrt/luci); subsequent work is maintained by Altars3668. The [Makefile](Makefile) declares **GPL-3.0-only**; retained source notices define attribution and terms.
 
 Related: [ZeroTier OpenWrt engine package](https://github.com/Altars3668/zerotier-openwrt) · [RE-CS-02 firmware CI](https://github.com/Altars3668/OpenWRT-CI).
+
+## Upstream baseline and regression checks
+
+The verified source is [`immortalwrt/luci/applications/luci-app-zerotier`](https://github.com/immortalwrt/luci/tree/5fc1fac5684cac6eee2c7fbff78c65b867980dd8/applications/luci-app-zerotier), pinned to `5fc1fac5684c`. [UPSTREAM.md](UPSTREAM.md) explains provenance, imported history and retained customisations.
+
+JavaScript, JSON, translation compilation and ucode compilation are checked; this refresh does not run router UI or firewall acceptance tests.

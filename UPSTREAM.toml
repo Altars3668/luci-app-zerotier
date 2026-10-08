@@ -1,0 +1,10 @@
+repository = "immortalwrt/luci"
+branch = "master"
+commit = "5fc1fac5684cac6eee2c7fbff78c65b867980dd8"
+path = "applications/luci-app-zerotier"
+checked_on = "2026-10-08"
+method = "application-only subtree split + reconstructed custom history + git rebase"
+split_commit = "8f43e06cf5e8b5ac58e33b4ecf74102eb3a85613"
+import_snapshot = "cdc135f1a4e98672195d77f904dd4f70c7b7fe67"
+historical_anchor = "e59f5cd939d94ae937585690942cec3520ab816d"
+anchor_is_exact_import = false

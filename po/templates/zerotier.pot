@@ -5,8 +5,16 @@ msgstr "Content-Type: text/plain; charset=UTF-8"
 msgid "\"%s\" is not an IPv4 or IPv6 prefix"
 msgstr ""
 
+#: htdocs/luci-static/resources/view/zerotier/overview.js:183
+msgid "%d flow(s)"
+msgstr ""
+
 #: htdocs/luci-static/resources/view/zerotier/controller.js:362
 msgid "%d member(s) wait for authorization."
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:185
+msgid "%d ms"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/overview.js:65
@@ -33,6 +41,10 @@ msgstr ""
 msgid "%d rule(s)"
 msgstr ""
 
+#: htdocs/luci-static/resources/view/zerotier/overview.js:173
+msgid "%d/%d path(s) alive"
+msgstr ""
+
 #: htdocs/luci-static/resources/zerotier/common.js:134
 msgid "%s ago"
 msgstr ""
@@ -57,6 +69,14 @@ msgstr ""
 msgid "(unnamed)"
 msgstr ""
 
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:298
+msgid "19445 (canary)"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:299
+msgid "445 (SMB)"
+msgstr ""
+
 #: htdocs/luci-static/resources/view/zerotier/controller.js:182
 msgid "6PLANE"
 msgstr ""
@@ -66,17 +86,11 @@ msgid "A /80 per member, for containers or VMs behind it."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/gateway.js:246
-msgid ""
-"A local host name that follows a device between its own ZeroTier client and "
-"its mapped LAN address: the router checks every minute which of the two "
-"answers and points the name there (dnsmasq)."
+msgid "A local host name that follows a device between its own ZeroTier client and its mapped LAN address: the router checks every minute which of the two answers and points the name there (dnsmasq)."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:270
-msgid ""
-"A member is recognized by the MAC address ZeroTier derives from its node "
-"address, never by IP, so it cannot borrow another member's grants by taking "
-"its address."
+msgid "A member is recognized by the MAC address ZeroTier derives from its node address, never by IP, so it cannot borrow another member's grants by taking its address."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:169
@@ -84,10 +98,7 @@ msgid "A moon ID has 10 hexadecimal digits"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:92
-msgid ""
-"A moon is a root server of your own: nodes that orbit it find each other "
-"through it, faster and without depending on the public roots. Its endpoints "
-"have to be reachable from where those nodes are."
+msgid "A moon is a root server of your own: nodes that orbit it find each other through it, faster and without depending on the public roots. Its endpoints have to be reachable from where those nodes are."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/settings.js:90
@@ -99,23 +110,19 @@ msgid "A node address has 10 hexadecimal digits"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:175
-msgid ""
-"A node reaches a moon only at the addresses of the moon definition it holds. "
-"When a moon moves to a new address and re-signs itself for it, every 5 "
-"minutes this router fetches the current definition of each moon it has no "
-"direct path to."
+msgid "A node reaches a moon only at the addresses of the moon definition it holds. When a moon moves to a new address and re-signs itself for it, every 5 minutes this router fetches the current definition of each moon it has no direct path to."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:323
-msgid ""
-"A role is a set of grants several members share: listing a role on a member "
-"gives it every grant of the role. A role is also a group: under member "
-"isolation, \"group:ROLE\" grants reach its members, and with \"Members reach "
-"each other\" they reach one another directly."
+msgid "A role is a set of grants several members share: listing a role on a member gives it every grant of the role. A role is also a group: under member isolation, \"group:ROLE\" grants reach its members, and with \"Members reach each other\" they reach one another directly."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:174
 msgid "A route needs a subnet such as 10.147.20.0/24"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:281
+msgid "A single IPv4 address is required"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:181
@@ -139,6 +146,10 @@ msgstr ""
 msgid "Access from the network"
 msgstr ""
 
+#: htdocs/luci-static/resources/view/zerotier/settings.js:224
+msgid "Active backup"
+msgstr ""
+
 #: htdocs/luci-static/resources/view/zerotier/controller.js:272
 #: htdocs/luci-static/resources/view/zerotier/controller.js:315
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:152
@@ -156,6 +167,10 @@ msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:274
 msgid "Add member…"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:196
+msgid "Add peer bond…"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:327
@@ -179,12 +194,72 @@ msgstr ""
 msgid "Admitted"
 msgstr ""
 
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:125
+msgid "Allow DNS"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:126
+msgid "Allow ZeroTier to set DNS servers."
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:113
+msgid "Allow ZeroTier to set IP addresses and routes (local/private ranges only)."
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:118
+msgid "Allow ZeroTier to set global/public/not-private range IPs and routes."
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:122
+msgid "Allow ZeroTier to set the default route on the system."
+msgstr ""
+
 #: htdocs/luci-static/resources/view/zerotier/settings.js:129
 msgid "Allow access to this router"
 msgstr ""
 
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:121
+msgid "Allow default route"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:133
+msgid "Allow forward"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:134
+msgid "Allow forward traffic from/to the ZeroTier network."
+msgstr ""
+
 #: htdocs/luci-static/resources/view/zerotier/settings.js:134
 msgid "Allow forwarding"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:117
+msgid "Allow global IP/route"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:129
+msgid "Allow input"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:87
+msgid "Allow input traffic"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:130
+msgid "Allow input traffic from the ZeroTier network."
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:88
+msgid "Allow input traffic to the ZeroTier daemon."
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:112
+msgid "Allow managed IP/route"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:277
+msgid "Allowed client"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/gateway.js:215
@@ -212,9 +287,7 @@ msgid "Asked to join, not authorized yet"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:156
-msgid ""
-"Asking the moon for its current definition. This takes up to a minute and a "
-"half."
+msgid "Asking the moon for its current definition. This takes up to a minute and a half."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:154
@@ -241,8 +314,48 @@ msgstr ""
 msgid "Available, controls %d of the joined networks"
 msgstr ""
 
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:307
+msgid "BBR"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:155
+msgid "BBR available"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:305
+msgid "BBR can help long-distance Linux socket forwarding. This page shows acceleration only when BBR is available, the VIP is ready and the relay is listening."
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:155
+msgid "BBR not loaded"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:223
+msgid "Balance XOR"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:225
+msgid "Bond status is read from zerotier-one. A saved configuration may still be waiting for the daemon to create or rebuild the bond."
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:168
+msgid "Bonded"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:192
+msgid "Bonding is only for the specific leaf peers listed here. Saving this page only writes UCI; zerotier-one may create a new bond when it scans the configuration. Once a bond is enabled, changing or disabling it needs a controlled rebuild by the backend package, not an automatic service restart from LuCI."
+msgstr ""
+
 #: htdocs/luci-static/resources/view/zerotier/controller.js:139
 msgid "Broadcast"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:308
+msgid "CUBIC"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:156
+msgid "CUBIC selected"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:315
@@ -250,9 +363,7 @@ msgid "Can send for any MAC address"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:235
-msgid ""
-"Can send with any MAC address, other members' included: as trusted as the "
-"most privileged member"
+msgid "Can send with any MAC address, other members' included: as trusted as the most privileged member"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:279
@@ -277,6 +388,14 @@ msgstr ""
 msgid "Checking the current addresses…"
 msgstr ""
 
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:153
+msgid "Client %s to %s:%d"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:71
+msgid "Client secret"
+msgstr ""
+
 #: htdocs/luci-static/resources/zerotier/common.js:25
 msgid "Client too old"
 msgstr ""
@@ -286,8 +405,24 @@ msgstr ""
 msgid "Close"
 msgstr ""
 
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:60
+msgid "Collecting data…"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:79
+msgid "Config path"
+msgstr ""
+
+#: applications/luci-app-zerotier/root/usr/share/luci/menu.d/luci-app-zerotier.json:14
+msgid "Configuration"
+msgstr ""
+
 #: htdocs/luci-static/resources/view/zerotier/controller.js:332
 msgid "Configured"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:304
+msgid "Congestion control"
 msgstr ""
 
 #: htdocs/luci-static/resources/zerotier/common.js:20
@@ -303,14 +438,20 @@ msgstr ""
 msgid "Controller"
 msgstr ""
 
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:83
+msgid "Copy config path"
+msgstr ""
+
 #: htdocs/luci-static/resources/view/zerotier/settings.js:47
 msgid "Copy into RAM"
 msgstr ""
 
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:84
+msgid "Copy the contents of the persistent configuration directory to memory instead of linking it, this avoids writing to flash."
+msgstr ""
+
 #: htdocs/luci-static/resources/view/zerotier/settings.js:48
-msgid ""
-"Copy the persistent directory into RAM at start instead of using it in "
-"place: fewer flash writes, but changes made while running are lost."
+msgid "Copy the persistent directory into RAM at start instead of using it in place: fewer flash writes, but changes made while running are lost."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:89
@@ -319,6 +460,10 @@ msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:409
 msgid "Create network"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:91
+msgid "Create or manage your ZeroTier network, and auth clients who could access."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:129
@@ -347,9 +492,7 @@ msgid "Delete"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:95
-msgid ""
-"Delete network %s (%s)? Every member loses access to it, and its "
-"configuration is gone for good."
+msgid "Delete network %s (%s)? Every member loses access to it, and its configuration is gone for good."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:140
@@ -375,8 +518,21 @@ msgstr ""
 msgid "Empty grant"
 msgstr ""
 
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:66
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:104
+msgid "Enable"
+msgstr ""
+
 #: htdocs/luci-static/resources/view/zerotier/settings.js:31
 msgid "Enable ZeroTier"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:272
+msgid "Enable a pure TCP byte relay for this device only. Windows SMB authentication, signing and sealing stay end-to-end; the Windows audit source address becomes this router on the LAN, not the remote client."
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:145
+msgid "Enable network address and port translation (NAT) for outbound traffic for this network."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/gateway.js:179
@@ -394,16 +550,11 @@ msgid "Endpoints"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:149
-msgid ""
-"Enter a subnet such as 10.147.20.0/24 to replace the pools and routes below "
-"with it."
+msgid "Enter a subnet such as 10.147.20.0/24 to replace the pools and routes below with it."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:133
-msgid ""
-"Every 10 minutes, and whenever the WAN comes up, the moon is re-signed if "
-"the router's public addresses changed. \"auto\" follows the WAN address; a "
-"domain follows what it resolves to."
+msgid "Every 10 minutes, and whenever the WAN comes up, the moon is re-signed if the router's public addresses changed. \"auto\" follows the WAN address; a domain follows what it resolves to."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:53
@@ -464,6 +615,10 @@ msgstr ""
 msgid "Following address changes"
 msgstr ""
 
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:137
+msgid "Forward interfaces"
+msgstr ""
+
 #: htdocs/luci-static/resources/view/zerotier/settings.js:139
 msgid "Forward to"
 msgstr ""
@@ -483,10 +638,7 @@ msgid "Generated rules"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/gateway.js:292
-msgid ""
-"Give devices on the LAN an address on the ZeroTier network, so that members "
-"reach them without ZeroTier installed on the device (1:1 NAT through this "
-"router). Who may reach them is decided on the Permissions page."
+msgid "Give devices on the LAN an address on the ZeroTier network, so that members reach them without ZeroTier installed on the device (1:1 NAT through this router). Who may reach them is decided on the Permissions page."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:155
@@ -497,8 +649,16 @@ msgstr ""
 msgid "Give members IPv6 addresses from IPv6 pools above."
 msgstr ""
 
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:64
+msgid "Global configuration"
+msgstr ""
+
 #: root/usr/share/rpcd/acl.d/luci-app-zerotier.json:3
 msgid "Grant access to ZeroTier"
+msgstr ""
+
+#: applications/luci-app-zerotier/root/usr/share/rpcd/acl.d/luci-app-zerotier.json:3
+msgid "Grant access to ZeroTier configuration"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/gateway.js:231
@@ -511,6 +671,10 @@ msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/gateway.js:185
 msgid "Grants refer to the device by this name (device:NAME)."
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:285
+msgid "High port bound on the device ZeroTier address. Do not use 1445 or privileged ports."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/gateway.js:151
@@ -526,23 +690,54 @@ msgid "Hosts the router knows from DHCP and its neighbour table."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:284
-msgid ""
-"How grants of other members refer to this one (member:NAME); also labels its "
-"firewall rules."
+msgid "How grants of other members refer to this one (member:NAME); also labels its firewall rules."
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:236
+msgid "IP preference"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:130
 msgid "IPv4"
 msgstr ""
 
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/interface.js:91
+msgid "IPv4 Address"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:237
+#: htdocs/luci-static/resources/view/zerotier/settings.js:242
+msgid "IPv4 and IPv6"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:238
+#: htdocs/luci-static/resources/view/zerotier/settings.js:242
+msgid "IPv4 only"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js
+msgid "IPv4 preferred, IPv6 standby"
+msgstr ""
+
 #: htdocs/luci-static/resources/view/zerotier/controller.js:131
 msgid "IPv6"
 msgstr ""
 
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/interface.js:95
+msgid "IPv6 Address"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:239
+#: htdocs/luci-static/resources/view/zerotier/settings.js:242
+msgid "IPv6 only"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js
+msgid "IPv6 preferred, IPv4 standby"
+msgstr ""
+
 #: htdocs/luci-static/resources/view/zerotier/settings.js:35
-msgid ""
-"Identity of this router on every network. It is kept with the configuration, "
-"readable by root only."
+msgid "Identity of this router on every network. It is kept with the configuration, readable by root only."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/gateway.js:221
@@ -557,8 +752,20 @@ msgstr ""
 msgid "Interface"
 msgstr ""
 
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/interface.js:83
+msgid "Interface Name"
+msgstr ""
+
 #: htdocs/luci-static/resources/zerotier/common.js:24
 msgid "Interface error"
+msgstr ""
+
+#: applications/luci-app-zerotier/root/usr/share/luci/menu.d/luci-app-zerotier.json:22
+msgid "Interface info"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:284
+msgid "Internal relay port"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:175
@@ -634,6 +841,11 @@ msgstr ""
 msgid "Leave"
 msgstr ""
 
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:138
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:149
+msgid "Leave empty for all."
+msgstr ""
+
 #: htdocs/luci-static/resources/view/zerotier/moon.js:157
 msgid "Left the moon"
 msgstr ""
@@ -643,17 +855,11 @@ msgid "Let hosts on the LAN interfaces connect to members of the network."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/settings.js:114
-msgid ""
-"Let the network replace the default route: all traffic of this router goes "
-"through it."
+msgid "Let the network replace the default route: all traffic of this router goes through it."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:273
-msgid ""
-"Lets the member send and receive for any MAC address - needed to bridge a "
-"LAN into the network. It can then also impersonate every other member, so "
-"the router trusts it like the most privileged member. Only for gateways you "
-"control."
+msgid "Lets the member send and receive for any MAC address - needed to bridge a LAN into the network. It can then also impersonate every other member, so the router trusts it like the most privileged member. Only for gateways you control."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/gateway.js:189
@@ -662,6 +868,14 @@ msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/settings.js:140
 msgid "Limit forwarding to these interfaces (default: any)."
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:68
+msgid "Listen port"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:147
+msgid "Listening, not accelerated"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:150
@@ -673,8 +887,16 @@ msgstr ""
 msgid "Local"
 msgstr ""
 
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:74
+msgid "Local config path"
+msgstr ""
+
 #: htdocs/luci-static/resources/view/zerotier/overview.js:173
 msgid "Log"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/interface.js:87
+msgid "MAC Address"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/gateway.js:151
@@ -699,9 +921,7 @@ msgid "Managed addresses and routes"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:268
-msgid ""
-"Managed addresses of the member; leave empty to have one assigned from the "
-"pools."
+msgid "Managed addresses of the member; leave empty to have one assigned from the pools."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:167
@@ -736,8 +956,16 @@ msgstr ""
 msgid "Masquerade"
 msgstr ""
 
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:148
+msgid "Masquerade interfaces"
+msgstr ""
+
 #: htdocs/luci-static/resources/view/zerotier/settings.js:170
 msgid "Masquerade traffic from"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:144
+msgid "Masquerading"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:303
@@ -769,8 +997,7 @@ msgid "Member isolation (flow rules of the controller)"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:36
-msgid ""
-"Member isolation is configured on the network section of a joined network"
+msgid "Member isolation is configured on the network section of a joined network"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/overview.js:83
@@ -802,9 +1029,7 @@ msgid "Members isolated"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:137
-msgid ""
-"Members need to be authorized here. A public network admits anyone who knows "
-"its ID."
+msgid "Members need to be authorized here. A public network admits anyone who knows its ID."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:371
@@ -856,10 +1081,7 @@ msgid "Moons"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:192
-msgid ""
-"Moons are root servers you run yourself. Nodes that orbit a moon learn about "
-"each other through it, which helps where the public roots are slow or "
-"unreachable."
+msgid "Moons are root servers you run yourself. Nodes that orbit a moon learn about each other through it, which helps where the public roots are slow or unreachable."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:162
@@ -867,15 +1089,11 @@ msgid "Moons this router orbits"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/settings.js:61
-msgid ""
-"More than 1 and fewer than the CPU cores of this router (%d). Empty: 2 with "
-"4 cores or more."
+msgid "More than 1 and fewer than the CPU cores of this router (%d). Empty: 2 with 4 cores or more."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/settings.js:62
-msgid ""
-"More than 1 and fewer than the CPU cores of this router. Empty: 2 with 4 "
-"cores or more."
+msgid "More than 1 and fewer than the CPU cores of this router. Empty: 2 with 4 cores or more."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:142
@@ -884,6 +1102,10 @@ msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/settings.js:55
 msgid "Multithreading"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:37
+msgid "NOT RUNNING"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:134
@@ -920,6 +1142,14 @@ msgstr ""
 msgid "Network ID"
 msgstr ""
 
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/interface.js:81
+msgid "Network Interface Information"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:98
+msgid "Network configuration"
+msgstr ""
+
 #: htdocs/luci-static/resources/view/zerotier/controller.js:387
 #: htdocs/luci-static/resources/view/zerotier/controller.js:401
 #: htdocs/luci-static/resources/view/zerotier/overview.js:77
@@ -946,16 +1176,11 @@ msgid "Networks"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:403
-msgid ""
-"Networks this router is the controller of: who is admitted, which addresses "
-"members get, and the routes they learn. What members may reach through a "
-"router is set on the Permissions page."
+msgid "Networks this router is the controller of: who is admitted, which addresses members get, and the routes they learn. What members may reach through a router is set on the Permissions page."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/settings.js:72
-msgid ""
-"Networks this router joins. A network that is not authorized yet stays \"Not "
-"authorized\" until its controller admits this router."
+msgid "Networks this router joins. A network that is not authorized yet stays \"Not authorized\" until its controller admits this router."
 msgstr ""
 
 #: htdocs/luci-static/resources/zerotier/common.js:221
@@ -966,12 +1191,20 @@ msgstr ""
 msgid "No LAN hosts known"
 msgstr ""
 
+#: htdocs/luci-static/resources/view/zerotier/overview.js:166
+msgid "No active bond policy"
+msgstr ""
+
 #: htdocs/luci-static/resources/view/zerotier/controller.js:270
 msgid "No automatic addresses"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:152
 msgid "No direct path: relayed"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/interface.js:77
+msgid "No interface online."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:304
@@ -991,10 +1224,7 @@ msgid "No network joined yet. Add one on the Settings page."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:123
-msgid ""
-"No network uses member permissions yet, so every member gets the same "
-"access. Switch \"Access from the network\" to member permissions on the "
-"Settings page."
+msgid "No network uses member permissions yet, so every member gets the same access. Switch \"Access from the network\" to member permissions on the Settings page."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/overview.js:82
@@ -1005,8 +1235,16 @@ msgstr ""
 msgid "No networks yet: create one below."
 msgstr ""
 
+#: htdocs/luci-static/resources/view/zerotier/overview.js:157
+msgid "No peer bonds configured."
+msgstr ""
+
 #: htdocs/luci-static/resources/view/zerotier/overview.js:128
 msgid "No peers"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:140
+msgid "No relay status yet"
 msgstr ""
 
 #: htdocs/luci-static/resources/zerotier/common.js:233
@@ -1027,9 +1265,7 @@ msgid "Node address"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:368
-msgid ""
-"Not a member of this network. Join it on the Settings page to use it here, "
-"or to isolate its members."
+msgid "Not a member of this network. Join it on the Settings page to use it here, or to isolate its members."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:88
@@ -1043,6 +1279,10 @@ msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/overview.js:80
 msgid "Not available"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:169
+msgid "Not bonded"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:84
@@ -1060,6 +1300,10 @@ msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:36
 msgid "Not joined here"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:150
+msgid "Not listening"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/overview.js:154
@@ -1092,11 +1336,7 @@ msgid "On: %s, port %d"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:63
-msgid ""
-"One grant per entry: TARGET [PORT...]. Targets: router, lan, wan, "
-"device:NAME, device:*, net:PREFIX, and - between members, under member "
-"isolation - member:NAME, group:ROLE. Ports: tcp/22, udp/53, tcp/8000-8100, "
-"icmp - none means all traffic. Example: \"device:nas tcp/445\"."
+msgid "One grant per entry: TARGET [PORT...]. Targets: router, lan, wan, device:NAME, device:*, net:PREFIX, and - between members, under member isolation - member:NAME, group:ROLE. Ports: tcp/22, udp/53, tcp/8000-8100, icmp - none means all traffic. Example: \"device:nas tcp/445\"."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:321
@@ -1127,12 +1367,7 @@ msgid "Only use the addresses listed above."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/settings.js:178
-msgid ""
-"Only when this router is the network's controller. Members then reach only "
-"the gateways - this router, and members marked as gateway on the Permissions "
-"page - the other members of their groups, and what their \"member:\" and "
-"\"group:\" grants allow. ZeroTier itself drops everything else between "
-"members, on both ends."
+msgid "Only when this router is the network's controller. Members then reach only the gateways - this router, and members marked as gateway on the Permissions page - the other members of their groups, and what their \"member:\" and \"group:\" grants allow. ZeroTier itself drops everything else between members, on both ends."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:121
@@ -1143,6 +1378,10 @@ msgstr ""
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:113
 #: htdocs/luci-static/resources/view/zerotier/settings.js:127
 msgid "Open to all members"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:92
+msgid "Open website"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/settings.js:123
@@ -1173,8 +1412,29 @@ msgstr ""
 msgid "Path"
 msgstr ""
 
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:75
+msgid "Path of the optional file local.conf (see <a target=\"_blank\" href=\"%s\">documentation</a>)."
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:156
+msgid "Paths"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js
+msgid "Paths of the two address families can differ a lot in latency. Preferring one family uses the other only when no path of the preferred family works."
+msgstr ""
+
 #: htdocs/luci-static/resources/view/zerotier/overview.js:127
 msgid "Peer"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:197
+msgid "Peer bond"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:191
+#: htdocs/luci-static/resources/view/zerotier/overview.js:224
+msgid "Peer bonds"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/overview.js:171
@@ -1186,6 +1446,10 @@ msgstr ""
 msgid "Permissions"
 msgstr ""
 
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:80
+msgid "Persistent configuration directory (to keep other configurations such as controller or moons, etc.)."
+msgstr ""
+
 #: htdocs/luci-static/resources/view/zerotier/settings.js:43
 msgid "Persistent directory"
 msgstr ""
@@ -1194,14 +1458,25 @@ msgstr ""
 msgid "Pin threads to CPU cores"
 msgstr ""
 
+#: htdocs/luci-static/resources/view/zerotier/settings.js:213
+msgid "Planet and moon peers cannot be bonded"
+msgstr ""
+
 #: htdocs/luci-static/resources/view/zerotier/overview.js:172
-msgid ""
-"Planets and moons are the root servers that introduce peers to each other; "
-"leaves are other ZeroTier nodes."
+msgid "Planets and moons are the root servers that introduce peers to each other; leaves are other ZeroTier nodes."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/gateway.js:265
 msgid "Points to"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:222
+#: htdocs/luci-static/resources/view/zerotier/overview.js:156
+msgid "Policy"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:244
+msgid "Policy alias"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:86
@@ -1245,10 +1520,28 @@ msgstr ""
 msgid "RFC 4193 addresses"
 msgstr ""
 
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:35
+msgid "RUNNING"
+msgstr ""
+
 #: htdocs/luci-static/resources/view/zerotier/controller.js:158
-msgid ""
-"Ranges as FIRST-LAST, e.g. 10.147.20.10-10.147.20.200. Keep addresses you "
-"map to LAN devices outside of them."
+msgid "Ranges as FIRST-LAST, e.g. 10.147.20.10-10.147.20.200. Keep addresses you map to LAN devices outside of them."
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:314
+msgid "Read-only status from the relay service and listener. The ready marker alone is only a clue, not proof that the relay is running."
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:145
+msgid "Ready"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:149
+msgid "Ready marker present, check listener"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:230
+msgid "Real network interface name that may carry one path of this bond."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:132
@@ -1257,6 +1550,10 @@ msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:106
 msgid "Refused"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:313
+msgid "Relay status"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:321
@@ -1271,9 +1568,7 @@ msgid "Remove"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:240
-msgid ""
-"Remove member %s from the network? It can ask to join again; on a private "
-"network it then waits for authorization."
+msgid "Remove member %s from the network? It can ask to join again; on a private network it then waits for authorization."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:117
@@ -1303,16 +1598,11 @@ msgid "Router firewall"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:134
-msgid ""
-"Routers with this package that orbit the moon fetch the new definition by "
-"themselves; other nodes, such as phones and PCs, have to orbit the moon "
-"again."
+msgid "Routers with this package that orbit the moon fetch the new definition by themselves; other nodes, such as phones and PCs, have to orbit the moon again."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:168
-msgid ""
-"Routes pushed to members: a subnet, optionally \"via GATEWAY\" - e.g. "
-"10.147.20.0/24, or 192.168.1.0/24 via 10.147.20.1 for a LAN behind a member."
+msgid "Routes pushed to members: a subnet, optionally \"via GATEWAY\" - e.g. 10.147.20.0/24, or 192.168.1.0/24 via 10.147.20.1 for a LAN behind a member."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:116
@@ -1331,6 +1621,14 @@ msgstr ""
 msgid "Running"
 msgstr ""
 
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:296
+msgid "SMB port"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:271
+msgid "SMB relay"
+msgstr ""
+
 #: htdocs/luci-static/resources/view/zerotier/controller.js:294
 msgid "Save"
 msgstr ""
@@ -1340,9 +1638,7 @@ msgid "Save settings"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:73
-msgid ""
-"Scan with a phone to copy the network ID, then join it in the ZeroTier app. "
-"A new member stays unauthorized until it is admitted here."
+msgid "Scan with a phone to copy the network ID, then join it in the ZeroTier app. A new member stays unauthorized until it is admitted here."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:185
@@ -1379,12 +1675,12 @@ msgstr ""
 msgid "Show generated rules"
 msgstr ""
 
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:278
+msgid "Single IPv4 address of the ZeroTier client allowed to use the relay. Revoking this device grant also revokes the forwarding path."
+msgstr ""
+
 #: htdocs/luci-static/resources/view/zerotier/settings.js:56
-msgid ""
-"Spread packet processing over several threads. Encrypting what this router "
-"sends runs in parallel, and so does handing received frames to the network "
-"interface; decrypting what arrives stays on one thread. Written into "
-"local.conf."
+msgid "Spread packet processing over several threads. Encrypting what this router sends runs in parallel, and so does handing received frames to the network interface; decrypting what arrives stays on one thread. Written into local.conf."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:150
@@ -1412,9 +1708,7 @@ msgid "Status"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/overview.js:167
-msgid ""
-"Status of the ZeroTier service, the networks this router has joined and the "
-"peers it talks to."
+msgid "Status of the ZeroTier service, the networks this router has joined and the peers it talks to."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:91
@@ -1446,17 +1740,11 @@ msgid "The 10 digit node address the member's ZeroTier client shows."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/settings.js:23
-msgid ""
-"The ZeroTier service, the networks this router joins, and peer bond "
-"configuration. Saving this page writes UCI only; it does not reload firewall "
-"rules, restart WAN, or restart zerotier-one."
+msgid "The ZeroTier service, the networks this router joins, and peer bond configuration. Saving this page writes UCI only; it does not reload firewall rules, restart WAN, or restart zerotier-one."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/gateway.js:205
-msgid ""
-"The address members reach the device at. It has to lie in a ZeroTier subnet "
-"of this router, must not be taken, and should stay outside the address pools "
-"of the controller."
+msgid "The address members reach the device at. It has to lie in a ZeroTier subnet of this router, must not be taken, and should stay outside the address pools of the controller."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:18
@@ -1464,21 +1752,15 @@ msgid "The command failed:"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:165
-msgid ""
-"The controller admitted them, but no member entry covers them: through this "
-"router they reach nothing."
+msgid "The controller admitted them, but no member entry covers them: through this router they reach nothing."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/gateway.js:222
-msgid ""
-"The controller may hand this address to a new member: %s. Narrow the pool on "
-"the Controller page."
+msgid "The controller may hand this address to a new member: %s. Narrow the pool on the Controller page."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:87
-msgid ""
-"The flow rules were edited elsewhere since they were generated; applying the "
-"configuration puts them back"
+msgid "The flow rules were edited elsewhere since they were generated; applying the configuration puts them back"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:52
@@ -1490,21 +1772,15 @@ msgid "The members of group %s (needs member isolation)"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:63
-msgid ""
-"The moon announces addresses this router no longer has: nodes cannot use it."
+msgid "The moon announces addresses this router no longer has: nodes cannot use it."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:68
-msgid ""
-"The moon announces other addresses than this router has on the WAN. That is "
-"right if they were set on purpose, e.g. for a port forwarding in front of "
-"the router."
+msgid "The moon announces other addresses than this router has on the WAN. That is right if they were set on purpose, e.g. for a port forwarding in front of the router."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/overview.js:40
-msgid ""
-"The permission rules of network %s are not loaded: its members are only held "
-"back by the default firewall rules."
+msgid "The permission rules of network %s are not loaded: its members are only held back by the default firewall rules."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:313
@@ -1523,9 +1799,7 @@ msgid "This router has %d CPU core(s): too few, ZeroTier keeps to one thread."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/gateway.js:293
-msgid ""
-"This router has no IPv4 address on a ZeroTier network yet, so no device can "
-"be mapped."
+msgid "This router has no IPv4 address on a ZeroTier network yet, so no device can be mapped."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:140
@@ -1533,9 +1807,7 @@ msgid "This router orbits no moon"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:153
-msgid ""
-"This router reaches the moon only through the public roots, e.g. because the "
-"moon's address changed"
+msgid "This router reaches the moon only through the public roots, e.g. because the moon's address changed"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:50
@@ -1550,14 +1822,20 @@ msgstr ""
 msgid "Threads"
 msgstr ""
 
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/interface.js:103
+msgid "Total Download"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/interface.js:107
+msgid "Total Upload"
+msgstr ""
+
 #: htdocs/luci-static/resources/view/zerotier/overview.js:104
 msgid "Traffic"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/settings.js:167
-msgid ""
-"Traffic from the LAN into the network leaves with this router's ZeroTier "
-"address."
+msgid "Traffic from the LAN into the network leaves with this router's ZeroTier address."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:103
@@ -1569,28 +1847,27 @@ msgid "Turn on"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/settings.js:39
-msgid ""
-"UDP port ZeroTier listens on; it picks a secondary and a tertiary port by "
-"itself."
+msgid "UDP port ZeroTier listens on; it picks a secondary and a tertiary port by itself."
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/interface.js:30
+msgid "Unable to get interface %s info: %s."
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/interface.js:15
+msgid "Unable to get interface info: %s."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:315
-msgid ""
-"Under member isolation every member may reach this one, and it reaches every "
-"member: for routers and other gateways."
+msgid "Under member isolation every member may reach this one, and it reaches every member: for routers and other gateways."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:331
-msgid ""
-"Under member isolation, the members of this group reach one another "
-"directly, with all traffic."
+msgid "Under member isolation, the members of this group reach one another directly, with all traffic."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/settings.js:122
-msgid ""
-"Under member permissions a member reaches this router, the LAN or the "
-"internet only as far as the Permissions page grants it, and members without "
-"an entry there reach nothing."
+msgid "Under member permissions a member reaches this router, the LAN or the internet only as far as the Permissions page grants it, and members without an entry there reach nothing."
 msgstr ""
 
 #: htdocs/luci-static/resources/zerotier/common.js:84
@@ -1609,19 +1886,32 @@ msgstr ""
 msgid "Use FIRST-LAST"
 msgstr ""
 
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:292
+msgid "Use a high TCP port above 1024, but not 1445"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:234
+msgid "Use a real interface name, without spaces or shell characters"
+msgstr ""
+
 #: htdocs/luci-static/resources/view/zerotier/controller.js:152
 msgid "Use a subnet of at least four addresses (/30 or larger)"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/gateway.js:262
-msgid ""
-"Used otherwise, e.g. the ZeroTier address mapped to the device on the LAN."
+msgid "Used otherwise, e.g. the ZeroTier address mapped to the device on the LAN."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/gateway.js:257
-msgid ""
-"Used whenever it answers, e.g. the address of the device's own ZeroTier "
-"client."
+msgid "Used whenever it answers, e.g. the address of the device's own ZeroTier client."
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:157
+msgid "VIP not ready"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:157
+msgid "VIP ready"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/overview.js:72
@@ -1645,43 +1935,37 @@ msgstr ""
 msgid "Waiting for the moon"
 msgstr ""
 
+#: htdocs/luci-static/resources/view/zerotier/overview.js:164
+msgid "Waiting for zerotier-one"
+msgstr ""
+
 #: htdocs/luci-static/resources/view/zerotier/settings.js:147
-msgid ""
-"What a \"lan\" grant reaches, and where LAN hosts may open connections into "
-"the network from. Default: the devices of the firewall zone \"lan\"."
+msgid "What a \"lan\" grant reaches, and where LAN hosts may open connections into the network from. Default: the devices of the firewall zone \"lan\"."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/settings.js:154
-msgid ""
-"What a \"wan\" grant reaches. Default: the devices of the firewall zone "
-"\"wan\"."
+msgid "What a \"wan\" grant reaches. Default: the devices of the firewall zone \"wan\"."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:188
-msgid ""
-"What zerotier-fw4 builds from the applied configuration - pending changes "
-"are not in it yet."
+msgid "What zerotier-fw4 builds from the applied configuration - pending changes are not in it yet."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/settings.js:44
-msgid ""
-"Where identity, moons, peers and - on a controller - its networks are kept "
-"across reboots. Empty: everything lives in RAM, only the identity survives."
+msgid "Where identity, moons, peers and - on a controller - its networks are kept across reboots. Empty: everything lives in RAM, only the identity survives."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:357
-msgid ""
-"Who may reach what through this router. On networks with member permissions, "
-"a member reaches this router, the LAN or the internet only as far as its "
-"grants and roles allow; members without an entry reach nothing. Traffic "
-"between members never passes the router: on networks this router controls, "
-"member isolation has the controller enforce groups and \"member:\" / \"group:"
-"\" grants instead."
+msgid "Who may reach what through this router. On networks with member permissions, a member reaches this router, the LAN or the internet only as far as its grants and roles allow; members without an entry reach nothing. Traffic between members never passes the router: on networks this router controls, member isolation has the controller enforce groups and \"member:\" / \"group:\" grants instead."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/overview.js:165
 #: root/usr/share/luci/menu.d/luci-app-zerotier.json:3
 msgid "ZeroTier"
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:90
+msgid "ZeroTier Central"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/gateway.js:204
@@ -1694,9 +1978,12 @@ msgid "ZeroTier interfaces not identified yet are denied"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:125
-msgid ""
-"ZeroTier interfaces that are not identified yet - while ZeroTier starts - "
-"are denied."
+msgid "ZeroTier interfaces that are not identified yet - while ZeroTier starts - are denied."
+msgstr ""
+
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/config.js:47
+#: applications/luci-app-zerotier/htdocs/luci-static/resources/view/zerotier/interface.js:74
+msgid "ZeroTier is an open source, cross-platform and easy to use virtual LAN."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/controller.js:388
@@ -1705,6 +1992,10 @@ msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:180
 msgid "ZeroTier is not running."
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/settings.js:205
+msgid "ZeroTier node address of the leaf peer to bond with. Planet and moon peers are not eligible."
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/settings.js:22
@@ -1731,9 +2022,17 @@ msgstr ""
 msgid "auto, a public IP or a domain"
 msgstr ""
 
+#: htdocs/luci-static/resources/view/zerotier/overview.js:181
+msgid "bonded"
+msgstr ""
+
 #: htdocs/luci-static/resources/view/zerotier/gateway.js:72
 #: htdocs/luci-static/resources/zerotier/common.js:261
 msgid "device %s"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:179
+msgid "eligible"
 msgstr ""
 
 #: htdocs/luci-static/resources/zerotier/common.js:259
@@ -1778,8 +2077,28 @@ msgstr ""
 msgid "none"
 msgstr ""
 
+#: htdocs/luci-static/resources/view/zerotier/overview.js:181
+msgid "not bonded"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:179
+msgid "not eligible"
+msgstr ""
+
 #: htdocs/luci-static/resources/view/zerotier/permissions.js:82
 msgid "not the controller"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:158
+msgid "procd not running"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/gateway.js:158
+msgid "procd reports running"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/zerotier/overview.js:187
+msgid "quality %s"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/gateway.js:124
@@ -1802,265 +2121,4 @@ msgstr ""
 
 #: htdocs/luci-static/resources/view/zerotier/moon.js:58
 msgid "unknown"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/overview.js:173
-msgid "%d/%d path(s) alive"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/overview.js:183
-msgid "%d flow(s)"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/overview.js:185
-msgid "%d ms"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:298
-msgid "19445 (canary)"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:299
-msgid "445 (SMB)"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/settings.js:224
-msgid "Active backup"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/settings.js:196
-msgid "Add peer bond…"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:277
-msgid "Allowed client"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:281
-msgid "A single IPv4 address is required"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/settings.js:223
-msgid "Balance XOR"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:307
-msgid "BBR"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:155
-msgid "BBR available"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:305
-msgid "BBR can help long-distance Linux socket forwarding. This page shows acceleration only when BBR is available, the VIP is ready and the relay is listening."
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:155
-msgid "BBR not loaded"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/overview.js:181
-msgid "bonded"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/overview.js:168
-msgid "Bonded"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/settings.js:192
-msgid "Bonding is only for the specific leaf peers listed here. Saving this page only writes UCI; zerotier-one may create a new bond when it scans the configuration. Once a bond is enabled, changing or disabling it needs a controlled rebuild by the backend package, not an automatic service restart from LuCI."
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/overview.js:225
-msgid "Bond status is read from zerotier-one. A saved configuration may still be waiting for the daemon to create or rebuild the bond."
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:153
-msgid "Client %s to %s:%d"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:304
-msgid "Congestion control"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:308
-msgid "CUBIC"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:156
-msgid "CUBIC selected"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/overview.js:179
-msgid "eligible"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:272
-msgid "Enable a pure TCP byte relay for this device only. Windows SMB authentication, signing and sealing stay end-to-end; the Windows audit source address becomes this router on the LAN, not the remote client."
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:285
-msgid "High port bound on the device ZeroTier address. Do not use 1445 or privileged ports."
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:284
-msgid "Internal relay port"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/settings.js:236
-msgid "IP preference"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/settings.js:237
-#: htdocs/luci-static/resources/view/zerotier/settings.js:242
-msgid "IPv4 and IPv6"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/settings.js:238
-#: htdocs/luci-static/resources/view/zerotier/settings.js:242
-msgid "IPv4 only"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/settings.js:239
-#: htdocs/luci-static/resources/view/zerotier/settings.js:242
-msgid "IPv6 only"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:147
-msgid "Listening, not accelerated"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/overview.js:166
-msgid "No active bond policy"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/overview.js:157
-msgid "No peer bonds configured."
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:140
-msgid "No relay status yet"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/overview.js:181
-msgid "not bonded"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/overview.js:169
-msgid "Not bonded"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/overview.js:179
-msgid "not eligible"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:150
-msgid "Not listening"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/overview.js:156
-msgid "Paths"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/settings.js:197
-msgid "Peer bond"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/settings.js:191
-#: htdocs/luci-static/resources/view/zerotier/overview.js:224
-msgid "Peer bonds"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/settings.js:213
-msgid "Planet and moon peers cannot be bonded"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/settings.js:222
-#: htdocs/luci-static/resources/view/zerotier/overview.js:156
-msgid "Policy"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/settings.js:244
-msgid "Policy alias"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:158
-msgid "procd not running"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:158
-msgid "procd reports running"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/overview.js:187
-msgid "quality %s"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:314
-msgid "Read-only status from the relay service and listener. The ready marker alone is only a clue, not proof that the relay is running."
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:145
-msgid "Ready"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:149
-msgid "Ready marker present, check listener"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/settings.js:230
-msgid "Real network interface name that may carry one path of this bond."
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:313
-msgid "Relay status"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:278
-msgid "Single IPv4 address of the ZeroTier client allowed to use the relay. Revoking this device grant also revokes the forwarding path."
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:296
-msgid "SMB port"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:271
-msgid "SMB relay"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:292
-msgid "Use a high TCP port above 1024, but not 1445"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/settings.js:234
-msgid "Use a real interface name, without spaces or shell characters"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:157
-msgid "VIP not ready"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/gateway.js:157
-msgid "VIP ready"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/overview.js:164
-msgid "Waiting for zerotier-one"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/settings.js:205
-msgid "ZeroTier node address of the leaf peer to bond with. Planet and moon peers are not eligible."
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/settings.js
-msgid "IPv4 preferred, IPv6 standby"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/settings.js
-msgid "IPv6 preferred, IPv4 standby"
-msgstr ""
-
-#: htdocs/luci-static/resources/view/zerotier/settings.js
-msgid "Paths of the two address families can differ a lot in latency. Preferring one family uses the other only when no path of the preferred family works."
 msgstr ""

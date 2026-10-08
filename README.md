@@ -4,7 +4,7 @@
 
 把 OpenWrt 路由器变成 **ZeroTier 节点、网络控制器、权限网关和 Moon 的统一管理入口**。本版本基于 ImmortalWrt LuCI ZeroTier 集成演进，重点不再只是“加入一个网络”，而是管理成员能访问什么、局域网设备如何映射、Moon 如何跟随地址变化，以及实际运行状态是否符合配置。
 
-搭配 [zerotier-openwrt](https://github.com/Altars3668/zerotier-openwrt) 使用：**LuCI 负责配置与展示，`zerotier-fw4` 负责生成和执行规则**。当前界面包版本为 **99.5.0**。
+搭配 [zerotier-openwrt](https://github.com/Altars3668/zerotier-openwrt) 使用：**LuCI 负责配置与展示，`zerotier-fw4` 负责生成和执行规则**。当前界面包版本为 **99.5.1**。
 
 ## 我的改造与特色
 
@@ -83,3 +83,9 @@ make package/luci-app-zerotier/compile V=s -j2
 原始 LuCI 集成与版权信息来自 [ImmortalWrt](https://github.com/immortalwrt/luci)，本仓库的后续重构由 Altars3668 维护。[Makefile](Makefile) 声明 **GPL-3.0-only**，版权和授权以保留的源码声明为准。
 
 配套项目：[ZeroTier OpenWrt 核心包](https://github.com/Altars3668/zerotier-openwrt) · [RE-CS-02 固件 CI](https://github.com/Altars3668/OpenWRT-CI)。
+
+## 上游基线与回归检查
+
+源码来源已核实为 [immortalwrt/luci 的 `applications/luci-app-zerotier`](https://github.com/immortalwrt/luci/tree/5fc1fac5684cac6eee2c7fbff78c65b867980dd8/applications/luci-app-zerotier)，本轮基线为 `5fc1fac5684c`。来源、导入历史和保留的定制差异见 [UPSTREAM.md](UPSTREAM.md)。
+
+检查视图 JavaScript、JSON、翻译编译和 ucode 编译；本轮不连接路由器进行网页或防火墙验收。
